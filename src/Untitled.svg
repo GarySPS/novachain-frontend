@@ -1,0 +1,14 @@
+<svg width="170" height="38" viewBox="0 0 170 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Chain Link Icon -->
+  <rect x="2" y="8" width="16" height="16" rx="8" fill="#ffd700"></rect>
+  <rect x="8" y="14" width="16" height="16" rx="8" stroke="#fff" stroke-width="3" fill="none"></rect>
+  <circle cx="10" cy="16" r="3" fill="#fff"></circle>
+  <circle cx="16" cy="22" r="3" fill="#fff"></circle>
+  <!-- Wordmark -->
+  <text x="34" y="26" font-family="Segoe UI,Bold,Arial,sans-serif" font-size="24" font-weight="bold" fill="#ffd700" letter-spacing="0.02em">
+    Nova
+  </text>
+  <text x="86" y="26" font-family="Segoe UI,Bold,Arial,sans-serif" font-size="24" font-weight="bold" fill="#fff" letter-spacing="0.02em">
+    Chain
+  </text>
+</svg>

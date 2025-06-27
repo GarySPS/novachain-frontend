@@ -1,0 +1,7 @@
+<svg width="64" height="64" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Chain Link Icon (NovaChain Mini) -->
+  <rect x="2" y="8" width="16" height="16" rx="8" fill="#ffd700"></rect>
+  <rect x="8" y="14" width="16" height="16" rx="8" stroke="#fff" stroke-width="3" fill="none"></rect>
+  <circle cx="10" cy="16" r="3" fill="#fff"></circle>
+  <circle cx="16" cy="22" r="3" fill="#fff"></circle>
+</svg>
