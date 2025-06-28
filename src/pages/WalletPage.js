@@ -438,12 +438,41 @@ export default function WalletPage() {
             {coinSymbols.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <div className="flex flex-col items-center">
-            {walletQRCodes[selectedDepositCoin] ? (
-              <img src={walletQRCodes[selectedDepositCoin]} alt="Deposit QR" className="w-28 h-28 mx-auto mb-2" />
-            ) : (
-              <QRCodeCanvas value={walletAddresses[selectedDepositCoin] || ""} size={120} bgColor="#191a1f" fgColor="#fff" />
-            )}
-          </div>
+  {walletQRCodes[selectedDepositCoin] ? (
+    // --- Always prepend ADMIN_API_BASE for /uploads/ images
+    <img
+      src={
+        walletQRCodes[selectedDepositCoin].startsWith("/uploads")
+          ? `${ADMIN_API_BASE}${walletQRCodes[selectedDepositCoin]}`
+          : walletQRCodes[selectedDepositCoin]
+      }
+      alt="Deposit QR"
+      className="w-28 h-28 mx-auto mb-2"
+      onError={e => {
+        // If image load fails, fallback to generated QR
+        e.target.onerror = null;
+        e.target.style.display = "none";
+        const fallback = e.target.nextSibling;
+        if (fallback) fallback.style.display = "block";
+      }}
+      style={{ display: "block" }}
+    />
+  ) : null}
+  {/* Fallback: Always render QRCodeCanvas, but hidden if real image shows */}
+  <div
+    style={{
+      display: walletQRCodes[selectedDepositCoin] ? "none" : "block",
+      marginTop: walletQRCodes[selectedDepositCoin] ? -120 : 0, // visually overlaps if needed
+    }}
+  >
+    <QRCodeCanvas
+      value={walletAddresses[selectedDepositCoin] || ""}
+      size={120}
+      bgColor="#191a1f"
+      fgColor="#fff"
+    />
+  </div>
+</div>
           <span className="text-theme-tertiary font-medium text-lg">
             Network: {depositNetworks[selectedDepositCoin]}
           </span>
