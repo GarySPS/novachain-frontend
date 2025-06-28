@@ -9,6 +9,7 @@ import Field from "../components/field";
 import Modal from "../components/modal";
 import Icon from "../components/icon";
 
+
 const coinSymbols = ["USDT", "BTC", "ETH", "SOL", "XRP", "TON"];
 const depositNetworks = {
   USDT: "TRC20", BTC: "BTC", ETH: "ERC20", SOL: "SOL", XRP: "XRP", TON: "TON",
@@ -38,6 +39,8 @@ export default function WalletPage() {
   const [successMsg, setSuccessMsg] = useState("");
   const [walletAddresses, setWalletAddresses] = useState({});
   const [walletQRCodes, setWalletQRCodes] = useState({});
+  const [fileLocked, setFileLocked] = useState(false);
+
 
   // Use static prices for now
   useEffect(() => {
@@ -165,8 +168,9 @@ export default function WalletPage() {
       setToast("Deposit submitted!");
       setDepositAmount("");
       setDepositScreenshot(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      setTimeout(() => {
+      setFileLocked(false);
+
+        setTimeout(() => {
         setToast("");
         closeModal();
       }, 1600);
@@ -532,15 +536,22 @@ export default function WalletPage() {
       type="file"
       accept="image/*"
       ref={fileInputRef}
-      onChange={e => setDepositScreenshot(e.target.files[0])}
+      onChange={e => {
+        setDepositScreenshot(e.target.files[0]);
+        setFileLocked(true);
+      }}
       required
       className="absolute inset-0 opacity-0 z-50 cursor-pointer"
+      disabled={fileLocked}
     />
-    <div className="truncate w-full text-sm text-white font-semibold text-center px-4 py-2 rounded-full bg-theme-primary hover:bg-theme-primary/90 cursor-pointer">
-      Choose File
+    <div className={`truncate w-full text-sm text-white font-semibold text-center px-4 py-2 rounded-full ${
+      fileLocked ? "bg-gray-500 cursor-not-allowed" : "bg-theme-primary hover:bg-theme-primary/90 cursor-pointer"
+    }`}>
+      {fileLocked ? "Screenshot Uploaded" : "Choose File"}
     </div>
   </div>
 </div>
+
 
           <div className="text-caption-1 text-theme-tertiary bg-theme-on-surface-2 rounded px-3 py-2">
             For your safety, please submit your deposit screenshot.
