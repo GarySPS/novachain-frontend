@@ -8,7 +8,7 @@ import Card from "../components/card";
 import Field from "../components/field";
 import Tooltip from "../components/tooltip";
 import Icon from "../components/icon";
-import TimerBar from "../components/timerbar";
+import TimerBar from "../components/TimerBar";
 
 
 function persistTradeState(tradeState) {
