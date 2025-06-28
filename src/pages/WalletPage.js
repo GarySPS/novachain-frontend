@@ -1,4 +1,4 @@
-import { API_BASE } from '../config';   // only once
+import { MAIN_API_BASE, ADMIN_API_BASE } from '../config';
 import { jwtDecode } from "jwt-decode";
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
@@ -9,16 +9,9 @@ import Field from "../components/field";
 import Modal from "../components/modal";
 import Icon from "../components/icon";
 
-
 const coinSymbols = ["USDT", "BTC", "ETH", "SOL", "XRP", "TON"];
-
 const depositNetworks = {
-  USDT: "TRC20",
-  BTC: "BTC",
-  ETH: "ERC20",
-  SOL: "SOL",
-  XRP: "XRP",
-  TON: "TON",
+  USDT: "TRC20", BTC: "BTC", ETH: "ERC20", SOL: "SOL", XRP: "XRP", TON: "TON",
 };
 
 export default function WalletPage() {
@@ -44,50 +37,39 @@ export default function WalletPage() {
   const [result, setResult] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [walletAddresses, setWalletAddresses] = useState({});
-const [walletQRCodes, setWalletQRCodes] = useState({});
+  const [walletQRCodes, setWalletQRCodes] = useState({});
 
-
-// FINAL PATCH: Use static prices for now (remove all other price fetching hooks)
-useEffect(() => {
-  setPrices({
-    BTC: 107419.98,
-    ETH: 2453.07,
-    SOL: 143.66,
-    XRP: 2.17,
-    TON: 6.34,
-    USDT: 1
-  });
-}, []);
-
-
-// PATCH: Fetch deposit addresses and QR PNGs with absolute URL
-useEffect(() => {
-  // Remove trailing /api so /uploads loads from backend root
-  const BACKEND_ROOT = API_BASE.replace(/\/api$/, "");
-
-  axios.get(`${API_BASE}/deposit-addresses`)
-    .then(res => {
-      const addresses = {};
-      const qrcodes = {};
-      res.data.forEach(row => {
-        addresses[row.coin] = row.address;
-        if (row.qr_url && row.qr_url.startsWith("/")) {
-          qrcodes[row.coin] = `${BACKEND_ROOT}${row.qr_url}`;
-        } else if (row.qr_url) {
-          qrcodes[row.coin] = row.qr_url;
-        } else {
-          qrcodes[row.coin] = null;
-        }
-      });
-      setWalletAddresses(addresses);
-      setWalletQRCodes(qrcodes);
-    })
-    .catch(() => {
-      setWalletAddresses({});
-      setWalletQRCodes({});
+  // Use static prices for now
+  useEffect(() => {
+    setPrices({
+      BTC: 107419.98, ETH: 2453.07, SOL: 143.66, XRP: 2.17, TON: 6.34, USDT: 1
     });
-}, []);
+  }, []);
 
+  // Fetch deposit addresses & QR PNGs (from main backend, but QR PNG always from admin backend)
+  useEffect(() => {
+    axios.get(`${MAIN_API_BASE}/deposit-addresses`)
+      .then(res => {
+        const addresses = {};
+        const qrcodes = {};
+        res.data.forEach(row => {
+          addresses[row.coin] = row.address;
+          if (row.qr_url && row.qr_url.startsWith("/uploads")) {
+            qrcodes[row.coin] = `${ADMIN_API_BASE}${row.qr_url}`;
+          } else if (row.qr_url) {
+            qrcodes[row.coin] = row.qr_url;
+          } else {
+            qrcodes[row.coin] = null;
+          }
+        });
+        setWalletAddresses(addresses);
+        setWalletQRCodes(qrcodes);
+      })
+      .catch(() => {
+        setWalletAddresses({});
+        setWalletQRCodes({});
+      });
+  }, []);
 
   useEffect(() => {
     if (token) {
@@ -105,13 +87,12 @@ useEffect(() => {
   useEffect(() => {
     if (!token || !userId) return;
     fetchBalances();
-    axios.get(`${API_BASE}/deposits`, {
+    axios.get(`${MAIN_API_BASE}/deposits`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(res => setDepositHistory(res.data)).catch(() => setDepositHistory([]));
-    axios.get(`${API_BASE}/withdrawals`, {
+    axios.get(`${MAIN_API_BASE}/withdrawals`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(res => setWithdrawHistory(res.data)).catch(() => setWithdrawHistory([]));
-   
   }, [token, userId]);
 
   useEffect(() => {
@@ -157,7 +138,7 @@ useEffect(() => {
   // --- CORE FUNCTIONS ---
   function fetchBalances() {
     if (!token || !userId) return;
-    axios.get(`${API_BASE}/balance`, {
+    axios.get(`${MAIN_API_BASE}/balance`, {
       headers: { Authorization: `Bearer ${token}` }
     }).then(res => setBalances(res.data.assets || []))
       .catch(() => setBalances([]));
@@ -177,7 +158,7 @@ useEffect(() => {
       formData.append("address", walletAddresses[selectedDepositCoin]);
       if (depositScreenshot) formData.append("screenshot", depositScreenshot);
 
-      await axios.post(`${API_BASE}/deposit`, formData, {
+      await axios.post(`${MAIN_API_BASE}/deposit`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -190,7 +171,7 @@ useEffect(() => {
         closeModal();
       }, 1600);
 
-      axios.get(`${API_BASE}/deposits`, {
+      axios.get(`${MAIN_API_BASE}/deposits`, {
         headers: { Authorization: `Bearer ${token}` }
       }).then(res => setDepositHistory(res.data));
     } catch (err) {
@@ -203,7 +184,7 @@ useEffect(() => {
     e.preventDefault();
     setWithdrawMsg("Submitting withdraw...");
     try {
-      const res = await axios.post(`${API_BASE}/withdraw`, {
+      const res = await axios.post(`${MAIN_API_BASE}/withdraw`, {
         user_id: userId,
         coin: selectedWithdrawCoin,
         amount: withdrawForm.amount,
@@ -211,7 +192,7 @@ useEffect(() => {
       }, { headers: { Authorization: `Bearer ${token}` } });
       if (res.data && res.data.success) {
         setWithdrawMsg("Withdraw request submitted!");
-        axios.get(`${API_BASE}/withdrawals`, {
+        axios.get(`${MAIN_API_BASE}/withdrawals`, {
           headers: { Authorization: `Bearer ${token}` }
         }).then(res => setWithdrawHistory(res.data));
         fetchBalances();
@@ -240,21 +221,14 @@ useEffect(() => {
     e.preventDefault();
     if (!amount || isNaN(amount) || parseFloat(amount) <= 0 || fromCoin === toCoin) return;
     try {
-      const res = await axios.post(`${API_BASE}/convert`, {
-  from_coin: fromCoin,
-  to_coin: toCoin,
-  amount: parseFloat(amount)
-}, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await axios.post(`${MAIN_API_BASE}/convert`, {
+        from_coin: fromCoin,
+        to_coin: toCoin,
+        amount: parseFloat(amount)
+      }, { headers: { Authorization: `Bearer ${token}` } });
 
-
-      if (res.data && res.data.success) {if (res.data && res.data.success) {
-  setSuccessMsg(`✅ Converted ${amount} ${fromCoin} ➔ ${Number(res.data.received).toLocaleString(undefined, { maximumFractionDigits: 6 })} ${toCoin}`);
-  fetchBalances();
-} else {
-  setSuccessMsg("❌ Conversion failed.");
-}
-
-        setSuccessMsg(`✅ Converted ${amount} ${fromCoin} ➔ ${result} ${toCoin}`);
+      if (res.data && res.data.success) {
+        setSuccessMsg(`✅ Converted ${amount} ${fromCoin} ➔ ${Number(res.data.received).toLocaleString(undefined, { maximumFractionDigits: 6 })} ${toCoin}`);
         fetchBalances();
       } else {
         setSuccessMsg("❌ Conversion failed.");
@@ -294,36 +268,32 @@ useEffect(() => {
     );
   }
 
-  
-console.log("Balances:", balances, "Prices:", prices);
-
   // --- MAIN RENDER ---
   return (
-    
     <div className="min-h-screen bg-theme-n-8 py-10 px-2 flex flex-col items-center">
       <div className="w-full max-w-6xl flex flex-col md:flex-row gap-8">
-        
+
         {/* -- Total Balance Card -- */}
         <Card
-  className="flex flex-col items-center justify-center rounded-3xl shadow-lg border mx-auto w-full max-w-md min-h-[170px] my-5 bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] border-[#f6e8ff]/80"
-  style={{
-    boxShadow: "0 4px 28px 0 #10101013, 0 2px 8px 0 #ffd70038",
-    border: "1.5px solid #eee7",
-  }}
->
-  <div className="flex flex-col items-center justify-center w-full py-7">
-    <div className="flex items-center gap-3 mb-2">
-      <Icon name="wallet" className="w-8 h-8 text-theme-yellow drop-shadow" />
-      <span className="font-extrabold text-2xl tracking-wide text-theme-primary">Total Balance</span>
-    </div>
-    <div className="font-extrabold text-5xl text-theme-primary text-center tracking-tight drop-shadow-lg">
-      {`$${balances.reduce((acc, { symbol, balance }) =>
-        acc + ((prices[symbol] || (symbol === "USDT" ? 1 : 0)) * Number(balance)), 0
-      ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-    </div>
-    <div className="text-theme-tertiary mt-1 text-base font-semibold tracking-wide">USD</div>
-  </div>
-</Card>
+          className="flex flex-col items-center justify-center rounded-3xl shadow-lg border mx-auto w-full max-w-md min-h-[170px] my-5 bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] border-[#f6e8ff]/80"
+          style={{
+            boxShadow: "0 4px 28px 0 #10101013, 0 2px 8px 0 #ffd70038",
+            border: "1.5px solid #eee7",
+          }}
+        >
+          <div className="flex flex-col items-center justify-center w-full py-7">
+            <div className="flex items-center gap-3 mb-2">
+              <Icon name="wallet" className="w-8 h-8 text-theme-yellow drop-shadow" />
+              <span className="font-extrabold text-2xl tracking-wide text-theme-primary">Total Balance</span>
+            </div>
+            <div className="font-extrabold text-5xl text-theme-primary text-center tracking-tight drop-shadow-lg">
+              {`$${balances.reduce((acc, { symbol, balance }) =>
+                acc + ((prices[symbol] || (symbol === "USDT" ? 1 : 0)) * Number(balance)), 0
+              ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            </div>
+            <div className="text-theme-tertiary mt-1 text-base font-semibold tracking-wide">USD</div>
+          </div>
+        </Card>
 
         {/* -- Assets Table -- */}
         <Card className="flex-[2] rounded-3xl shadow-lg px-7 py-6 overflow-x-auto mb-8 border bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] border-[#f6e8ff]/80">
@@ -344,10 +314,10 @@ console.log("Balances:", balances, "Prices:", prices);
                   className="border-b border-theme-stroke last:border-0 hover:bg-theme-on-surface-2/80 transition"
                 >
                   <td className="py-3 px-2 text-lg font-bold">
-                  <div className="flex items-center gap-2">
-                   <Icon name={symbol?.toLowerCase() || "coin"} className="w-7 h-7" />
-                    <span>{symbol}</span>
-                  </div>
+                    <div className="flex items-center gap-2">
+                      <Icon name={symbol?.toLowerCase() || "coin"} className="w-7 h-7" />
+                      <span>{symbol}</span>
+                    </div>
                   </td>
                   <td className="font-mono text-theme-green py-3 px-2 text-lg">
                     {Number(balance).toLocaleString(undefined, { minimumFractionDigits: symbol === "BTC" ? 6 : 2 })}
@@ -391,44 +361,44 @@ console.log("Balances:", balances, "Prices:", prices);
         <form onSubmit={handleConvert} className="flex flex-col gap-5">
           <div className="flex gap-3">
             <div className="flex-1">
-  <label className="text-theme-tertiary font-medium mb-1 block">From</label>
-  <select
-    value={fromCoin}
-    onChange={e => {
-      setFromCoin(e.target.value);
-      // Set To coin auto
-      if (e.target.value === "USDT") setToCoin("BTC");
-      else setToCoin("USDT");
-    }}
-    className="w-full px-3 py-3 rounded-xl bg-theme-on-surface-2 text-theme-primary border border-theme-stroke text-lg"
-  >
-    {coinSymbols.map(c => (
-      <option key={c} value={c}>{c}</option>
-    ))}
-  </select>
-</div>
-<button
-  type="button"
-  onClick={swap}
-  className="btn-secondary h-14 mt-6 rounded-xl"
->
-  <Icon name="swap" />
-</button>
-<div className="flex-1">
-  <label className="text-theme-tertiary font-medium mb-1 block">To</label>
-  <select
-    value={toCoin}
-    onChange={e => setToCoin(e.target.value)}
-    className="w-full px-3 py-3 rounded-xl bg-theme-on-surface-2 text-theme-primary border border-theme-stroke text-lg"
-  >
-    {fromCoin === "USDT"
-      ? coinSymbols.filter(c => c !== "USDT").map(c =>
-          <option key={c} value={c}>{c}</option>
-        )
-      : <option value="USDT">USDT</option>
-    }
-  </select>
-</div>
+              <label className="text-theme-tertiary font-medium mb-1 block">From</label>
+              <select
+                value={fromCoin}
+                onChange={e => {
+                  setFromCoin(e.target.value);
+                  // Set To coin auto
+                  if (e.target.value === "USDT") setToCoin("BTC");
+                  else setToCoin("USDT");
+                }}
+                className="w-full px-3 py-3 rounded-xl bg-theme-on-surface-2 text-theme-primary border border-theme-stroke text-lg"
+              >
+                {coinSymbols.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="button"
+              onClick={swap}
+              className="btn-secondary h-14 mt-6 rounded-xl"
+            >
+              <Icon name="swap" />
+            </button>
+            <div className="flex-1">
+              <label className="text-theme-tertiary font-medium mb-1 block">To</label>
+              <select
+                value={toCoin}
+                onChange={e => setToCoin(e.target.value)}
+                className="w-full px-3 py-3 rounded-xl bg-theme-on-surface-2 text-theme-primary border border-theme-stroke text-lg"
+              >
+                {fromCoin === "USDT"
+                  ? coinSymbols.filter(c => c !== "USDT").map(c =>
+                      <option key={c} value={c}>{c}</option>
+                    )
+                  : <option value="USDT">USDT</option>
+                }
+              </select>
+            </div>
           </div>
           <Field
             label={`Amount (${fromCoin})`}
@@ -468,34 +438,33 @@ console.log("Balances:", balances, "Prices:", prices);
             {coinSymbols.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <div className="flex flex-col items-center">
-        {walletQRCodes[selectedDepositCoin] ? (
-         <img src={walletQRCodes[selectedDepositCoin]} alt="Deposit QR" className="w-28 h-28 mx-auto mb-2" />
-          ) : (
-           <QRCodeCanvas value={walletAddresses[selectedDepositCoin] || ""} size={120} bgColor="#191a1f" fgColor="#fff" />
-          )}
-         </div>
+            {walletQRCodes[selectedDepositCoin] ? (
+              <img src={walletQRCodes[selectedDepositCoin]} alt="Deposit QR" className="w-28 h-28 mx-auto mb-2" />
+            ) : (
+              <QRCodeCanvas value={walletAddresses[selectedDepositCoin] || ""} size={120} bgColor="#191a1f" fgColor="#fff" />
+            )}
+          </div>
           <span className="text-theme-tertiary font-medium text-lg">
             Network: {depositNetworks[selectedDepositCoin]}
           </span>
           <div className="flex items-center gap-2 mt-2 w-full">
-  <div className="flex-1 min-w-0">
-    <span
-      className="font-mono bg-theme-on-surface-2 px-2 py-1 rounded block overflow-x-auto whitespace-nowrap text-base"
-      style={{ maxWidth: "290px" }}
-    >
-      {walletAddresses[selectedDepositCoin]}
-    </span>
-  </div>
-  <button
-    type="button"
-    className="btn-secondary px-3 py-1 rounded-xl"
-    onClick={() => {
-      navigator.clipboard.writeText(walletAddresses[selectedDepositCoin]);
-      setToast("Copied!");
-    }}
-  ><Icon name="copy" className="mr-1" />Copy</button>
-</div>
-
+            <div className="flex-1 min-w-0">
+              <span
+                className="font-mono bg-theme-on-surface-2 px-2 py-1 rounded block overflow-x-auto whitespace-nowrap text-base"
+                style={{ maxWidth: "290px" }}
+              >
+                {walletAddresses[selectedDepositCoin]}
+              </span>
+            </div>
+            <button
+              type="button"
+              className="btn-secondary px-3 py-1 rounded-xl"
+              onClick={() => {
+                navigator.clipboard.writeText(walletAddresses[selectedDepositCoin]);
+                setToast("Copied!");
+              }}
+            ><Icon name="copy" className="mr-1" />Copy</button>
+          </div>
           <Field
             label={`Deposit Amount (${selectedDepositCoin})`}
             type="number"
@@ -577,15 +546,14 @@ console.log("Balances:", balances, "Prices:", prices);
       </Modal>
 
       {/* -- TOAST -- */}
-{toast && (
-  <div
-    className="fixed top-10 left-1/2 -translate-x-1/2 z-[9999] bg-theme-primary text-theme-n-8 px-6 py-3 rounded-full shadow text-lg font-bold animate-pulse select-none pointer-events-none"
-    style={{ userSelect: 'none' }}
-  >
-    {toast}
-  </div>
-)}
-
+      {toast && (
+        <div
+          className="fixed top-10 left-1/2 -translate-x-1/2 z-[9999] bg-theme-primary text-theme-n-8 px-6 py-3 rounded-full shadow text-lg font-bold animate-pulse select-none pointer-events-none"
+          style={{ userSelect: 'none' }}
+        >
+          {toast}
+        </div>
+      )}
 
       {/* -- HISTORY TABLE -- */}
       <Card className="max-w-3xl w-full rounded-3xl shadow-lg px-7 py-6 mb-10 border bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] border-[#f6e8ff]/80">
@@ -609,8 +577,8 @@ console.log("Balances:", balances, "Prices:", prices);
                     row.type === "Deposit"
                       ? `deposit-${row.id || idx}`
                       : row.type === "Withdraw"
-                      ? `withdraw-${row.id || idx}`
-                      : idx
+                        ? `withdraw-${row.id || idx}`
+                        : idx
                   }
                   className="border-b border-theme-stroke last:border-0 hover:bg-theme-on-surface-2 transition"
                 >
@@ -642,4 +610,3 @@ console.log("Balances:", balances, "Prices:", prices);
     </div>
   );
 }
-
