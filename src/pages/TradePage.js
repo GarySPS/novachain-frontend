@@ -41,15 +41,15 @@ export default function TradePage() {
   useEffect(() => {
     const saved = loadTradeState();
     if (saved && saved.endAt > Date.now()) {
-      setTradeState(saved);
-      setTimerActive(true);
-      setTradeDetail(null);
-      setTradeResult(null);
-      setTimerKey(Math.random());
-    } else {
-      persistTradeState(null);
-      setTradeState(null);
-    }
+  const remaining = Math.ceil((saved.endAt - Date.now()) / 1000);
+  const adjustedTradeState = { ...saved, duration: remaining }; // ⬅️ override with remaining time
+
+  setTradeState(adjustedTradeState);
+  setTimerActive(true);
+  setTradeDetail(null);
+  setTradeResult(null);
+  setTimerKey(Math.random()); // ✅ still ok
+}
   }, []);
 
   // BTC price polling
