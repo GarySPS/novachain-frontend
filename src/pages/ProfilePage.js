@@ -157,8 +157,14 @@ export default function ProfilePage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.avatar) {
-        setAvatarUrl(`/uploads/${response.data.avatar}`);
-      }
+  // ✅ Reload updated user data after saving avatar
+  const updated = await axios.get(`${MAIN_API_BASE}/profile`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  setUser(updated.data.user);
+  setAvatarUrl(updated.data.user.avatar || "/logo192_new.png");
+}
+
       setShowEditPic(false);
     } catch {
       alert("Failed to update avatar.");
