@@ -256,30 +256,18 @@ export default function TradePage() {
           {/* HEADER */}
           <div className="flex items-center justify-between mb-5">
            <span
-  className="font-black text-lg tracking-widest px-5 py-2 rounded-2xl shadow-md border-0 border-[#00eaff]/70
-    bg-gradient-to-tr from-[#1f2fff] via-[#00eaff] to-[#ffd700] text-transparent bg-clip-text
-    border-[2.5px] drop-shadow-xl transition-all duration-200"
+  className="font-extrabold text-[1.6rem] md:text-2xl tracking-wide"
   style={{
-    letterSpacing: "0.18em",
-    backgroundImage: "linear-gradient(95deg, #1f2fff 30%, #00eaff 60%, #ffd700 100%)",
+    background: "linear-gradient(92deg, #00eaff 0%, #1f2fff 60%, #ffd700 100%)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
-    boxShadow: "0 1.5px 0 #00eaff66, 0 2.5px 12px #ffd70022",
-    borderRadius: "14px",
+    letterSpacing: "0.04em",
     fontFamily: "'Plus Jakarta Sans', 'Inter', Arial, sans-serif",
-    fontSize: "1.28rem"
+    lineHeight: 1.15,
+    textShadow: "0 2px 18px #1f2fff22"
   }}
 >
-  <span
-    className="px-4 py-[6px] rounded-xl bg-[#181b25] border-2 border-[#00eaff]/70 shadow"
-    style={{
-      display: "inline-block",
-      background: "linear-gradient(90deg, #23243a 40%, #1f2fff 70%, #ffd700 100%)",
-      boxShadow: "0 1px 8px #00eaff11"
-    }}
-  >
-    BTC/<span className="text-[#ffd700]">USDT</span>
-  </span>
+  BTC/USDT
 </span>
 
             <img src={NovaChainLogo} alt="NovaChain" className="h-9 w-auto ml-4" />
