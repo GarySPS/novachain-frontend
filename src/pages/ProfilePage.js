@@ -98,7 +98,7 @@ export default function ProfilePage() {
         setAvatarUrl(
           res.data.user.avatar && res.data.user.avatar.startsWith("/uploads/")
             ? res.data.user.avatar
-            : "/logo192_new.png"
+            : "/logo192.png"
         );
         const balRes = await axios.get(`${MAIN_API_BASE}/balance`, { headers });
         setBalance(balRes.data.total_usd);
