@@ -1,6 +1,6 @@
-<svg width="240" height="60" viewBox="0 0 220 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="220" height="60" viewBox="0 0 210 60" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="lux-blue" x1="0" y1="0" x2="220" y2="0" gradientUnits="userSpaceOnUse">
+    <linearGradient id="lux-blue" x1="0" y1="0" x2="210" y2="0" gradientUnits="userSpaceOnUse">
       <stop stop-color="#00eaff"/>
       <stop offset="0.4" stop-color="#0096ff"/>
       <stop offset="0.75" stop-color="#1f2fff"/>
