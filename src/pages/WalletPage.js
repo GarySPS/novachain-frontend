@@ -62,7 +62,8 @@ useEffect(() => {
 
 // PATCH: Fetch deposit addresses and QR PNGs with absolute URL
 useEffect(() => {
-  const BACKEND_ROOT = window.location.origin; // define once here
+  // Remove trailing /api so /uploads loads from backend root
+  const BACKEND_ROOT = API_BASE.replace(/\/api$/, "");
 
   axios.get(`${API_BASE}/deposit-addresses`)
     .then(res => {
@@ -70,9 +71,8 @@ useEffect(() => {
       const qrcodes = {};
       res.data.forEach(row => {
         addresses[row.coin] = row.address;
-
         if (row.qr_url && row.qr_url.startsWith("/")) {
-          qrcodes[row.coin] = `${BACKEND_ROOT}${row.qr_url}`; // prepend origin only once
+          qrcodes[row.coin] = `${BACKEND_ROOT}${row.qr_url}`;
         } else if (row.qr_url) {
           qrcodes[row.coin] = row.qr_url;
         } else {
@@ -87,6 +87,7 @@ useEffect(() => {
       setWalletQRCodes({});
     });
 }, []);
+
 
   useEffect(() => {
     if (token) {
