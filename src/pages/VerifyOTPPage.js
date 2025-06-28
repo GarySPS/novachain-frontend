@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { API_BASE } from '../config';
+import { MAIN_API_BASE } from '../config';
 import Card from "../components/card";
 import NovaChainLogo from "../components/NovaChainLogo.svg";
 import ReactCodesInput from "react-codes-input";
@@ -35,7 +35,7 @@ export default function VerifyOTPPage() {
       return;
     }
     try {
-      const res = await fetch(`${API_BASE}/auth/verify-otp`, {
+      const res = await fetch(`${MAIN_API_BASE}/auth/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp }),

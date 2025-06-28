@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { API_BASE } from "../config";
+import { MAIN_API_BASE } from "../config";
 import Card from "../components/card";
 import Tooltip from "../components/tooltip";
 import Icon from "../components/icon";
@@ -31,7 +31,7 @@ export default function TradeHistory() {
       return;
     }
     axios
-      .get(`${API_BASE}/trade/history/${user_id}`, {
+      .get(`${MAIN_API_BASE}/trade/history/${user_id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {

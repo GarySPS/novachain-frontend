@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { API_BASE } from '../config';
+import { MAIN_API_BASE } from '../config';
+
 import Card from "../components/card";
 import NovaChainLogo from "../components/NovaChainLogo.svg"; // SVG logo
 
@@ -14,7 +15,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
+      const res = await fetch(`${MAIN_API_BASE}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
