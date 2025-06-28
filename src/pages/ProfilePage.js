@@ -503,26 +503,25 @@ export default function ProfilePage() {
 
       </Modal>
       <Modal visible={showChangePw} onClose={() => setShowChangePw(false)}>
-        <h3 className="text-title-2 font-semibold mb-4">Change Password</h3>
-        <form onSubmit={handleChangePassword} className="space-y-3">
-          <Field
-            type="password"
-            placeholder="New Password"
-            inputRef={pw1}
-          />
-          <Field
-            type="password"
-            placeholder="Confirm Password"
-            inputRef={pw2}
-          />
-          {pwErr && <div className="text-theme-red mb-2">{pwErr}</div>}
-          <div className="flex justify-center gap-4 mt-4">
-  <button onClick={saveAvatar} className="btn-primary">Save</button>
-  <button onClick={() => setShowEditPic(false)} className="btn-secondary">Cancel</button>
-</div>
-
-        </form>
-      </Modal>
+  <h3 className="text-title-2 font-semibold mb-4">Change Password</h3>
+  <form onSubmit={handleChangePassword} className="space-y-3">
+    <Field
+      type="password"
+      placeholder="New Password"
+      inputRef={pw1}
+    />
+    <Field
+      type="password"
+      placeholder="Confirm Password"
+      inputRef={pw2}
+    />
+    {pwErr && <div className="text-theme-red mb-2">{pwErr}</div>}
+    <div className="flex justify-center gap-4 mt-4">
+      <button type="submit" className="btn-primary">Save</button>
+      <button type="button" onClick={() => setShowChangePw(false)} className="btn-secondary">Cancel</button>
+    </div>
+  </form>
+    </Modal>
     </div>
   );
 }
