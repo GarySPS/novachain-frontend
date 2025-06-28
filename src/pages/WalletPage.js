@@ -523,15 +523,19 @@ export default function WalletPage() {
             required
             icon="dollar-sign"
           />
-          <Field
-            label="Upload Screenshot"
-            type="file"
-            accept="image/*"
-            ref={fileInputRef}
-            onChange={e => setDepositScreenshot(e.target.files[0])}
-            required
-            icon="image"
-          />
+          <div className="w-full">
+  <label className="block text-theme-tertiary font-medium mb-1">
+    Upload Screenshot
+  </label>
+  <input
+    type="file"
+    accept="image/*"
+    ref={fileInputRef}
+    onChange={e => setDepositScreenshot(e.target.files[0])}
+    required
+    className="block w-full text-sm text-theme-primary border border-theme-stroke rounded-xl px-3 py-2 bg-white file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-theme-primary/90 file:text-white hover:file:bg-theme-primary transition truncate"
+  />
+</div>
           <div className="text-caption-1 text-theme-tertiary bg-theme-on-surface-2 rounded px-3 py-2">
             For your safety, please submit your deposit screenshot.
             <span className="block text-theme-yellow">
