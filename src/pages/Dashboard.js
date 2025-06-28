@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Card from "../components/card";
 import NewsTicker from "../components/newsticker";
-import { API_BASE } from "../config";
+import { MAIN_API_BASE } from "../config";
 
 const fakeNews = [
   "🔥 Bitcoin surges past $105K as whales accumulate.",
@@ -25,7 +25,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchPrices = async () => {
       try {
-        const res = await fetch(`${API_BASE}/prices`);
+        const res = await fetch(`${MAIN_API_BASE}/prices`);
         const response = await res.json();
         setCoins(response.data || []);
         setLoading(false);

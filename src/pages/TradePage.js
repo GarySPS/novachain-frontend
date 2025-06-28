@@ -3,7 +3,7 @@ import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import MaintenanceBanner from "../components/maintenancebanner";
 import NovaChainLogo from "../components/NovaChainLogo.svg";
-import { API_BASE } from '../config';
+import { MAIN_API_BASE } from '../config';
 import Card from "../components/card";
 import Field from "../components/field";
 import Tooltip from "../components/tooltip";
@@ -97,7 +97,7 @@ export default function TradePage() {
   useEffect(() => {
     const fetchPrice = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/price/BTC`);
+        const res = await axios.get(`${MAIN_API_BASE}/price/BTC`);
         setBtcPrice(res.data.price);
         setFetchError(false);
       } catch {
@@ -157,7 +157,7 @@ export default function TradePage() {
     const token = localStorage.getItem("token");
     while (tries < 6 && (!trade || trade.result === "PENDING")) {
       try {
-        const his = await axios.get(`${API_BASE}/trade/history/${user_id}`, {
+        const his = await axios.get(`${MAIN_API_BASE}/trade/history/${user_id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         trade = his.data.find(t => t.id === trade_id);
@@ -214,7 +214,7 @@ export default function TradePage() {
     const user_id = payload.id;
     try {
       const res = await axios.post(
-        `${API_BASE}/trade`,
+        `${MAIN_API_BASE}/trade`,
         {
           user_id,
           direction: direction.toUpperCase(),

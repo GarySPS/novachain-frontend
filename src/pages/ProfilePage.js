@@ -1,7 +1,7 @@
        import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { API_BASE } from '../config';
+import { MAIN_API_BASE } from '../config';
 import Card from "../components/card";
 import Field from "../components/field";
 import Modal from "../components/modal";
@@ -38,7 +38,7 @@ export default function ProfilePage() {
       try {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
-        const res = await axios.get(`${API_BASE}/balance/history`, { headers });
+        const res = await axios.get(`${MAIN_API_BASE}/balance/history`, { headers });
         // Fix: Convert DB result to chart format
         const history = (res.data.history || []).map(row => ({
           time: row.date, // or row.timestamp for finer scale
@@ -51,7 +51,7 @@ export default function ProfilePage() {
   }, []);
 
   useEffect(() => {
-    axios.get(`${API_BASE}/prices`).then(res => {
+    axios.get(`${MAIN_API_BASE}/prices`).then(res => {
       const priceObj = {};
       (res.data.data || []).forEach(c => {
         priceObj[c.symbol] = c.quote.USD.price;
@@ -81,7 +81,7 @@ export default function ProfilePage() {
       try {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
-        const res = await axios.get(`${API_BASE}/kyc/status`, { headers });
+        const res = await axios.get(`${MAIN_API_BASE}/kyc/status`, { headers });
         setKycStatus((res.data.status || "unverified").toLowerCase());
       } catch { }
     }, 10000);
@@ -93,17 +93,17 @@ export default function ProfilePage() {
       try {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
-        const res = await axios.get(`${API_BASE}/profile`, { headers });
+        const res = await axios.get(`${MAIN_API_BASE}/profile`, { headers });
         setUser(res.data.user);
         setAvatarUrl(
           res.data.user.avatar && res.data.user.avatar.startsWith("/uploads/")
             ? res.data.user.avatar
             : "/logo192_new.png"
         );
-        const balRes = await axios.get(`${API_BASE}/balance`, { headers });
+        const balRes = await axios.get(`${MAIN_API_BASE}/balance`, { headers });
         setBalance(balRes.data.total_usd);
         setAssets(balRes.data.assets);
-        const kycRes = await axios.get(`${API_BASE}/kyc/status`, { headers });
+        const kycRes = await axios.get(`${MAIN_API_BASE}/kyc/status`, { headers });
         setKycStatus((kycRes.data.status || "unverified").toLowerCase());
         setLoading(false);
       } catch (err) {
@@ -127,7 +127,7 @@ export default function ProfilePage() {
       const formData = new FormData();
       formData.append("selfie", kycSelfie);
       formData.append("id_card", kycId);
-      await axios.post(`${API_BASE}/kyc`, formData, {
+      await axios.post(`${MAIN_API_BASE}/kyc`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data"
@@ -153,7 +153,7 @@ export default function ProfilePage() {
       const token = localStorage.getItem("token");
       const formData = new FormData();
       formData.append("avatar", avatarFile);
-      const response = await axios.post(`${API_BASE}/profile/avatar`, formData, {
+      const response = await axios.post(`${MAIN_API_BASE}/profile/avatar`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.avatar) {
@@ -172,7 +172,7 @@ export default function ProfilePage() {
     if (pw1.current.value !== pw2.current.value) return setPwErr("Passwords do not match.");
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`${API_BASE}/profile/password`, { newPassword: pw1.current.value }, {
+      await axios.post(`${MAIN_API_BASE}/profile/password`, { newPassword: pw1.current.value }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setShowChangePw(false);
