@@ -116,9 +116,6 @@ body {
   color: var(--primary);
 }
 
-body[data-theme="dark"] {
-  background: #111315 !important; /* matches your :root[data-theme="dark"] */
-}
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;

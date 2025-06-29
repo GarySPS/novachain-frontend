@@ -41,7 +41,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center px-1 pt-1 pb-2 bg-[#f7f8fa]">
+    <div className="min-h-screen w-full flex flex-col items-center px-1 pt-1 pb-2">
       <div className="w-full max-w-6xl mx-auto space-y-0">
         <Card className="w-full max-w-6xl mx-auto p-0 mt-0 mb-0 bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] shadow-lg rounded-2xl border border-[#f6e8ff]/80">
           <div className="overflow-x-auto rounded-2xl">
