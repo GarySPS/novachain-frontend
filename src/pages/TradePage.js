@@ -8,7 +8,7 @@ import Field from "../components/field";
 import Tooltip from "../components/tooltip";
 import Icon from "../components/icon";
 import TimerBar from "../components/TimerBar";
-import OrderBook from "../components/orderbook";
+import OrderBTC from "../components/orderbtc";
 
 
 function persistTradeState(tradeState) {
@@ -441,7 +441,7 @@ export default function TradePage() {
       </div>
 
       <div className="w-full max-w-5xl mt-8">
-         <OrderBook />
+         <OrderBTC />
          </div>
 
     </motion.div>
