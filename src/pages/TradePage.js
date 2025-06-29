@@ -8,7 +8,7 @@ import Field from "../components/field";
 import Tooltip from "../components/tooltip";
 import Icon from "../components/icon";
 import TimerBar from "../components/TimerBar";
-import OrderBook from "../components/Orderbook";
+import OrderBook from "../components/orderbook";
 
 
 function persistTradeState(tradeState) {
