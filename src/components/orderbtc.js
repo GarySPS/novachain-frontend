@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react";
-
-// --- Replace with your CoinGecko/CMC Pro API URL and API KEY ---
-const COIN_API_URL = "https://pro-api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd";
-const API_KEY = "YOUR_COIN_GECKO_PRO_API_KEY"; // <-- insert your actual Pro API key
+import { MAIN_API_BASE } from "../config";
 
 function generateOrderBook(midPrice) {
   // Generate mock order book data
@@ -23,16 +20,14 @@ export default function OrderBTC() {
   const [asks, setAsks] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+    useEffect(() => {
     let timer;
     const fetchPrice = async () => {
       setLoading(true);
       try {
-        const res = await fetch(COIN_API_URL, {
-          headers: { "x-cg-pro-api-key": API_KEY }
-        });
+        const res = await fetch(`${MAIN_API_BASE}/price/BTC`);
         const data = await res.json();
-        const price = data.bitcoin.usd;
+        const price = data.price;
         setBtcPrice(price);
         const { bids, asks } = generateOrderBook(price);
         setBids(bids);
@@ -46,6 +41,7 @@ export default function OrderBTC() {
     timer = setInterval(fetchPrice, 5000);
     return () => clearInterval(timer);
   }, []);
+
 
   // For nice table alignment, use same length for bids/asks (take shorter)
   const rowCount = Math.min(bids.length, asks.length);
