@@ -59,8 +59,16 @@ export default function TradeHistory() {
           </h1>
         </div>
         {loading ? (
-          <div className="text-center text-lg text-theme-yellow py-12">Loading...</div>
-        ) : history.length === 0 ? (
+  <div className="flex flex-col justify-center items-center min-h-[380px] py-12">
+    <svg className="animate-spin h-14 w-14 mb-3 text-[#ffd700]" viewBox="0 0 24 24" fill="none">
+      <circle className="opacity-20" cx="12" cy="12" r="10" stroke="#ffd700" strokeWidth="4" />
+      <path className="opacity-85" fill="#ffd700" d="M4 12a8 8 0 018-8v8z" />
+    </svg>
+    <span className="text-[#ffd700] font-extrabold text-xl drop-shadow-lg mt-1 tracking-wide">
+      Loading History
+    </span>
+  </div>
+) : history.length === 0 ? (
           <Card className="max-w-xl mx-auto py-10 text-center text-lg text-theme-tertiary font-semibold bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] rounded-2xl shadow-lg border border-[#f6e8ff]/80">
             No trade history yet.
           </Card>
