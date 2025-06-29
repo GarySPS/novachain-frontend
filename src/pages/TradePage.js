@@ -211,10 +211,11 @@ useEffect(() => {
         {/* Chart */}
         <Card
   className="w-full lg:w-[70%] 2xl:w-[75%] p-0 rounded-2xl shadow-lg overflow-hidden mb-5 lg:mb-0 min-h-[420px] 2xl:min-h-[480px] border border-[#23283a]/60"
-  style={{ backgroundColor: "#fff" }}
+  style={{ backgroundColor: "#101726" }}
 >
   <div id="tradingview_btcusdt_chart" className="w-full" style={{ height: "420px" }} />
 </Card>
+
         {/* Trade box */}
         <Card className="w-full max-w-[410px] mx-auto px-4 py-6 rounded-2xl shadow-lg border border-[#f6e8ff]/80 bg-gradient-to-tr from-[#f0f3ff] to-[#fafffa] flex flex-col lg:w-[360px] 2xl:w-[360px]">
           {/* HEADER */}
