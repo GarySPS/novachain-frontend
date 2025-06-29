@@ -112,7 +112,7 @@
 
 body {
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  background: #101726 !important;
+  background: linear-gradient(120deg, #f7fafd 0%, #faf9fc 100%) !important;
   color: var(--primary);
 }
 
