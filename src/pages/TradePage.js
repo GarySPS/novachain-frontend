@@ -207,9 +207,12 @@ export default function TradePage() {
     >
       <div className="w-full max-w-[1300px] mx-auto flex flex-col lg:flex-row lg:items-start gap-7 lg:gap-10 overflow-x-hidden">
         {/* Chart */}
-        <Card className="w-full lg:w-[70%] 2xl:w-[75%] p-0 bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] rounded-2xl shadow-lg overflow-hidden mb-5 lg:mb-0 min-h-[420px] 2xl:min-h-[480px] border border-[#f6e8ff]/80">
-          <div id="tradingview_btcusdt_chart" className="w-full" style={{ height: "420px" }} />
-        </Card>
+        <Card
+  className="w-full lg:w-[70%] 2xl:w-[75%] p-0 rounded-2xl shadow-lg overflow-hidden mb-5 lg:mb-0 min-h-[420px] 2xl:min-h-[480px] border border-[#23283a]/60"
+  style={{ backgroundColor: "#101726" }}
+>
+  <div id="tradingview_btcusdt_chart" className="w-full" style={{ height: "420px" }} />
+</Card>
         {/* Trade box */}
         <Card className="w-full max-w-[410px] mx-auto px-4 py-6 rounded-2xl shadow-lg border border-[#f6e8ff]/80 bg-gradient-to-tr from-[#f0f3ff] to-[#fafffa] flex flex-col lg:w-[360px] 2xl:w-[360px]">
           {/* HEADER */}
@@ -436,10 +439,11 @@ export default function TradePage() {
           </AnimatePresence>
         </Card>
       </div>
-      {/* Maintenance banner always at the bottom */}
+
       <div className="w-full max-w-5xl mt-8">
-        <MaintenanceBanner />
-      </div>
+         <OrderBook />
+         </div>
+
     </motion.div>
   );
 }
