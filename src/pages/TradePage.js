@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import MaintenanceBanner from "../components/maintenancebanner";
 import NovaChainLogo from "../components/NovaChainLogo.svg";
 import { MAIN_API_BASE } from '../config';
 import Card from "../components/card";
@@ -9,6 +8,7 @@ import Field from "../components/field";
 import Tooltip from "../components/tooltip";
 import Icon from "../components/icon";
 import TimerBar from "../components/TimerBar";
+import OrderBook from "../components/Orderbook";
 
 
 function persistTradeState(tradeState) {
