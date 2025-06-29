@@ -211,7 +211,7 @@ useEffect(() => {
         {/* Chart */}
         <Card
   className="w-full lg:w-[70%] 2xl:w-[75%] p-0 rounded-2xl shadow-lg overflow-hidden mb-5 lg:mb-0 min-h-[420px] 2xl:min-h-[480px] border border-[#23283a]/60"
-  style={{ backgroundColor: "#101726" }}
+  style={{ backgroundColor: "#fff" }}
 >
   <div id="tradingview_btcusdt_chart" className="w-full" style={{ height: "420px" }} />
 </Card>
