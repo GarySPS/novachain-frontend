@@ -16,7 +16,7 @@ function AppShell() {
   const hideHeader = ["/login", "/signup", "/verify-otp"].includes(location.pathname);
 
   return (
-    <div className="min-h-screen bg-theme-n-8 w-full">
+    <div className="min-h-screen w-full" style={{ background: "#101726" }}>
       {!hideHeader && <NavBar />}
       <main>
         <Routes>
