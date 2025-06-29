@@ -208,12 +208,17 @@ useEffect(() => {
       className="w-full max-w-full min-h-screen bg-theme-n-8 flex flex-col items-center px-2 pt-4 pb-8 overflow-x-hidden"
     >
       <div className="w-full max-w-[1300px] mx-auto flex flex-col lg:flex-row lg:items-start gap-7 lg:gap-10 overflow-x-hidden">
+       
         {/* Chart */}
         <Card
   className="w-full lg:w-[70%] 2xl:w-[75%] p-0 rounded-2xl shadow-lg overflow-hidden mb-5 lg:mb-0 min-h-[420px] 2xl:min-h-[480px] border border-[#23283a]/60"
-  style={{ backgroundColor: "#101726" }}
+  style={{ backgroundColor: "#101726", padding: "24px" }} // 24px = 1.5rem, adjust as you like
 >
-  <div id="tradingview_btcusdt_chart" className="w-full" style={{ height: "420px" }} />
+  <div
+    id="tradingview_btcusdt_chart"
+    className="w-full rounded-xl shadow"
+    style={{ height: "420px", background: "#101726" }}
+  />
 </Card>
 
         {/* Trade box */}
