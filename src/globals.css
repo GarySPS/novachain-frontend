@@ -112,10 +112,13 @@
 
 body {
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  background: linear-gradient(120deg, #f7fafd 0%, #faf9fc 100%) !important;
+    background: #f7f8fa !important;
   color: var(--primary);
 }
 
+body[data-theme="dark"] {
+  background: #111315 !important; /* matches your :root[data-theme="dark"] */
+}
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
