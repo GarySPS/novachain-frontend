@@ -18,7 +18,13 @@ export default function NavBar() {
   const location = useLocation();
 
   return (
-    <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-theme-stroke shadow-md w-full">
+    <header
+  className="sticky top-0 z-30 border-b border-theme-stroke shadow-md w-full"
+  style={{
+    background: "linear-gradient(120deg, #fdfcff 0%, #f8fafd 100%)",
+    backdropFilter: "blur(8px)"
+  }}
+>
       <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-4 sm:px-2 w-full">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3">
