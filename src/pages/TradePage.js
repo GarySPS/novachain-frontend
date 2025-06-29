@@ -70,45 +70,47 @@ export default function TradePage() {
   }, []);
 
   // Chart embed
-  useEffect(() => {
-    const oldScript = document.getElementById("tradingview-widget-script");
-    if (oldScript) oldScript.remove();
-    const script = document.createElement("script");
-    script.id = "tradingview-widget-script";
-    script.src = "https://s3.tradingview.com/tv.js";
-    script.async = true;
-    script.onload = () => {
-      if (window.TradingView) {
-        new window.TradingView.widget({
-          container_id: "tradingview_btcusdt_chart",
-          width: "100%",
-          height: 400,
-          symbol: "BINANCE:BTCUSDT",
-          interval: "15",
-          timezone: "Etc/UTC",
-          theme: "dark",
-          style: "1",
-          locale: "en",
-          toolbar_bg: "#0f0f16",
-          enable_publishing: false,
-          allow_symbol_change: false,
-          hide_top_toolbar: false,
-          hide_legend: false,
-          hide_side_toolbar: true,
-          withdateranges: true,
-          details: false,
-          studies: [],
-        });
-      }
-    };
-    document.body.appendChild(script);
-    return () => {
-      const container = document.getElementById("tradingview_btcusdt_chart");
-      if (container) container.innerHTML = "";
-      const sc = document.getElementById("tradingview-widget-script");
-      if (sc) sc.remove();
-    };
-  }, []);
+useEffect(() => {
+  const oldScript = document.getElementById("tradingview-widget-script");
+  if (oldScript) oldScript.remove();
+  const script = document.createElement("script");
+  script.id = "tradingview-widget-script";
+  script.src = "https://s3.tradingview.com/tv.js";
+  script.async = true;
+  script.onload = () => {
+    if (window.TradingView) {
+      new window.TradingView.widget({
+        container_id: "tradingview_btcusdt_chart",
+        width: "100%",
+        height: 400,
+        symbol: "BINANCE:BTCUSDT",
+        interval: "15",
+        timezone: "Etc/UTC",
+        theme: "dark",
+        style: "1",
+        locale: "en",
+        toolbar_bg: "#0f0f16",
+        backgroundColor: "#101726",   // <-- ADD THIS LINE
+        enable_publishing: false,
+        allow_symbol_change: false,
+        hide_top_toolbar: false,
+        hide_legend: false,
+        hide_side_toolbar: true,
+        withdateranges: true,
+        details: false,
+        studies: [],
+      });
+    }
+  };
+  document.body.appendChild(script);
+  return () => {
+    const container = document.getElementById("tradingview_btcusdt_chart");
+    if (container) container.innerHTML = "";
+    const sc = document.getElementById("tradingview-widget-script");
+    if (sc) sc.remove();
+  };
+}, []);
+
 
   // When timer ends: poll trade result
   async function pollResult(trade_id, user_id) {
