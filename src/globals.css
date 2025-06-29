@@ -112,12 +112,18 @@
 
 body {
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-    background: #f7f8fa !important;
   color: var(--primary);
+  /* No background here! */
 }
 
 body, html, #root {
-  background: #101523 !important;
+  background: linear-gradient(120deg, #181D2F 0%, #181A20 100%) !important;
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+}
+
+.card {
+  box-shadow: 0 2px 24px #1f2fff18, 0 6px 36px #00eaff11;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -126,9 +132,4 @@ body, html, #root {
 .no-scrollbar {
   -ms-overflow-style: none;  /* IE/Edge */
   scrollbar-width: none;     /* Firefox */
-}
-
-body, html, #root {
-  overflow-x: hidden !important;
-  max-width: 100vw !important;
 }
