@@ -112,9 +112,10 @@
 
 body {
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  background: var(--on-surface-1);
+  background: #101726 !important;
   color: var(--primary);
 }
+
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
