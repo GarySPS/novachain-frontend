@@ -116,6 +116,9 @@ body {
   color: var(--primary);
 }
 
+body, html, #root {
+  background: #101523 !important;
+}
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
