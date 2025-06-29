@@ -5,14 +5,14 @@ const COIN_API_URL = "https://pro-api.coingecko.com/api/v3/simple/price?ids=bitc
 const API_KEY = "YOUR_COIN_GECKO_PRO_API_KEY"; // <-- insert your actual Pro API key
 
 function generateOrderBook(midPrice) {
-  // Generate mock order book with real price as center
-  const bids = Array.from({ length: 5 }).map((_, i) => ({
+  // Generate mock order book data
+  const bids = Array.from({ length: 14 }).map((_, i) => ({
     price: (midPrice - 20 - i * 30).toLocaleString(),
-    amount: (Math.random() * 0.25 + 0.03).toFixed(2),
+    amount: (Math.random() * 1 + 0.01).toFixed(5),
   }));
-  const asks = Array.from({ length: 5 }).map((_, i) => ({
+  const asks = Array.from({ length: 14 }).map((_, i) => ({
     price: (midPrice + 20 + i * 30).toLocaleString(),
-    amount: (Math.random() * 0.25 + 0.03).toFixed(2),
+    amount: (Math.random() * 1 + 0.01).toFixed(5),
   }));
   return { bids, asks };
 }
@@ -23,7 +23,6 @@ export default function OrderBTC() {
   const [asks, setAsks] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch real-time price
   useEffect(() => {
     let timer;
     const fetchPrice = async () => {
@@ -48,74 +47,62 @@ export default function OrderBTC() {
     return () => clearInterval(timer);
   }, []);
 
+  // For nice table alignment, use same length for bids/asks (take shorter)
+  const rowCount = Math.min(bids.length, asks.length);
+
   return (
     <div
-      className="w-full max-w-3xl mx-auto mb-10 px-6 py-8 rounded-[32px] shadow-[0_4px_36px_0_rgba(38,40,64,0.10)] border"
-      style={{
-        background: "linear-gradient(140deg, #f9fafc 70%, #f8f6ee 100%)",
-        border: "1px solid #f0f3f7"
-      }}
+      className="w-full max-w-2xl mx-auto my-8 rounded-2xl bg-[#15161e] border border-[#242630] shadow-lg"
     >
-      <div className="mb-5 flex items-center justify-between">
-        <div>
-          <span className="text-[1.5rem] font-extrabold text-neutral-800">Order Book</span>
-          <div className="text-xs text-gray-400 mt-1">BTC/USDT</div>
-        </div>
-        <span className="text-[13px] bg-yellow-100 px-3 py-1 rounded-xl font-bold text-yellow-700 shadow ml-2">Novachain</span>
+      {/* Top Tabs */}
+      <div className="flex items-center px-6 pt-5 pb-2 border-b border-[#23232c]">
+        <span className="text-white font-bold text-lg mr-8 border-b-2 border-blue-500 pb-1 cursor-pointer">Order Book</span>
+        <span className="text-gray-500 font-medium text-lg pb-1 cursor-pointer">Trades</span>
       </div>
 
-      <div className="flex flex-row justify-between gap-10 py-2">
-        {/* BIDS */}
-        <div className="flex-1">
-          <div className="flex items-center mb-2">
-            <span className="h-2 w-2 rounded-full bg-green-500 mr-2" />
-            <span className="font-bold text-green-600 text-base">BIDS</span>
-          </div>
-          {loading ? (
-            <div className="text-gray-400 text-xs pl-4">Loading...</div>
-          ) : (
-            bids.map((row, i) => (
-              <div key={i} className="flex items-center justify-between px-1 py-1.5 font-mono">
-                <span className="text-green-700 text-lg">{row.price}</span>
-                <span className="text-gray-500 text-xs ml-4">{row.amount} BTC</span>
-              </div>
-            ))
-          )}
-        </div>
+      {/* Pair + Price */}
+      <div className="flex justify-between items-center px-6 mt-4 mb-2">
+        <span className="text-gray-400 text-sm font-semibold">BTC/USDT</span>
+        <span className="bg-yellow-100 px-3 py-1 rounded-xl font-bold text-yellow-700 text-xs shadow ml-2">Novachain</span>
+      </div>
 
-        {/* Divider */}
-        <div className="flex items-center justify-center">
-          <div className="w-px h-40 bg-[#e7eaf2]" />
-        </div>
+      {/* Table Headers */}
+      <div className="flex items-center px-6 pb-2 pt-1 text-xs font-bold text-gray-500 border-b border-[#23232c]">
+        <div className="w-1/4 text-left">Bid Size</div>
+        <div className="w-1/4 text-left">Bid Price</div>
+        <div className="w-1/4 text-right">Ask Price</div>
+        <div className="w-1/4 text-right">Ask Size</div>
+      </div>
 
-        {/* ASKS */}
-        <div className="flex-1">
-          <div className="flex items-center mb-2">
-            <span className="h-2 w-2 rounded-full bg-red-500 mr-2" />
-            <span className="font-bold text-red-600 text-base">ASKS</span>
-          </div>
-          {loading ? (
-            <div className="text-gray-400 text-xs pl-4">Loading...</div>
-          ) : (
-            asks.map((row, i) => (
-              <div key={i} className="flex items-center justify-between px-1 py-1.5 font-mono">
-                <span className="text-red-600 text-lg">{row.price}</span>
-                <span className="text-gray-500 text-xs ml-4">{row.amount} BTC</span>
-              </div>
-            ))
-          )}
-        </div>
+      {/* Table Body */}
+      <div className="h-[420px] overflow-y-auto px-6 py-3 font-mono bg-[#161926]">
+        {loading ? (
+          <div className="text-center text-gray-400 py-12 text-base">Loading...</div>
+        ) : (
+          Array.from({ length: rowCount }).map((_, i) => (
+            <div className="flex items-center py-[2.5px] text-[13px] border-b border-[#212130]" key={i}>
+              {/* Bid Size */}
+              <div className="w-1/4 text-left text-gray-400">{bids[i]?.amount}</div>
+              {/* Bid Price */}
+              <div className="w-1/4 text-left font-bold text-green-500">{bids[i]?.price}</div>
+              {/* Ask Price */}
+              <div className="w-1/4 text-right font-bold text-red-500">{asks[i]?.price}</div>
+              {/* Ask Size */}
+              <div className="w-1/4 text-right text-gray-400">{asks[i]?.amount}</div>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Center Price */}
-      <div className="w-full text-center my-2">
-        <span className="inline-block text-[15px] font-bold text-blue-700 bg-blue-50 px-5 py-1.5 rounded-lg shadow-sm">
+      <div className="text-center my-4">
+        <span className="inline-block text-[15px] font-bold text-blue-300 bg-blue-900/30 px-6 py-2 rounded-lg shadow">
           {btcPrice ? `Live Price: $${btcPrice.toLocaleString()}` : "Loading..."}
         </span>
       </div>
 
       {/* Footer */}
-      <div className="text-right pt-2 text-[13px] text-gray-400 font-medium tracking-wide opacity-80">
+      <div className="text-right pb-3 px-6 text-[13px] text-gray-500 font-medium tracking-wide opacity-80">
         Live order • NovaChain
       </div>
     </div>

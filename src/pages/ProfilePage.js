@@ -292,12 +292,12 @@ export default function ProfilePage() {
           </div>
            
     <div className="flex-1 flex flex-col justify-center items-center pl-4">
-    <div className="text-lg font-bold mb-2 text-gray-600">Assets</div>
-      {assets.filter(a => a.balance > 0).map((a, i) => {
-     const price = prices[a.symbol] || (a.symbol === "USDT" ? 1 : 0);
-     const usd = Number(a.balance) * price;
-     const percent = totalUsd ? (usd / totalUsd * 100) : 0;
-     return (
+  <div className="text-lg font-bold mb-2 text-[#f8fafc] drop-shadow">Assets</div>
+  {assets.filter(a => a.balance > 0).map((a, i) => {
+    const price = prices[a.symbol] || (a.symbol === "USDT" ? 1 : 0);
+    const usd = Number(a.balance) * price;
+    const percent = totalUsd ? (usd / totalUsd * 100) : 0;
+    return (
       <div key={a.symbol} className="flex items-center mb-2 min-w-[120px]">
         <span
           className="inline-block w-3 h-3 rounded-full mr-2"
@@ -312,12 +312,12 @@ export default function ProfilePage() {
             ][i % 6]
           }}
         ></span>
-        <span className="w-14 font-semibold text-gray-900">{a.symbol}</span>
-        <span className="ml-2 font-bold text-gray-700">{percent.toFixed(1)}%</span>
-       </div>
-       );
-       })}
-    </div>
+        <span className="w-14 font-semibold text-[16px] text-[#f8fafc] drop-shadow-sm">{a.symbol}</span>
+        <span className="ml-2 font-bold text-[16px] text-[#ffffffcc] drop-shadow">{percent.toFixed(1)}%</span>
+      </div>
+    );
+  })}
+</div>
         </div>
       </div>
            {/* 3. KYC + Settings */}
