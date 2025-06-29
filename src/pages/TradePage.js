@@ -205,7 +205,7 @@ useEffect(() => {
     <motion.div
   initial={{ opacity: 0, y: 30 }}
   animate={{ opacity: 1, y: 0 }}
-  className="w-full max-w-full min-h-screen flex flex-col items-center px-2 pt-4 pb-8 overflow-x-hidden bg-[#f7f8fa]"
+  className="w-full max-w-full min-h-screen flex flex-col items-center px-2 pt-4 pb-8 overflow-x-hidden bg-theme-n-8"
 >
   
      <div className="w-full max-w-[1300px] mx-auto flex flex-col lg:flex-row lg:items-start gap-7 lg:gap-10 overflow-x-hidden">

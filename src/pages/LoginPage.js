@@ -36,7 +36,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f7f8fa] px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center bg-[#15192a] px-4 py-8">
       <Card className="w-full max-w-md mx-auto p-7 rounded-3xl shadow-2xl border-0 bg-white/90" style={{ overflow: "visible" }}>
         {/* Animated Glow Logo */}
         <div className="flex items-center justify-center w-full mb-7 mt-[-10px]">

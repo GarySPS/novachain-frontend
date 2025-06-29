@@ -61,7 +61,7 @@ export default function OrderBTC() {
           <span className="text-[1.5rem] font-extrabold text-neutral-800">Order Book</span>
           <div className="text-xs text-gray-400 mt-1">BTC/USDT</div>
         </div>
-        <span className="text-[13px] bg-yellow-100 px-3 py-1 rounded-xl font-bold text-yellow-700 shadow ml-2">Neutrade</span>
+        <span className="text-[13px] bg-yellow-100 px-3 py-1 rounded-xl font-bold text-yellow-700 shadow ml-2">Novachain</span>
       </div>
 
       <div className="flex flex-row justify-between gap-10 py-2">
@@ -116,7 +116,7 @@ export default function OrderBTC() {
 
       {/* Footer */}
       <div className="text-right pt-2 text-[13px] text-gray-400 font-medium tracking-wide opacity-80">
-        Live order book demo • NovaChain
+        Live order • NovaChain
       </div>
     </div>
   );

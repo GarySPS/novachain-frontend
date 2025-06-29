@@ -35,7 +35,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f7f8fa] px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center bg-theme-n-8 px-4 py-8">
       <Card className="w-full max-w-md mx-auto p-8 rounded-3xl shadow-2xl border-0 bg-white/90" style={{overflow: "visible"}}>
         {/* Animated Logo */}
         <div

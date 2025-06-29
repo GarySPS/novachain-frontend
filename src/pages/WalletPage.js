@@ -274,7 +274,7 @@ export default function WalletPage() {
 
   // --- MAIN RENDER ---
   return (
-    <div className="min-h-screen bg-[#f7f8fa] py-10 px-2 flex flex-col items-center">
+    <div className="min-h-screen bg-theme-n-8 py-10 px-2 flex flex-col items-center">
       <div className="w-full max-w-6xl flex flex-col md:flex-row gap-8">
 
         {/* -- Total Balance Card -- */}
