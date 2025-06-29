@@ -45,7 +45,7 @@ export default function TradeHistory() {
   }, []);
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center py-10 px-2 bg-theme-n-8">
+    <div className="min-h-screen w-full flex flex-col items-center py-10 px-2 bg-[#f7f8fa]">
       <div className="w-full max-w-6xl">
         <div className="mb-8 flex items-center gap-3">
           <Icon name="activity" className="w-7 h-7 text-theme-yellow" />

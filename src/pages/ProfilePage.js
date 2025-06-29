@@ -198,7 +198,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f8fa] py-10 px-2 flex flex-col items-center">
+    <div className="min-h-screen py-10 px-2 flex flex-col items-center" style={{ background: "#f7f8fa" }}>
       {/* 1. Profile and Balance Top */}
       <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         {/* Profile Card */}
