@@ -1,4 +1,4 @@
-       import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { MAIN_API_BASE } from '../config';
@@ -9,6 +9,7 @@ import Tooltip from "../components/tooltip";
 import Icon from "../components/icon";
 import Chart from "../components/chart";
 import AssetsDonut from "../components/assetsdonut";
+import { Loader2 } from "lucide-react";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -190,12 +191,15 @@ export default function ProfilePage() {
   }
 
   if (loading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-theme-n-8">
-        <div className="text-theme-yellow text-lg">Loading profile...</div>
+  return (
+    <div className="bg-gradient-to-br from-[#181b25] via-[#191e29] to-[#181b25] min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center">
+        <Loader2 className="animate-spin text-[#ffd700] mb-3" size={48} />
+        <span className="text-[#ffd700] text-xl font-semibold tracking-tight">Refreshing Balance</span>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen py-10 px-2 flex flex-col items-center" style={{
