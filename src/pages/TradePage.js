@@ -9,6 +9,7 @@ import Tooltip from "../components/tooltip";
 import Icon from "../components/icon";
 import TimerBar from "../components/TimerBar";
 import OrderBTC from "../components/orderbtc";
+import BeautifulLoader from "../components/BeautifulLoader";
 
 
 function persistTradeState(tradeState) {
@@ -24,6 +25,7 @@ function loadTradeState() {
 }
 
 export default function TradePage() {
+  const [loadingChart, setLoadingChart] = useState(true);
   const [btcPrice, setBtcPrice] = useState(null);
   const [amount, setAmount] = useState(100);
   const [duration, setDuration] = useState(30);
@@ -35,6 +37,7 @@ export default function TradePage() {
   const [tradeState, setTradeState] = useState(null);
   const [timerKey, setTimerKey] = useState(0);
   const [waitingResult, setWaitingResult] = useState(false);
+  
 
 
   // Restore active trade if exists
@@ -71,6 +74,7 @@ export default function TradePage() {
 
   // Chart embed
 useEffect(() => {
+  setLoadingChart(true);
   const oldScript = document.getElementById("tradingview-widget-script");
   if (oldScript) oldScript.remove();
   const script = document.createElement("script");
@@ -90,7 +94,7 @@ useEffect(() => {
         style: "1",
         locale: "en",
         toolbar_bg: "#0f0f16",
-        backgroundColor: "#101726",   // <-- ADD THIS LINE
+        backgroundColor: "#101726",
         enable_publishing: false,
         allow_symbol_change: false,
         hide_top_toolbar: false,
@@ -99,7 +103,13 @@ useEffect(() => {
         withdateranges: true,
         details: false,
         studies: [],
+        // 👇 ADD THIS CALLBACK
+        container_id: "tradingview_btcusdt_chart",
+        overrides: {},
+        loading_screen: { backgroundColor: "#101726", foregroundColor: "#ffd700" }, // optional
       });
+      // 👇 This line ensures the overlay disappears after chart loads
+      setTimeout(() => setLoadingChart(false), 1200); // 1.2s (adjust if chart loads faster/slower)
     }
   };
   document.body.appendChild(script);
@@ -110,6 +120,7 @@ useEffect(() => {
     if (sc) sc.remove();
   };
 }, []);
+
 
 
   // When timer ends: poll trade result
@@ -215,7 +226,23 @@ useEffect(() => {
         <div
   className="w-full lg:w-[70%] 2xl:w-[75%] mb-5 lg:mb-0"
 >
-  <div id="tradingview_btcusdt_chart" className="w-full" style={{ height: "420px" }} />
+  <div className="relative w-full" style={{ height: "420px" }}>
+  {/* TradingView chart container */}
+  <div id="tradingview_btcusdt_chart" className="w-full h-full" />
+  {/* Loader overlay */}
+  {loadingChart && (
+    <div
+      className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#101726e6] backdrop-blur-sm"
+      style={{ borderRadius: 14, pointerEvents: "none" }}
+    >
+      <svg className="animate-spin mb-4" width="54" height="54" viewBox="0 0 54 54" fill="none">
+        <circle cx="27" cy="27" r="24" stroke="#2474ff44" strokeWidth="5"/>
+        <path d="M51 27a24 24 0 1 1-48 0" stroke="#FFD700" strokeWidth="5" strokeLinecap="round"/>
+      </svg>
+      <div className="text-lg font-bold text-theme-primary">Refreshing BTC Price...</div>
+    </div>
+  )}
+</div>
 </div>
 
         {/* Trade box */}
