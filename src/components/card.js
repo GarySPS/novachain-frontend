@@ -19,7 +19,9 @@ export default function Card({
 }) {
   return (
     <section
-  className={`card bg-theme-on-surface-1/90 border border-theme-stroke shadow-depth-1 rounded-2xl p-1 md:p-2 transition-all ${className || ""}`}
+  className={`card border border-theme-stroke shadow-depth-1 rounded-2xl p-1 md:p-2 transition-all ${
+    className?.includes("bg-") ? className : "bg-theme-on-surface-1/90 " + (className || "")
+  }`}
 >
       <div className="relative z-2 flex flex-wrap items-center justify-between min-h-[2.5rem] mb-0 gap-0">
         {leftContent}
