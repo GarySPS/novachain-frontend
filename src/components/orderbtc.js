@@ -76,16 +76,16 @@ export default function OrderBTC() {
           <div className="text-center text-gray-400 py-12 text-base">Loading...</div>
         ) : (
           Array.from({ length: rowCount }).map((_, i) => (
-            <div className="flex items-center py-[2.5px] text-[13px] border-b border-[#212130]" key={i}>
-              {/* Bid Size */}
-              <div className="w-1/4 text-left text-gray-400">{bids[i]?.amount}</div>
-              {/* Bid Price */}
-              <div className="w-1/4 text-left font-bold text-green-500">{bids[i]?.price}</div>
-              {/* Ask Price */}
-              <div className="w-1/4 text-right font-bold text-red-500">{asks[i]?.price}</div>
-              {/* Ask Size */}
-              <div className="w-1/4 text-right text-gray-400">{asks[i]?.amount}</div>
-            </div>
+            <div className="flex items-center py-[2.5px] text-[13px] border-b border-[#212130] gap-x-4" key={i}>
+  {/* Bid Size */}
+  <div className="w-[22%] text-left text-gray-400 pr-2">{bids[i]?.amount}</div>
+  {/* Bid Price */}
+  <div className="w-[25%] text-left font-bold text-green-500 pr-4">{bids[i]?.price}</div>
+  {/* Ask Price */}
+  <div className="w-[25%] text-right font-bold text-red-500 pl-4">{asks[i]?.price}</div>
+  {/* Ask Size */}
+  <div className="w-[22%] text-right text-gray-400 pl-2">{asks[i]?.amount}</div>
+</div>
           ))
         )}
       </div>

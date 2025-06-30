@@ -10,6 +10,8 @@ import SignUpPage from "./pages/SignUpPage";
 import VerifyOTPPage from "./pages/VerifyOTPPage";
 import AboutUs from "./pages/AboutUs";
 import NavBar from './components/navbar';
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+
 
 function AppShell() {
   const location = useLocation();
@@ -29,6 +31,7 @@ function AppShell() {
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/verify-otp" element={<VerifyOTPPage />} />
           <Route path="/about" element={<AboutUs />} />
+          <Route path="/forgot" element={<ForgotPasswordPage />} />
         </Routes>
       </main>
     </div>

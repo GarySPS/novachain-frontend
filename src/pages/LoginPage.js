@@ -118,26 +118,27 @@ export default function LoginPage() {
         </form>
 
         {/* Extra links */}
-        <div className="flex justify-between items-center mt-10">
-          <Link
-            to="/forgot"
-            className="px-6 py-3 rounded-xl font-bold text-lg text-[#00eaff] bg-[#eaf8fc] hover:bg-[#00eaff] hover:text-white shadow-md transition-all duration-150"
-            style={{
-              boxShadow: "0 1.5px 0 #00eaff33, 0 2.5px 12px #00eaff11"
-            }}
-          >
-            Forgot password?
-          </Link>
-          <Link
-            to="/signup"
-            className="px-6 py-3 rounded-xl font-bold text-lg text-[#ffd700] bg-[#fff8e1] hover:bg-[#ffd700] hover:text-[#232836] shadow-md transition-all duration-150"
-            style={{
-              boxShadow: "0 1.5px 0 #ffd70033, 0 2.5px 12px #ffd70011"
-            }}
-          >
-            Sign up
-          </Link>
-        </div>
+        <div className="flex flex-col md:flex-row gap-3 mt-10 w-full">
+  <Link
+    to="/forgot"
+    className="w-full px-6 py-3 rounded-xl font-bold text-lg text-[#00eaff] bg-[#eaf8fc] hover:bg-[#00eaff] hover:text-white shadow-md transition-all duration-150 text-center"
+    style={{
+      boxShadow: "0 1.5px 0 #00eaff33, 0 2.5px 12px #00eaff11"
+    }}
+  >
+    Forgot password?
+  </Link>
+  <Link
+    to="/signup"
+    className="w-full px-6 py-3 rounded-xl font-bold text-lg text-[#ffd700] bg-[#fff8e1] hover:bg-[#ffd700] hover:text-[#232836] shadow-md transition-all duration-150 text-center"
+    style={{
+      boxShadow: "0 1.5px 0 #ffd70033, 0 2.5px 12px #ffd70011"
+    }}
+  >
+    Sign up
+  </Link>
+</div>
+
       </Card>
 
       {/* Logo Glow Animation */}
