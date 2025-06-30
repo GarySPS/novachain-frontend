@@ -17,6 +17,7 @@ const depositNetworks = {
 };
 
 export default function WalletPage() {
+  const navigate = useNavigate()
   const location = useLocation();
   const token = localStorage.getItem("token");
   const [userId, setUserId] = useState(null);
@@ -257,15 +258,13 @@ export default function WalletPage() {
     new Date(b.created_at || b.date) - new Date(a.created_at || a.date)
   );
 
-  // --- GUEST REDIRECT ---
-if (!token || !userId) {
-  const navigate = useNavigate();
   useEffect(() => {
+  if (!token || !userId) {
     navigate("/login");
-  }, []);
-  return null;
-}
+  }
+}, [token, userId, navigate]);
 
+  
   // --- MAIN RENDER ---
   return (
     <div className="min-h-screen py-10 px-2 flex flex-col items-center" style={{ background: "none" }}>

@@ -74,7 +74,7 @@ export default function ProfilePage() {
   useEffect(() => {
   const token = localStorage.getItem("token");
   if (!token) {
-    navigate("/login"); // ✅ do NOT use `{ replace: true }`
+    navigate("/login"); // ✅ preserves history so back button works
   }
 }, [navigate]);
 
