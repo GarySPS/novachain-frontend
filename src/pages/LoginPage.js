@@ -140,13 +140,7 @@ export default function LoginPage() {
 </div>
 
       </Card>
-      <Link
-  to="/"
-  className="block text-blue-500 underline text-center mt-8 text-lg font-bold hover:text-blue-700 transition-all"
->
-  ← Back to Dashboard
-</Link>
-
+      
       {/* Logo Glow Animation */}
       <style>
         {`
