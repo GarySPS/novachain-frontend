@@ -9,9 +9,7 @@ import Tooltip from "../components/tooltip";
 import Icon from "../components/icon";
 import TimerBar from "../components/TimerBar";
 import OrderBTC from "../components/orderbtc";
-import BeautifulLoader from "../components/BeautifulLoader";
-import PremiumChart from "../components/PremiumChart";
-
+// REMOVE: import PremiumChart from "../components/PremiumChart";
 
 function persistTradeState(tradeState) {
   if (tradeState) localStorage.setItem("activeTrade", JSON.stringify(tradeState));
@@ -37,22 +35,22 @@ export default function TradePage() {
   const [tradeState, setTradeState] = useState(null);
   const [timerKey, setTimerKey] = useState(0);
   const [waitingResult, setWaitingResult] = useState(false);
-  
 
+  // CHART LOADING STATE
+  const [loadingChart, setLoadingChart] = useState(true);
 
   // Restore active trade if exists
   useEffect(() => {
     const saved = loadTradeState();
     if (saved && saved.endAt > Date.now()) {
-  const remaining = Math.ceil((saved.endAt - Date.now()) / 1000);
-  const adjustedTradeState = { ...saved, duration: remaining }; // ⬅️ override with remaining time
-
-  setTradeState(adjustedTradeState);
-  setTimerActive(true);
-  setTradeDetail(null);
-  setTradeResult(null);
-  setTimerKey(Math.random()); // ✅ still ok
-}
+      const remaining = Math.ceil((saved.endAt - Date.now()) / 1000);
+      const adjustedTradeState = { ...saved, duration: remaining };
+      setTradeState(adjustedTradeState);
+      setTimerActive(true);
+      setTradeDetail(null);
+      setTradeResult(null);
+      setTimerKey(Math.random());
+    }
   }, []);
 
   // BTC price polling
@@ -72,7 +70,50 @@ export default function TradePage() {
     return () => clearInterval(interval);
   }, []);
 
-  
+  // TradingView widget loader
+  useEffect(() => {
+    setLoadingChart(true);
+    const script = document.createElement("script");
+    script.id = "tradingview-widget-script";
+    script.src = "https://s3.tradingview.com/tv.js";
+    script.async = true;
+    script.onload = () => {
+      if (window.TradingView) {
+        new window.TradingView.widget({
+          container_id: "tradingview_btcusdt_chart",
+          width: "100%",
+          height: 400,
+          symbol: "BINANCE:BTCUSDT",
+          interval: "15",
+          timezone: "Etc/UTC",
+          theme: "dark",
+          style: "1",
+          locale: "en",
+          toolbar_bg: "#0f0f16",
+          backgroundColor: "#101726",
+          enable_publishing: false,
+          allow_symbol_change: false,
+          hide_top_toolbar: false,
+          hide_legend: false,
+          hide_side_toolbar: true,
+          withdateranges: true,
+          details: false,
+          studies: [],
+          overrides: {},
+          loading_screen: { backgroundColor: "#101726", foregroundColor: "#ffd700" },
+        });
+        setTimeout(() => setLoadingChart(false), 1400); // Adjust if needed
+      }
+    };
+    document.body.appendChild(script);
+    return () => {
+      const sc = document.getElementById("tradingview-widget-script");
+      if (sc) sc.remove();
+      const container = document.getElementById("tradingview_btcusdt_chart");
+      if (container) container.innerHTML = "";
+    };
+  }, []);
+
   // When timer ends: poll trade result
   async function pollResult(trade_id, user_id) {
     let tries = 0, trade = null;
@@ -102,16 +143,15 @@ export default function TradePage() {
   }
 
   const onTimerComplete = async () => {
-  setWaitingResult(true); // show spinner/message
-  if (!tradeState) return;
-  await pollResult(tradeState.trade_id, tradeState.user_id);
-  setTradeState(null);
-  setTimerActive(false);
-  setWaitingResult(false); // hide spinner/message when result shows
-  setTimerKey(Math.random());
-  return { shouldRepeat: false, delay: 0 };
-};
-
+    setWaitingResult(true);
+    if (!tradeState) return;
+    await pollResult(tradeState.trade_id, tradeState.user_id);
+    setTradeState(null);
+    setTimerActive(false);
+    setWaitingResult(false);
+    setTimerKey(Math.random());
+    return { shouldRepeat: false, delay: 0 };
+  };
 
   // Start new trade (and persist)
   const executeTrade = async () => {
@@ -164,40 +204,49 @@ export default function TradePage() {
 
   return (
     <motion.div
-  initial={{ opacity: 0, y: 30 }}
-  animate={{ opacity: 1, y: 0 }}
-  className="w-full max-w-full min-h-screen flex flex-col items-center px-2 pt-4 pb-8 overflow-x-hidden bg-[#101523]"
->
-
-  
-     <div className="w-full max-w-[1300px] mx-auto flex flex-col lg:flex-row lg:items-start gap-7 lg:gap-10 overflow-x-hidden">
-       
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full max-w-full min-h-screen flex flex-col items-center px-2 pt-4 pb-8 overflow-x-hidden bg-[#101523]"
+    >
+      <div className="w-full max-w-[1300px] mx-auto flex flex-col lg:flex-row lg:items-start gap-7 lg:gap-10 overflow-x-hidden">
         {/* Chart */}
-        <div
-  className="w-full lg:w-[70%] 2xl:w-[75%] mb-5 lg:mb-0"
->
-  <PremiumChart />
-</div>
-
+        <div className="w-full lg:w-[70%] 2xl:w-[75%] mb-5 lg:mb-0">
+          <div className="relative w-full rounded-2xl shadow-xl bg-gradient-to-br from-[#23243a] via-[#171b24] to-[#11151c] border border-[#23243a] min-h-[420px] overflow-hidden">
+            <div id="tradingview_btcusdt_chart" className="w-full h-[420px]" />
+            {loadingChart && (
+              <div
+                className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#101726e6] backdrop-blur-sm"
+                style={{ borderRadius: 14, pointerEvents: "none" }}
+              >
+                <svg className="animate-spin mb-4" width="54" height="54" viewBox="0 0 54 54" fill="none">
+                  <circle cx="27" cy="27" r="24" stroke="#2474ff44" strokeWidth="5"/>
+                  <path d="M51 27a24 24 0 1 1-48 0" stroke="#FFD700" strokeWidth="5" strokeLinecap="round"/>
+                </svg>
+                <div className="text-lg font-bold text-theme-primary">
+                  Refreshing Price...
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
         {/* Trade box */}
         <Card className="w-full max-w-[410px] mx-auto px-4 py-6 rounded-2xl shadow-lg border border-[#f6e8ff]/80 bg-gradient-to-tr from-[#f0f3ff] to-[#fafffa] flex flex-col lg:w-[360px] 2xl:w-[360px]">
           {/* HEADER */}
           <div className="flex items-center justify-between mb-5">
-           <span
-  className="font-extrabold text-[1.6rem] md:text-2xl tracking-wide"
-  style={{
-    background: "linear-gradient(92deg, #00eaff 0%, #1f2fff 60%, #ffd700 100%)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    letterSpacing: "0.04em",
-    fontFamily: "'Plus Jakarta Sans', 'Inter', Arial, sans-serif",
-    lineHeight: 1.15,
-    textShadow: "0 2px 18px #1f2fff22"
-  }}
->
-  BTC/USDT
-</span>
-
+            <span
+              className="font-extrabold text-[1.6rem] md:text-2xl tracking-wide"
+              style={{
+                background: "linear-gradient(92deg, #00eaff 0%, #1f2fff 60%, #ffd700 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                letterSpacing: "0.04em",
+                fontFamily: "'Plus Jakarta Sans', 'Inter', Arial, sans-serif",
+                lineHeight: 1.15,
+                textShadow: "0 2px 18px #1f2fff22"
+              }}
+            >
+              BTC/USDT
+            </span>
             <img src={NovaChainLogo} alt="NovaChain" className="h-9 w-auto ml-4" />
           </div>
           {/* TRADE DIRECTION */}
@@ -245,94 +294,88 @@ export default function TradePage() {
               icon="dollar-sign"
             />
           </div>
-         {/* DURATION */}
-{/* DURATION (slider and number in one horizontal row) */}
-<div className="flex items-center gap-3 mb-5">
-  <label className="font-semibold text-theme-tertiary mr-2 whitespace-nowrap">
-    Duration (sec)
-  </label>
-  <input
-    type="range"
-    min={5}
-    max={120}
-    step={1}
-    value={duration}
-    disabled={timerActive}
-    onChange={e => setDuration(Number(e.target.value))}
-    className="flex-1 accent-theme-primary"
-    style={{ minWidth: "120px", maxWidth: "200px" }}
-  />
-  <span className="ml-2 text-lg font-bold text-theme-primary w-12 text-right">{duration}s</span>
-</div>
-
-
+          {/* DURATION */}
+          <div className="flex items-center gap-3 mb-5">
+            <label className="font-semibold text-theme-tertiary mr-2 whitespace-nowrap">
+              Duration (sec)
+            </label>
+            <input
+              type="range"
+              min={5}
+              max={120}
+              step={1}
+              value={duration}
+              disabled={timerActive}
+              onChange={e => setDuration(Number(e.target.value))}
+              className="flex-1 accent-theme-primary"
+              style={{ minWidth: "120px", maxWidth: "200px" }}
+            />
+            <span className="ml-2 text-lg font-bold text-theme-primary w-12 text-right">{duration}s</span>
+          </div>
           {/* INVEST BUTTON */}
           <button
-  className={`btn-primary w-full h-12 mt-2 rounded-full font-extrabold text-lg shadow transition-all duration-200
-    ${timerActive ? "cursor-not-allowed opacity-80" : "hover:scale-[1.03]"}
-  `}
-  disabled={timerActive || !btcPrice}
-  onClick={executeTrade}
->
-  {timerActive ? (
-    <span className="flex items-center justify-center gap-2">
-      {/* Beautiful animated spinner */}
-      <svg className="animate-spin" width="22" height="22" viewBox="0 0 44 44" fill="none">
-        <circle cx="22" cy="22" r="20" stroke="#2474ff44" strokeWidth="4"/>
-        <path d="M42 22a20 20 0 1 1-40 0" stroke="#FFD700" strokeWidth="4" strokeLinecap="round"/>
-      </svg>
-      Investing
-    </span>
-  ) : (
-    "Invest"
-  )}
-</button>
-
+            className={`btn-primary w-full h-12 mt-2 rounded-full font-extrabold text-lg shadow transition-all duration-200
+              ${timerActive ? "cursor-not-allowed opacity-80" : "hover:scale-[1.03]"}
+            `}
+            disabled={timerActive || !btcPrice}
+            onClick={executeTrade}
+          >
+            {timerActive ? (
+              <span className="flex items-center justify-center gap-2">
+                {/* Beautiful animated spinner */}
+                <svg className="animate-spin" width="22" height="22" viewBox="0 0 44 44" fill="none">
+                  <circle cx="22" cy="22" r="20" stroke="#2474ff44" strokeWidth="4"/>
+                  <path d="M42 22a20 20 0 1 1-40 0" stroke="#FFD700" strokeWidth="4" strokeLinecap="round"/>
+                </svg>
+                Investing
+              </span>
+            ) : (
+              "Invest"
+            )}
+          </button>
           {/* RESULT / COUNTDOWN */}
           <AnimatePresence>
-  {/* Show TIMER BAR first */}
-  {timerActive && tradeState && !waitingResult && (
-    <motion.div
-      key="timer"
-      initial={{ opacity: 0, scale: 0.97, y: 24 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.97, y: 24 }}
-      transition={{ duration: 0.32, type: "spring" }}
-      className="flex flex-col items-center mt-7 w-full"
-    >
-      <TimerBar
-        duration={tradeState.duration}
-        onComplete={onTimerComplete}
-      />
-    </motion.div>
-  )}
-
-  {/* Show PROCESSING spinner/message after timer */}
-  {waitingResult && (
-    <motion.div
-      key="waiting"
-      initial={{ opacity: 0, scale: 0.97, y: 24 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.97, y: 24 }}
-      transition={{ duration: 0.32, type: "spring" }}
-      className="flex flex-col items-center mt-7 w-full"
-    >
-      <div className="flex flex-col items-center justify-center min-h-[130px]">
-        <svg className="animate-spin mb-4" width="44" height="44" viewBox="0 0 44 44" fill="none">
-          <circle cx="22" cy="22" r="20" stroke="#2474ff44" strokeWidth="4"/>
-          <path d="M42 22a20 20 0 1 1-40 0" stroke="#FFD700" strokeWidth="4" strokeLinecap="round"/>
-        </svg>
-        <div className="text-lg font-bold text-theme-primary">
-          Processing your trade and updating your balance...
-        </div>
-        <div className="text-theme-tertiary mt-1 text-base font-medium text-center">
-          Please wait while your trade settles and funds update in your wallet.
-        </div>
-      </div>
-    </motion.div>
-  )}
-</AnimatePresence>
-
+            {/* Show TIMER BAR first */}
+            {timerActive && tradeState && !waitingResult && (
+              <motion.div
+                key="timer"
+                initial={{ opacity: 0, scale: 0.97, y: 24 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.97, y: 24 }}
+                transition={{ duration: 0.32, type: "spring" }}
+                className="flex flex-col items-center mt-7 w-full"
+              >
+                <TimerBar
+                  duration={tradeState.duration}
+                  onComplete={onTimerComplete}
+                />
+              </motion.div>
+            )}
+            {/* Show PROCESSING spinner/message after timer */}
+            {waitingResult && (
+              <motion.div
+                key="waiting"
+                initial={{ opacity: 0, scale: 0.97, y: 24 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.97, y: 24 }}
+                transition={{ duration: 0.32, type: "spring" }}
+                className="flex flex-col items-center mt-7 w-full"
+              >
+                <div className="flex flex-col items-center justify-center min-h-[130px]">
+                  <svg className="animate-spin mb-4" width="44" height="44" viewBox="0 0 44 44" fill="none">
+                    <circle cx="22" cy="22" r="20" stroke="#2474ff44" strokeWidth="4"/>
+                    <path d="M42 22a20 20 0 1 1-40 0" stroke="#FFD700" strokeWidth="4" strokeLinecap="round"/>
+                  </svg>
+                  <div className="text-lg font-bold text-theme-primary">
+                    Processing your trade and updating your balance...
+                  </div>
+                  <div className="text-theme-tertiary mt-1 text-base font-medium text-center">
+                    Please wait while your trade settles and funds update in your wallet.
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           {/* RESULT BOX */}
           <AnimatePresence>
             {tradeDetail && !timerActive && (
@@ -345,11 +388,11 @@ export default function TradePage() {
               >
                 <Card
                   className={`mt-6 px-8 py-7 rounded-2xl shadow-xl border-2 transition-all duration-300
-                  flex flex-col items-center justify-center
-                  ${tradeDetail.result === "WIN"
-                    ? "bg-gradient-to-br from-[#eaffec] to-[#d2ffd9] border-green-400"
-                    : "bg-gradient-to-br from-[#fff1f1] to-[#ffe4e4] border-red-400"
-                  }`}
+                    flex flex-col items-center justify-center
+                    ${tradeDetail.result === "WIN"
+                      ? "bg-gradient-to-br from-[#eaffec] to-[#d2ffd9] border-green-400"
+                      : "bg-gradient-to-br from-[#fff1f1] to-[#ffe4e4] border-red-400"
+                    }`}
                   style={{
                     minWidth: "290px",
                     maxWidth: "370px",
@@ -405,11 +448,9 @@ export default function TradePage() {
           </AnimatePresence>
         </Card>
       </div>
-
       <div className="w-full max-w-5xl mt-8">
-         <OrderBTC />
-         </div>
-
+        <OrderBTC />
+      </div>
     </motion.div>
   );
 }
