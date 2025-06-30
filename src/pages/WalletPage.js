@@ -42,13 +42,30 @@ export default function WalletPage() {
   const [walletAddresses, setWalletAddresses] = useState({});
   const [walletQRCodes, setWalletQRCodes] = useState({});
   const [fileLocked, setFileLocked] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
-// ✅ Guest redirect logic (best early position)
+// 1. Parse the token and set userId
 useEffect(() => {
-  if (!token || !userId || token === "undefined" || userId === "undefined") {
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      setUserId(decoded.id);
+    } catch {
+      setUserId(null);
+    }
+  } else {
+    setUserId(null);
+  }
+  setAuthChecked(true); // Mark that we have checked authentication
+}, [token]);
+
+// 2. Only redirect guests AFTER authChecked is true
+useEffect(() => {
+  if (!authChecked) return; // Wait until we have checked authentication
+  if (!token || token === "undefined" || !userId || userId === "undefined") {
     navigate("/login");
   }
-}, [token, userId, navigate]);
+}, [authChecked, token, userId, navigate]);
 
 
   // Use static prices for now
@@ -83,19 +100,7 @@ useEffect(() => {
       });
   }, []);
 
-  useEffect(() => {
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        setUserId(decoded.id);
-      } catch {
-        setUserId(null);
-      }
-    } else {
-      setUserId(null);
-    }
-  }, [token]);
-
+  
   useEffect(() => {
     if (!token || !userId) return;
     fetchBalances();
