@@ -43,6 +43,13 @@ export default function WalletPage() {
   const [walletQRCodes, setWalletQRCodes] = useState({});
   const [fileLocked, setFileLocked] = useState(false);
 
+// ✅ Guest redirect logic (best early position)
+useEffect(() => {
+  if (!token || !userId || token === "undefined" || userId === "undefined") {
+    navigate("/login");
+  }
+}, [token, userId, navigate]);
+
 
   // Use static prices for now
   useEffect(() => {
@@ -258,13 +265,7 @@ export default function WalletPage() {
     new Date(b.created_at || b.date) - new Date(a.created_at || a.date)
   );
 
-  useEffect(() => {
-  if (!token || !userId) {
-    navigate("/login");
-  }
-}, [token, userId, navigate]);
-
-  
+    
   // --- MAIN RENDER ---
   return (
     <div className="min-h-screen py-10 px-2 flex flex-col items-center" style={{ background: "none" }}>
