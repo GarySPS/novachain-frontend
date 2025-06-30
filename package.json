@@ -9,6 +9,7 @@
     "build": "^0.1.4",
     "framer-motion": "^12.16.0",
     "jwt-decode": "^4.0.0",
+    "lightweight-charts": "^5.0.8",
     "lucide-react": "^0.511.0",
     "postcss": "^8.4.38",
     "qrcode.react": "^4.2.0",
