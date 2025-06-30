@@ -72,9 +72,11 @@ export default function ProfilePage() {
   }, [assets, prices]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) navigate("/login");
-  }, [navigate]);
+  const token = localStorage.getItem("token");
+  if (!token) {
+    navigate("/login"); // ✅ do NOT use `{ replace: true }`
+  }
+}, [navigate]);
 
   useEffect(() => {
     if (kycStatus !== "pending") return;

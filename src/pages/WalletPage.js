@@ -8,6 +8,7 @@ import Card from "../components/card";
 import Field from "../components/field";
 import Modal from "../components/modal";
 import Icon from "../components/icon";
+import { useNavigate } from "react-router-dom";
 
 
 const coinSymbols = ["USDT", "BTC", "ETH", "SOL", "XRP", "TON"];
@@ -256,21 +257,14 @@ export default function WalletPage() {
     new Date(b.created_at || b.date) - new Date(a.created_at || a.date)
   );
 
-  // --- GUEST RETURN ---
-  if (!token || !userId) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-theme-n-8">
-        <Card className="w-full max-w-md mx-auto py-12 px-8 text-center">
-          <div className="mb-5 text-3xl font-bold text-theme-yellow">
-            <Icon name="wallet" className="w-9 h-9 mb-2" /> NovaChain Wallet
-          </div>
-          <div className="mb-6 text-theme-tertiary">
-            Please <a href="/login" className="text-theme-primary underline">log in</a> or <a href="/signup" className="text-theme-green underline">create an account</a> to access your wallet, balances, and transactions.
-          </div>
-        </Card>
-      </div>
-    );
-  }
+  // --- GUEST REDIRECT ---
+if (!token || !userId) {
+  const navigate = useNavigate();
+  useEffect(() => {
+    navigate("/login");
+  }, []);
+  return null;
+}
 
   // --- MAIN RENDER ---
   return (
