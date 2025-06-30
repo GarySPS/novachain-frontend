@@ -63,11 +63,10 @@ useEffect(() => {
 // 2. Only redirect guests AFTER authChecked is true
 useEffect(() => {
   if (!authChecked) return;
-  if (!token || token === "undefined" || !userId || userId === "undefined") {
-    setIsGuest(true); // just show guest state instead of redirecting
-  } else {
-    setIsGuest(false);
-  }
+if (!token || token === "undefined" || !userId || userId === "undefined") {
+  navigate("/login"); // ✅ redirect with history preserved (back works)
+}
+
 }, [authChecked, token, userId]);
 
 
@@ -274,20 +273,7 @@ useEffect(() => {
     new Date(b.created_at || b.date) - new Date(a.created_at || a.date)
   );
 
-  if (isGuest) {
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center">
-      <Card className="p-8 max-w-md text-center">
-        <div className="text-2xl font-bold mb-4">Guest Access</div>
-        <div className="mb-6 text-lg text-theme-secondary">
-          Please <a href="/login" className="text-blue-500 underline">Login</a> or <a href="/signup" className="text-yellow-500 underline">Sign Up</a> to access your wallet.
-        </div>
-        <a href="/" className="btn-primary px-6 py-3 rounded-xl font-bold inline-block">← Back to Dashboard</a>
-      </Card>
-    </div>
-  );
-}
-    
+   
   // --- MAIN RENDER ---
   return (
     <div className="min-h-screen py-10 px-2 flex flex-col items-center" style={{ background: "none" }}>

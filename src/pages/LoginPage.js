@@ -29,7 +29,7 @@ export default function LoginPage() {
         localStorage.setItem("token", data.token);
       }
       localStorage.setItem("user", JSON.stringify(data.user));
-      navigate("/");
+      navigate(-1); // Go back to previous page like Binance
     } catch (err) {
       setError("Login failed. Please try again.");
     }
@@ -140,14 +140,8 @@ export default function LoginPage() {
 </div>
 
       </Card>
-      <Link
-  to="/"
-  className="block text-blue-500 underline text-center mt-8 text-lg font-bold hover:text-blue-700 transition-all"
->
-  ← Back to Dashboard
-</Link>
-
-      {/* Logo Glow Animation */}
+    
+          {/* Logo Glow Animation */}
       <style>
         {`
         @keyframes logoGlow {
