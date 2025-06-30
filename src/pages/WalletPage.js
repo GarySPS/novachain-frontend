@@ -45,7 +45,7 @@ export default function WalletPage() {
   const [authChecked, setAuthChecked] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
 
-// 1. Parse the token and set userId
+
 useEffect(() => {
   if (token) {
     try {
@@ -53,22 +53,14 @@ useEffect(() => {
       setUserId(decoded.id);
     } catch {
       setUserId(null);
+      navigate("/login", { replace: true }); // ✅ redirects to login, preserving history
     }
   } else {
     setUserId(null);
+    navigate("/login", { replace: true }); // ✅ redirects to login, preserving history
   }
-  setAuthChecked(true); // Mark that we have checked authentication
-}, [token]);
+}, [token, navigate]);
 
-// 2. Only redirect guests AFTER authChecked is true
-useEffect(() => {
-  if (!authChecked) return;
-  if (!token || token === "undefined" || !userId || userId === "undefined") {
-    setIsGuest(true); // just show guest state instead of redirecting
-  } else {
-    setIsGuest(false);
-  }
-}, [authChecked, token, userId]);
 
 
 
