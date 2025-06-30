@@ -74,7 +74,7 @@ export default function ProfilePage() {
   useEffect(() => {
   const token = localStorage.getItem("token");
   if (!token) {
-    navigate("/login"); // ✅ preserves history so back button works
+    navigate("/login", { replace: true }); // ✅ FIXED
   }
 }, [navigate]);
 
@@ -109,9 +109,10 @@ export default function ProfilePage() {
         const kycRes = await axios.get(`${MAIN_API_BASE}/kyc/status`, { headers });
         setKycStatus((kycRes.data.status || "unverified").toLowerCase());
         setLoading(false);
-      } catch (err) {
-        navigate("/login");
-      }
+      } 
+      catch (err) {
+  navigate("/login", { replace: true }); // ✅ FIXED
+}
     }
     fetchProfile();
   }, [navigate]);
