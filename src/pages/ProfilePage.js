@@ -32,6 +32,7 @@ export default function ProfilePage() {
   const [prices, setPrices] = useState({});
   const [totalUsd, setTotalUsd] = useState(null);
   const [balanceHistory, setBalanceHistory] = useState([]);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // Fetch balance history for the chart
   useEffect(() => {
@@ -71,12 +72,17 @@ export default function ProfilePage() {
     setTotalUsd(sum);
   }, [assets, prices]);
 
-  useEffect(() => {
+
+
+useEffect(() => {
   const token = localStorage.getItem("token");
   if (!token) {
-    navigate("/login"); // ✅ preserves history so back button works
+    setAuthChecked(true); // ✅ mark as checked so we can render fallback
+  } else {
+    setAuthChecked(true); // ✅ continue loading normally
   }
-}, [navigate]);
+}, []);
+
 
   useEffect(() => {
     if (kycStatus !== "pending") return;
@@ -191,6 +197,28 @@ export default function ProfilePage() {
       setPwErr("Failed to change password.");
     }
   }
+
+  if (!authChecked) {
+  return null; // Wait for auth to be checked
+}
+
+const token = localStorage.getItem("token");
+if (!token) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-black text-white">
+      <div className="text-center">
+        <p className="text-lg font-semibold">Please login to access your profile.</p>
+        <button
+          className="mt-4 px-6 py-2 bg-white text-black rounded-xl font-bold"
+          onClick={() => navigate("/login")}
+        >
+          Go to Login
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
   if (loading || !user) {
   return (

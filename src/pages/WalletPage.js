@@ -63,12 +63,10 @@ useEffect(() => {
 // 2. Only redirect guests AFTER authChecked is true
 useEffect(() => {
   if (!authChecked) return;
-if (!token || token === "undefined" || !userId || userId === "undefined") {
-  navigate("/login"); // ✅ redirect with history preserved (back works)
-}
-
+  if (!token || token === "undefined" || !userId || userId === "undefined") {
+    setIsGuest(true); // Soft guest fallback
+  }
 }, [authChecked, token, userId]);
-
 
 
   // Use static prices for now
@@ -273,7 +271,28 @@ if (!token || token === "undefined" || !userId || userId === "undefined") {
     new Date(b.created_at || b.date) - new Date(a.created_at || a.date)
   );
 
-   
+  // --- MAIN RENDER ---
+if (!authChecked) return null;
+if (isGuest) {
+  return (
+    <div className="min-h-screen flex items-center justify-center px-5 text-center">
+      <div className="max-w-xl">
+        <h2 className="text-3xl font-bold text-theme-primary mb-4">Wallet Access Restricted</h2>
+        <p className="text-lg text-theme-tertiary mb-6">
+          Please login to view your wallet, balances, and history.
+        </p>
+        <button
+          onClick={() => navigate("/login")}
+          className="btn-primary px-6 py-3 rounded-xl text-lg font-bold"
+        >
+          Go to Login
+        </button>
+      </div>
+    </div>
+  );
+}
+
+  
   // --- MAIN RENDER ---
   return (
     <div className="min-h-screen py-10 px-2 flex flex-col items-center" style={{ background: "none" }}>
