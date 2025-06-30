@@ -198,15 +198,15 @@ useEffect(() => {
     }
   }
 
-  if (!authChecked) {
-  return null; // Wait for auth to be checked
-}
+useEffect(() => {
+  if (!authChecked) return;
+  const token = localStorage.getItem("token");
+  if (!token) {
+    navigate("/login", { replace: true }); // ✅ instant redirect
+  }
+}, [authChecked, navigate]);
 
-const token = localStorage.getItem("token");
-if (!token) {
-  navigate("/login", { replace: true }); // ✅ FIXED: don't push fake page into history
-  return null;
-}
+if (!authChecked) return null;
 
 
   if (loading || !user) {

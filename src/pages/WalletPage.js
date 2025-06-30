@@ -68,6 +68,12 @@ useEffect(() => {
   }
 }, [authChecked, token, userId]);
 
+useEffect(() => {
+  if (!authChecked) return;
+  if (isGuest) {
+    navigate("/login", { replace: true });
+  }
+}, [authChecked, isGuest]);
 
   // Use static prices for now
   useEffect(() => {
@@ -272,11 +278,10 @@ useEffect(() => {
   );
 
   // --- MAIN RENDER ---
+
+
 if (!authChecked) return null;
-if (isGuest) {
-  navigate("/login", { replace: true }); // ✅ FIXED: avoid blank page in history
-  return null;
-}
+if (isGuest) return null;
 
   
   // --- MAIN RENDER ---
