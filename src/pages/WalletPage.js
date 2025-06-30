@@ -274,22 +274,8 @@ useEffect(() => {
   // --- MAIN RENDER ---
 if (!authChecked) return null;
 if (isGuest) {
-  return (
-    <div className="min-h-screen flex items-center justify-center px-5 text-center">
-      <div className="max-w-xl">
-        <h2 className="text-3xl font-bold text-theme-primary mb-4">Wallet Access Restricted</h2>
-        <p className="text-lg text-theme-tertiary mb-6">
-          Please login to view your wallet, balances, and history.
-        </p>
-        <button
-          onClick={() => navigate("/login")}
-          className="btn-primary px-6 py-3 rounded-xl text-lg font-bold"
-        >
-          Go to Login
-        </button>
-      </div>
-    </div>
-  );
+  navigate("/login", { replace: true }); // ✅ FIXED: avoid blank page in history
+  return null;
 }
 
   

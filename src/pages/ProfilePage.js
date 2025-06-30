@@ -116,8 +116,8 @@ useEffect(() => {
         setKycStatus((kycRes.data.status || "unverified").toLowerCase());
         setLoading(false);
       } catch (err) {
-        navigate("/login");
-      }
+  navigate("/login", { replace: true }); // ✅ for consistency
+}
     }
     fetchProfile();
   }, [navigate]);
@@ -204,19 +204,8 @@ useEffect(() => {
 
 const token = localStorage.getItem("token");
 if (!token) {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-black text-white">
-      <div className="text-center">
-        <p className="text-lg font-semibold">Please login to access your profile.</p>
-        <button
-          className="mt-4 px-6 py-2 bg-white text-black rounded-xl font-bold"
-          onClick={() => navigate("/login")}
-        >
-          Go to Login
-        </button>
-      </div>
-    </div>
-  );
+  navigate("/login", { replace: true }); // ✅ FIXED: don't push fake page into history
+  return null;
 }
 
 
