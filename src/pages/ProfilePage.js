@@ -563,15 +563,17 @@ export default function ProfilePage() {
       }}
     />
     <input
-      type="file"
-      accept="image/*"
-      className="hidden"
-      id="profile-pic-input"
-      onChange={handleAvatarChange}
-    />
-    <label htmlFor="profile-pic-input">
-      <button className="btn-primary mt-2">Choose New Photo</button>
-    </label>
+  type="file"
+  accept="image/*"
+  className="hidden"
+  id="profile-pic-input"
+  onChange={handleAvatarChange}
+/>
+<label htmlFor="profile-pic-input" className="w-full">
+  <span className="btn-primary mt-2 block text-center cursor-pointer">
+    Choose New Photo
+  </span>
+</label>
     <div className="flex flex-row gap-4 mt-4">
       <button
         className="btn-primary"
