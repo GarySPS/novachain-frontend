@@ -34,6 +34,8 @@ export default function ProfilePage() {
   const [balanceHistory, setBalanceHistory] = useState([]);
   const [authChecked, setAuthChecked] = useState(false);
   const pwCurrent = useRef("");
+  const [pwSuccess, setPwSuccess] = useState("");
+
 
   // Fetch balance history for the chart
   useEffect(() => {
@@ -172,36 +174,33 @@ export default function ProfilePage() {
 
   // ---------- PASSWORD CHANGE HANDLER (only one, placed here!) ----------
   async function handleChangePassword(e) {
-    e.preventDefault();
-    setPwErr("");
-    console.log(
-    "Current:", pwCurrent.current.value,
-    "New:", pw1.current.value,
-    "Confirm:", pw2.current.value
-  );
-    if (!pwCurrent.current.value || !pw1.current.value || !pw2.current.value)
-      return setPwErr("Fill all fields.");
-    if (pw1.current.value !== pw2.current.value)
-      return setPwErr("Passwords do not match.");
-    if (pw1.current.value.length < 6)
-      return setPwErr("New password must be at least 6 characters.");
-    try {
-      const token = localStorage.getItem("token");
-      await axios.post(`${MAIN_API_BASE}/profile/change-password`, {
-  old_password: pwCurrent.current.value,
-  new_password: pw1.current.value,
-}, {
-  headers: { Authorization: `Bearer ${token}` }
-});
-      setShowChangePw(false);
-      pwCurrent.current.value = "";
-      pw1.current.value = "";
-      pw2.current.value = "";
-      alert("Password changed successfully.");
-    } catch (err) {
-      setPwErr("Failed to change password. Make sure your current password is correct.");
-    }
+  e.preventDefault();
+  setPwErr("");
+  setPwSuccess("");
+  // ...your checks...
+  try {
+    const token = localStorage.getItem("token");
+    await axios.post(`${MAIN_API_BASE}/profile/password`, {
+      currentPassword: pwCurrent.current.value,
+      newPassword: pw1.current.value,
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    pwCurrent.current.value = "";
+    pw1.current.value = "";
+    pw2.current.value = "";
+    setPwSuccess("Password changed successfully!");
+    setTimeout(() => {
+      setPwSuccess("");
+      setShowChangePw(false);    // Only close after message
+    }, 1800); // Show for 1.8s then close
+  } catch (err) {
+    setPwErr("Failed to change password. Make sure your current password is correct.");
   }
+}
+
+
   // ----------------------------------------------------------------------
 
   useEffect(() => {
@@ -523,30 +522,23 @@ export default function ProfilePage() {
       </div>
       {/* Modals */}
       <Modal visible={showChangePw} onClose={() => setShowChangePw(false)}>
-        <h3 className="text-title-2 font-semibold mb-4">Change Password</h3>
-        <form onSubmit={handleChangePassword} className="space-y-3">
-          <Field
-            type="password"
-            placeholder="Current Password"
-            inputRef={pwCurrent}
-          />
-          <Field
-            type="password"
-            placeholder="New Password"
-            inputRef={pw1}
-          />
-          <Field
-            type="password"
-            placeholder="Confirm New Password"
-            inputRef={pw2}
-          />
-          {pwErr && <div className="text-theme-red mb-2">{pwErr}</div>}
-          <div className="flex justify-center gap-4 mt-4">
-            <button type="submit" className="btn-primary">Save</button>
-            <button type="button" onClick={() => setShowChangePw(false)} className="btn-secondary">Cancel</button>
-          </div>
-        </form>
-      </Modal>
+  <h3 className="text-title-2 font-semibold mb-4">Change Password</h3>
+  <form onSubmit={handleChangePassword} className="space-y-3">
+    <Field type="password" placeholder="Current Password" inputRef={pwCurrent} />
+    <Field type="password" placeholder="New Password" inputRef={pw1} />
+    <Field type="password" placeholder="Confirm New Password" inputRef={pw2} />
+    {pwErr && <div className="text-theme-red mb-2">{pwErr}</div>}
+    {pwSuccess && (
+      <div className="bg-green-100 border border-green-300 text-green-700 rounded-lg px-4 py-2 text-center mb-2 transition">
+        {pwSuccess}
+      </div>
+    )}
+    <div className="flex justify-center gap-4 mt-4">
+      <button type="submit" className="btn-primary" disabled={!!pwSuccess}>Save</button>
+      <button type="button" onClick={() => setShowChangePw(false)} className="btn-secondary">Cancel</button>
+    </div>
+  </form>
+</Modal>
     </div>
   );
 }
