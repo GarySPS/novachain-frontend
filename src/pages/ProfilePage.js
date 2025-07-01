@@ -151,26 +151,29 @@ export default function ProfilePage() {
   }
 
   async function saveAvatar() {
-    if (!avatarFile) return;
-    try {
-      const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append("avatar", avatarFile);
-      const response = await axios.post(`${MAIN_API_BASE}/profile/avatar`, formData, {
+  if (!avatarFile) return;
+  try {
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("avatar", avatarFile);
+    const response = await axios.post(`${MAIN_API_BASE}/profile/avatar`, formData, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (response.data.avatar) {
+      // Refetch user to update avatar in card!
+      const updated = await axios.get(`${MAIN_API_BASE}/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (response.data.avatar) {
-        const updated = await axios.get(`${MAIN_API_BASE}/profile`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setUser(updated.data.user);
-        setAvatarUrl(updated.data.user.avatar || "/logo192_new.png");
-      }
-      setShowEditPic(false);
-    } catch {
-      alert("Failed to update avatar.");
+      setUser(updated.data.user);
+      setAvatarUrl(updated.data.user.avatar || "/logo192_new.png");
+      // Show success to user
+      alert("Profile picture updated successfully!");
     }
+    setShowEditPic(false);
+  } catch {
+    alert("Failed to update avatar.");
   }
+}
 
   async function handleChangePassword(e) {
   e.preventDefault();
@@ -239,19 +242,20 @@ export default function ProfilePage() {
         <Card className="md:col-span-2 flex flex-col items-center bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] border-0 shadow-lg rounded-2xl py-10 px-8">
           <div className="relative flex flex-col items-center">
             <img
-  src={
-    user.avatar && user.avatar.startsWith("/uploads/")
-      ? `${MAIN_API_BASE}${user.avatar}?t=${user.avatar}`  // prevent cache after change
-      : "/logo192_new.png"
-  }
-  alt="Profile"
-              className="rounded-full border-4 border-yellow-400 shadow-2xl object-cover bg-white"
-              style={{ width: 130, height: 130, objectFit: "cover", backgroundColor: "#fff", boxShadow: "0 2px 20px #ffd70044" }}
-              onError={e => {
-                e.target.onerror = null;
-                e.target.src = "/logo192_new.png";
-              }}
-            />
+      src={
+           user.avatar && user.avatar.startsWith("/uploads/")
+          ? `${MAIN_API_BASE}${user.avatar}?t=${user.avatar}` // always reloads after update!
+          : "/logo192_new.png"
+          }
+          alt="Profile"
+         className="rounded-full border-4 border-yellow-400 shadow-2xl object-cover bg-white"
+         style={{ width: 130, height: 130, objectFit: "cover", backgroundColor: "#fff", boxShadow: "0 2px 20px #ffd70044" }}
+         onError={e => {
+        e.target.onerror = null;
+        e.target.src = "/logo192_new.png";
+        }}
+      />
+
             <div className="mt-4 text-xs tracking-wider text-gray-400 font-mono select-none">
               {user.id ? `NC-${String(user.id).padStart(7, "0")}` : "NC-USER"}
             </div>
