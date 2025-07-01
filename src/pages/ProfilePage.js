@@ -172,20 +172,25 @@ export default function ProfilePage() {
     }
   }
 
-  // ---------- PASSWORD CHANGE HANDLER (only one, placed here!) ----------
   async function handleChangePassword(e) {
   e.preventDefault();
   setPwErr("");
   setPwSuccess("");
-  // ...your checks...
+
+  // ADD THIS CHECK:
+  if (pw1.current.value !== pw2.current.value) {
+    setPwErr("New passwords do not match.");
+    return;
+  }
+
   try {
     const token = localStorage.getItem("token");
     await axios.post(`${MAIN_API_BASE}/profile/change-password`, {
-  old_password: pwCurrent.current.value,
-  new_password: pw1.current.value,
-}, {
-  headers: { Authorization: `Bearer ${token}` }
-});
+      old_password: pwCurrent.current.value,
+      new_password: pw1.current.value,
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
 
     pwCurrent.current.value = "";
     pw1.current.value = "";
@@ -193,13 +198,12 @@ export default function ProfilePage() {
     setPwSuccess("Password changed successfully!");
     setTimeout(() => {
       setPwSuccess("");
-      setShowChangePw(false);    // Only close after message
-    }, 1800); // Show for 1.8s then close
+      setShowChangePw(false);
+    }, 1800);
   } catch (err) {
     setPwErr("Failed to change password. Make sure your current password is correct.");
   }
 }
-
 
   // ----------------------------------------------------------------------
 
