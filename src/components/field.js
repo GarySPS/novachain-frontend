@@ -11,6 +11,7 @@ export default function Field({
   type,
   success,
   error,
+  inputRef, // <-- Add this
   ...inputProps
 }) {
   // Calculate dynamic classes for input/textarea
@@ -36,11 +37,13 @@ export default function Field({
         )}
         {textarea ? (
           <textarea
+            ref={inputRef} // <-- pass ref to textarea
             className={`h-[8.75rem] px-4 py-3 ${baseInput} resize-none ${classInput} ${iconPadding} ${feedback}`}
             {...inputProps}
           />
         ) : (
           <input
+            ref={inputRef} // <-- pass ref to input
             className={`h-12 px-4 ${baseInput} ${classInput} ${iconPadding} ${feedback}`}
             type={type || "text"}
             {...inputProps}

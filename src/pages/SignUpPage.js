@@ -11,11 +11,16 @@ export default function SignUpPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleSignUp = async (e) => {
   e.preventDefault();
   setError("");
   setSuccess("");
+  if (password !== confirmPassword) {
+    setError("Passwords do not match.");
+    return;
+  }
   try {
     const res = await fetch(`${MAIN_API_BASE}/auth/register`, {
       method: "POST",
@@ -125,6 +130,23 @@ export default function SignUpPage() {
             placeholder="Create a password"
             className="w-full h-14 rounded-xl px-5 bg-[#eaf1fb] text-lg font-semibold border-2 border-[#bee3f8] focus:border-[#ffd700] focus:ring-2 focus:ring-[#ffd70044] transition outline-none mb-3"
           />
+
+          {/* Confirm Password */}
+<label
+  htmlFor="confirmPassword"
+  className="block text-lg font-bold text-[#232836] mb-1"
+>
+  Confirm Password
+</label>
+<input
+  id="confirmPassword"
+  type="password"
+  value={confirmPassword}
+  onChange={e => setConfirmPassword(e.target.value)}
+  required
+  placeholder="Re-enter your password"
+  className="w-full h-14 rounded-xl px-5 bg-[#eaf1fb] text-lg font-semibold border-2 border-[#bee3f8] focus:border-[#ffd700] focus:ring-2 focus:ring-[#ffd70044] transition outline-none mb-3"
+/>
 
           {/* Error / Success */}
           {error && (
