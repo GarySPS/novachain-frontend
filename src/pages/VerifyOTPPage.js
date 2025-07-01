@@ -10,6 +10,9 @@ export default function VerifyOTPPage() {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState("");
+  const [resendTimer, setResendTimer] = useState(0);
   const pinWrapperRef = useRef(null);
 
   const navigate = useNavigate();
@@ -26,10 +29,19 @@ export default function VerifyOTPPage() {
     // eslint-disable-next-line
   }, [otp]);
 
+  // Resend OTP Timer countdown
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const t = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+      return () => clearTimeout(t);
+    }
+  }, [resendTimer]);
+
   const handleVerify = async (e) => {
     if (e) e.preventDefault();
     setError("");
     setSuccess("");
+    setResendSuccess("");
     if (!email || otp.length < 6) {
       setError("Enter your email and the 6-digit code.");
       return;
@@ -42,14 +54,39 @@ export default function VerifyOTPPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Verification failed");
+        setError(data.error || "Incorrect OTP. Please try again.");
+        setOtp(""); // Clear code to let user retry
         return;
       }
       setSuccess(data.message || "Email verified!");
       setTimeout(() => navigate("/login"), 1400);
     } catch (err) {
       setError("Verification failed. Try again.");
+      setOtp(""); // Allow retry
     }
+  };
+
+  const handleResend = async () => {
+    setError("");
+    setResendSuccess("");
+    setResendLoading(true);
+    try {
+      const res = await fetch(`${MAIN_API_BASE}/auth/resend-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Failed to resend code.");
+      } else {
+        setResendSuccess("OTP code resent! Check your email.");
+        setResendTimer(60);
+      }
+    } catch (err) {
+      setError("Failed to resend code. Try again.");
+    }
+    setResendLoading(false);
   };
 
   return (
@@ -119,6 +156,7 @@ export default function VerifyOTPPage() {
             autoFocus
           />
 
+          {/* Error and Success Messages */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-500 rounded-lg px-4 py-2 text-center mb-2">
               {error}
@@ -127,6 +165,11 @@ export default function VerifyOTPPage() {
           {success && (
             <div className="bg-green-50 border border-green-200 text-green-700 rounded-lg px-4 py-2 text-center mb-2">
               {success}
+            </div>
+          )}
+          {resendSuccess && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-700 rounded-lg px-4 py-2 text-center mb-2">
+              {resendSuccess}
             </div>
           )}
 
@@ -150,6 +193,23 @@ export default function VerifyOTPPage() {
             Verify
           </button>
         </form>
+        
+        {/* --- RESEND OTP BUTTON --- */}
+        <div className="flex justify-center items-center mt-4 mb-2 text-base text-[#1f2fff] font-bold">
+          <button
+            type="button"
+            onClick={handleResend}
+            className="hover:underline disabled:opacity-60"
+            disabled={resendLoading || resendTimer > 0}
+          >
+            {resendTimer > 0
+              ? `Resend OTP in ${resendTimer}s`
+              : resendLoading
+              ? "Sending..."
+              : "Resend OTP"}
+          </button>
+        </div>
+
         <div className="flex justify-center items-center mt-8 text-base text-[#1f2fff] font-bold">
           <Link to="/login" className="hover:underline hover:text-[#00eaff] transition">Back to login</Link>
         </div>

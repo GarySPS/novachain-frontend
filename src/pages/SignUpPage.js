@@ -13,26 +13,35 @@ export default function SignUpPage() {
   const navigate = useNavigate();
 
   const handleSignUp = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-    try {
-      const res = await fetch(`${MAIN_API_BASE}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, email }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Signup failed");
-        return;
-      }
-      setSuccess("OTP code sent to your email. Please verify to complete sign up.");
+  e.preventDefault();
+  setError("");
+  setSuccess("");
+  try {
+    const res = await fetch(`${MAIN_API_BASE}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password, email }),
+    });
+    const data = await res.json();
+
+    // Handle already registered but not verified (backend sends {unverified: true})
+    if (res.status === 409 && data.unverified) {
+      setSuccess("You have already registered but not verified. Please check your email for the OTP code.");
       setTimeout(() => navigate("/verify-otp", { state: { email } }), 1400);
-    } catch (err) {
-      setError("Signup failed. Please try again.");
+      return;
     }
-  };
+
+    if (!res.ok) {
+      setError(data.error || "Signup failed");
+      return;
+    }
+
+    setSuccess("OTP code sent to your email. Please verify to complete sign up.");
+    setTimeout(() => navigate("/verify-otp", { state: { email } }), 1400);
+  } catch (err) {
+    setError("Signup failed. Please try again.");
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-theme-n-8 px-4 py-8" style={{ background: "linear-gradient(120deg, #181D2F 0%, #181A20 100%)" }}>

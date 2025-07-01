@@ -12,28 +12,35 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
-    try {
-      const res = await fetch(`${MAIN_API_BASE}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Login failed");
-        return;
-      }
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-      }
-      localStorage.setItem("user", JSON.stringify(data.user));
-      navigate(-1); // Go back to previous page like Binance
-    } catch (err) {
-      setError("Login failed. Please try again.");
+  e.preventDefault();
+  setError("");
+  try {
+    const res = await fetch(`${MAIN_API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+
+    // Handle NOT verified: redirect to OTP page with email pre-filled
+    if (res.status === 403 && data.error && data.error.toLowerCase().includes("verify your email")) {
+      navigate("/verify-otp", { state: { email } });
+      return;
     }
-  };
+
+    if (!res.ok) {
+      setError(data.error || "Login failed");
+      return;
+    }
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+    }
+    localStorage.setItem("user", JSON.stringify(data.user));
+    navigate(-1); // Go back to previous page like Binance
+  } catch (err) {
+    setError("Login failed. Please try again.");
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#15192a] px-4 py-8">
