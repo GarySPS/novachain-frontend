@@ -174,6 +174,11 @@ export default function ProfilePage() {
   async function handleChangePassword(e) {
     e.preventDefault();
     setPwErr("");
+    console.log(
+    "Current:", pwCurrent.current.value,
+    "New:", pw1.current.value,
+    "Confirm:", pw2.current.value
+  );
     if (!pwCurrent.current.value || !pw1.current.value || !pw2.current.value)
       return setPwErr("Fill all fields.");
     if (pw1.current.value !== pw2.current.value)
