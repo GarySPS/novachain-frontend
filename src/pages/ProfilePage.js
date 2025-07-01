@@ -239,8 +239,12 @@ export default function ProfilePage() {
         <Card className="md:col-span-2 flex flex-col items-center bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] border-0 shadow-lg rounded-2xl py-10 px-8">
           <div className="relative flex flex-col items-center">
             <img
-              src={user.avatar ? `${MAIN_API_BASE}${user.avatar}` : "/logo192_new.png"}
-              alt="Profile"
+  src={
+    user.avatar && user.avatar.startsWith("/uploads/")
+      ? `${MAIN_API_BASE}${user.avatar}?t=${user.avatar}`  // prevent cache after change
+      : "/logo192_new.png"
+  }
+  alt="Profile"
               className="rounded-full border-4 border-yellow-400 shadow-2xl object-cover bg-white"
               style={{ width: 130, height: 130, objectFit: "cover", backgroundColor: "#fff", boxShadow: "0 2px 20px #ffd70044" }}
               onError={e => {
@@ -547,21 +551,21 @@ export default function ProfilePage() {
   <h3 className="text-title-2 font-semibold mb-4">Change Profile Picture</h3>
   <div className="flex flex-col items-center gap-4">
     <img
-      src={
-        avatarFile
-          ? URL.createObjectURL(avatarFile)
-          : user.avatar
-          ? `${MAIN_API_BASE}${user.avatar}`
-          : "/logo192_new.png"
-      }
-      alt="Profile Preview"
-      className="rounded-full border-4 border-yellow-400 shadow-xl object-cover bg-white"
-      style={{ width: 120, height: 120, objectFit: "cover" }}
-      onError={e => {
-        e.target.onerror = null;
-        e.target.src = "/logo192_new.png";
-      }}
-    />
+  src={
+    avatarFile
+      ? URL.createObjectURL(avatarFile)
+      : (user.avatar && user.avatar.startsWith("/uploads/"))
+        ? `${MAIN_API_BASE}${user.avatar}?t=${user.avatar}`
+        : "/logo192_new.png"
+  }
+  alt="Profile Preview"
+  className="rounded-full border-4 border-yellow-400 shadow-xl object-cover bg-white"
+  style={{ width: 120, height: 120, objectFit: "cover" }}
+  onError={e => {
+    e.target.onerror = null;
+    e.target.src = "/logo192_new.png";
+  }}
+/>
     <input
   type="file"
   accept="image/*"
