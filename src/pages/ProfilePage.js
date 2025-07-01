@@ -543,6 +543,53 @@ export default function ProfilePage() {
     </div>
   </form>
 </Modal>
+<Modal visible={showEditPic} onClose={() => setShowEditPic(false)}>
+  <h3 className="text-title-2 font-semibold mb-4">Change Profile Picture</h3>
+  <div className="flex flex-col items-center gap-4">
+    <img
+      src={
+        avatarFile
+          ? URL.createObjectURL(avatarFile)
+          : user.avatar
+          ? `${MAIN_API_BASE}${user.avatar}`
+          : "/logo192_new.png"
+      }
+      alt="Profile Preview"
+      className="rounded-full border-4 border-yellow-400 shadow-xl object-cover bg-white"
+      style={{ width: 120, height: 120, objectFit: "cover" }}
+      onError={e => {
+        e.target.onerror = null;
+        e.target.src = "/logo192_new.png";
+      }}
+    />
+    <input
+      type="file"
+      accept="image/*"
+      className="hidden"
+      id="profile-pic-input"
+      onChange={handleAvatarChange}
+    />
+    <label htmlFor="profile-pic-input">
+      <button className="btn-primary mt-2">Choose New Photo</button>
+    </label>
+    <div className="flex flex-row gap-4 mt-4">
+      <button
+        className="btn-primary"
+        onClick={saveAvatar}
+        disabled={!avatarFile}
+      >
+        Save
+      </button>
+      <button
+        className="btn-secondary"
+        onClick={() => setShowEditPic(false)}
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</Modal>
+
     </div>
   );
 }
