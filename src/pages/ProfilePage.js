@@ -180,12 +180,12 @@ export default function ProfilePage() {
   // ...your checks...
   try {
     const token = localStorage.getItem("token");
-    await axios.post(`${MAIN_API_BASE}/profile/password`, {
-      currentPassword: pwCurrent.current.value,
-      newPassword: pw1.current.value,
-    }, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    await axios.post(`${MAIN_API_BASE}/profile/change-password`, {
+  old_password: pwCurrent.current.value,
+  new_password: pw1.current.value,
+}, {
+  headers: { Authorization: `Bearer ${token}` }
+});
 
     pwCurrent.current.value = "";
     pw1.current.value = "";
