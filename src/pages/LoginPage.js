@@ -146,6 +146,23 @@ export default function LoginPage() {
   </Link>
 </div>
 
+{/* Customer Support Button */}
+<div className="mt-4 flex justify-center w-full">
+  <a
+    href="https://t.me/novachainsingapore"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="w-full px-6 py-3 rounded-xl font-bold text-lg text-white bg-black hover:bg-[#222] shadow-md transition-all duration-150 text-center"
+    style={{
+      maxWidth: 360,
+      boxShadow: "0 2px 20px #0002"
+    }}
+  >
+    <span role="img" aria-label="support" className="mr-2">💬</span>
+    Contact Support
+  </a>
+</div>
+
       </Card>
     
           {/* Logo Glow Animation */}
