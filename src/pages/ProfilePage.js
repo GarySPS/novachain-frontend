@@ -165,6 +165,7 @@ export default function ProfilePage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUser(updated.data.user);
+      setAvatarFile(null);
       setAvatarUrl(updated.data.user.avatar || "/logo192_new.png");
       // Show success to user
       alert("Profile picture updated successfully!");
@@ -242,19 +243,21 @@ export default function ProfilePage() {
         <Card className="md:col-span-2 flex flex-col items-center bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] border-0 shadow-lg rounded-2xl py-10 px-8">
           <div className="relative flex flex-col items-center">
             <img
-      src={
-           user.avatar && user.avatar.startsWith("/uploads/")
-          ? `${MAIN_API_BASE}${user.avatar}?t=${user.avatar}` // always reloads after update!
-          : "/logo192_new.png"
-          }
-          alt="Profile"
-         className="rounded-full border-4 border-yellow-400 shadow-2xl object-cover bg-white"
-         style={{ width: 130, height: 130, objectFit: "cover", backgroundColor: "#fff", boxShadow: "0 2px 20px #ffd70044" }}
-         onError={e => {
-        e.target.onerror = null;
-        e.target.src = "/logo192_new.png";
-        }}
-      />
+  src={
+    avatarFile
+      ? URL.createObjectURL(avatarFile)
+      : (user.avatar && user.avatar.startsWith("/uploads/"))
+        ? `${MAIN_API_BASE}${user.avatar}?t=${user.avatar}`
+        : "/logo192_new.png"
+  }
+  alt="Profile Preview"
+  className="rounded-full border-4 border-yellow-400 shadow-xl object-cover bg-white"
+  style={{ width: 120, height: 120, objectFit: "cover" }}
+  onError={e => {
+    e.target.onerror = null;
+    e.target.src = "/logo192_new.png";
+  }}
+/>
 
             <div className="mt-4 text-xs tracking-wider text-gray-400 font-mono select-none">
               {user.id ? `NC-${String(user.id).padStart(7, "0")}` : "NC-USER"}
