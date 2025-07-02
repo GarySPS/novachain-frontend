@@ -36,7 +36,7 @@ export default function LoginPage() {
       localStorage.setItem("token", data.token);
     }
     localStorage.setItem("user", JSON.stringify(data.user));
-    navigate(-1); // Go back to previous page like Binance
+    navigate('/profile'); // or '/dashboard'
   } catch (err) {
     setError("Login failed. Please try again.");
   }
