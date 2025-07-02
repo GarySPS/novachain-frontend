@@ -35,6 +35,9 @@ export default function ProfilePage() {
   const [authChecked, setAuthChecked] = useState(false);
   const pwCurrent = useRef("");
   const [pwSuccess, setPwSuccess] = useState("");
+  const [kycSelfiePreview, setKycSelfiePreview] = useState(null);
+const [kycIdPreview, setKycIdPreview] = useState(null);
+
 
 
   // Fetch balance history for the chart
@@ -418,15 +421,21 @@ export default function ProfilePage() {
                       id="selfie"
                       className="hidden"
                       disabled={kycStatus === "pending" || kycStatus === "approved"}
-                      onChange={e => { if (e.target.files[0]) setKycSelfie(e.target.files[0]); }}
+                      onChange={e => {
+  const file = e.target.files[0];
+  if (file) {
+    setKycSelfie(file);
+    setKycSelfiePreview(URL.createObjectURL(file));
+  }
+}}
                     />
                     <label htmlFor="selfie" className="cursor-pointer flex flex-col items-center">
                       <Icon name="upload-cloud" className="w-8 h-8 text-theme-primary mb-1" />
                       <span className="text-sm text-theme-primary font-semibold">Click to upload</span>
                     </label>
-                    {kycSelfie && (
-                      <img
-                        src={URL.createObjectURL(kycSelfie)}
+                    {kycSelfiePreview && (
+  <img
+    src={kycSelfiePreview} // ✅ now stable
                         alt="Selfie Preview"
                         className="rounded-lg mt-3 border-2 border-green-400 shadow"
                         style={{ maxWidth: 90 }}
@@ -448,15 +457,21 @@ export default function ProfilePage() {
                       id="id-card"
                       className="hidden"
                       disabled={kycStatus === "pending" || kycStatus === "approved"}
-                      onChange={e => { if (e.target.files[0]) setKycId(e.target.files[0]); }}
+                      onChange={e => {
+  const file = e.target.files[0];
+  if (file) {
+    setKycId(file);
+    setKycIdPreview(URL.createObjectURL(file));
+  }
+}}
                     />
                     <label htmlFor="id-card" className="cursor-pointer flex flex-col items-center">
                       <Icon name="upload-cloud" className="w-8 h-8 text-yellow-500 mb-1" />
                       <span className="text-sm text-yellow-500 font-semibold">Click to upload</span>
                     </label>
-                    {kycId && (
-                      <img
-                        src={URL.createObjectURL(kycId)}
+                    {kycIdPreview && (
+  <img
+    src={kycIdPreview} // ✅ now stable
                         alt="ID Preview"
                         className="rounded-lg mt-3 border-2 border-yellow-400 shadow"
                         style={{ maxWidth: 90 }}
