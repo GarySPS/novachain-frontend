@@ -10,7 +10,7 @@ import SignUpPage from "./pages/SignUpPage";
 import VerifyOTPPage from "./pages/VerifyOTPPage";
 import AboutUs from "./pages/AboutUs";
 import NavBar from './components/navbar';
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ForgotPasswordPage from "./components/ForgotPasswordPage";
 
 
 function AppShell() {
