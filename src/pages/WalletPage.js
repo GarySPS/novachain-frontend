@@ -10,6 +10,15 @@ import Modal from "../components/modal";
 import Icon from "../components/icon";
 import { useNavigate } from "react-router-dom";
 
+// --- Helper to get signed URL from Supabase if needed ---
+async function getSignedUrl(path, bucket) {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  const filename = path.split('/').pop();
+  // Use MAIN_API_BASE for user deposit/withdraw screenshots
+  const res = await axios.get(`${MAIN_API_BASE}/upload/${bucket}/signed-url/${filename}`);
+  return res.data.url;
+}
 
 const coinSymbols = ["USDT", "BTC", "ETH", "SOL", "XRP", "TON"];
 const depositNetworks = {
@@ -44,36 +53,70 @@ export default function WalletPage() {
   const [fileLocked, setFileLocked] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
+  const [historyScreenshots, setHistoryScreenshots] = useState({});
 
-// 1. Parse the token and set userId
-useEffect(() => {
-  if (token) {
-    try {
-      const decoded = jwtDecode(token);
-      setUserId(decoded.id);
-    } catch {
+  // --- HISTORY LOGIC ---  (!!! PLACED HERE, BEFORE useEffect !!!)
+  const userDepositHistory = depositHistory.filter(d => userId && Number(d.user_id) === Number(userId));
+  const userWithdrawHistory = withdrawHistory.filter(w => userId && Number(w.user_id) === Number(userId));
+  const allHistory = [
+    ...userDepositHistory.map(d => ({ ...d, type: "Deposit" })),
+    ...userWithdrawHistory.map(w => ({ ...w, type: "Withdraw" })),
+  ].sort((a, b) =>
+    new Date(b.created_at || b.date) - new Date(a.created_at || a.date)
+  );
+
+  // Resolve screenshot URLs for deposit/withdraw history
+  useEffect(() => {
+    async function fetchHistoryScreenshots() {
+      let shots = {};
+      for (let row of allHistory) {
+        if (row.screenshot) {
+          // Screenshot can be "deposits/xyz.png" (Supabase), or "/uploads/..." (local)
+          if (row.screenshot.startsWith("deposits/")) {
+            shots[row.id] = await getSignedUrl(row.screenshot, "deposits");
+          } else if (row.screenshot.startsWith("/uploads/")) {
+            shots[row.id] = `${MAIN_API_BASE}${row.screenshot}`;
+          } else if (row.screenshot.startsWith("http")) {
+            shots[row.id] = row.screenshot;
+          }
+        }
+      }
+      setHistoryScreenshots(shots);
+    }
+    fetchHistoryScreenshots();
+    // Only run when allHistory changes
+    // eslint-disable-next-line
+  }, [JSON.stringify(allHistory)]);
+
+  // 1. Parse the token and set userId
+  useEffect(() => {
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setUserId(decoded.id);
+      } catch {
+        setUserId(null);
+      }
+    } else {
       setUserId(null);
     }
-  } else {
-    setUserId(null);
-  }
-  setAuthChecked(true); // Mark that we have checked authentication
-}, [token]);
+    setAuthChecked(true); // Mark that we have checked authentication
+  }, [token]);
 
-// 2. Only redirect guests AFTER authChecked is true
-useEffect(() => {
-  if (!authChecked) return;
-  if (!token || token === "undefined" || !userId || userId === "undefined") {
-    setIsGuest(true); // Soft guest fallback
-  }
-}, [authChecked, token, userId]);
+  // 2. Only redirect guests AFTER authChecked is true
+  useEffect(() => {
+    if (!authChecked) return;
+    if (!token || token === "undefined" || !userId || userId === "undefined") {
+      setIsGuest(true); // Soft guest fallback
+    }
+  }, [authChecked, token, userId]);
 
-useEffect(() => {
-  if (!authChecked) return;
-  if (isGuest) {
-    navigate("/login", { replace: true });
-  }
-}, [authChecked, isGuest]);
+  useEffect(() => {
+    if (!authChecked) return;
+    if (isGuest) {
+      navigate("/login", { replace: true });
+    }
+  }, [authChecked, isGuest]);
 
   // Use static prices for now
   useEffect(() => {
@@ -107,7 +150,6 @@ useEffect(() => {
       });
   }, []);
 
-  
   useEffect(() => {
     if (!token || !userId) return;
     fetchBalances();
@@ -191,7 +233,7 @@ useEffect(() => {
       setDepositScreenshot(null);
       setFileLocked(false);
 
-        setTimeout(() => {
+      setTimeout(() => {
         setToast("");
         closeModal();
       }, 1600);
@@ -267,24 +309,11 @@ useEffect(() => {
     setResult("");
   };
 
-  // --- HISTORY LOGIC ---
-  const userDepositHistory = depositHistory.filter(d => userId && Number(d.user_id) === Number(userId));
-  const userWithdrawHistory = withdrawHistory.filter(w => userId && Number(w.user_id) === Number(userId));
-  const allHistory = [
-    ...userDepositHistory.map(d => ({ ...d, type: "Deposit" })),
-    ...userWithdrawHistory.map(w => ({ ...w, type: "Withdraw" })),
-  ].sort((a, b) =>
-    new Date(b.created_at || b.date) - new Date(a.created_at || a.date)
-  );
-
   // --- MAIN RENDER ---
 
+  if (!authChecked) return null;
+  if (isGuest) return null;
 
-if (!authChecked) return null;
-if (isGuest) return null;
-
-  
-  // --- MAIN RENDER ---
   return (
     <div className="min-h-screen py-10 px-2 flex flex-col items-center" style={{ background: "none" }}>
       <div className="w-full max-w-6xl flex flex-col md:flex-row gap-8">
@@ -317,10 +346,11 @@ if (isGuest) return null;
           <table className="w-full">
             <thead>
               <tr className="text-left text-theme-tertiary border-b border-theme-stroke">
+                <th className="py-3 px-2">Type</th>
+                <th className="py-3 px-2">Amount</th>
                 <th className="py-3 px-2">Coin</th>
-                <th className="py-3 px-2">Balance</th>
-                <th className="py-3 px-2">Value (USD)</th>
-                <th className="py-3 px-2">Actions</th>
+                <th className="py-3 px-2">Date</th>
+                <th className="py-3 px-2">Proof</th>
               </tr>
             </thead>
             <tbody>
@@ -455,58 +485,58 @@ if (isGuest) return null;
           </select>
           
           <div className="flex flex-col items-center justify-center">
-  <div
-    className="relative w-full max-w-[140px] aspect-square mb-3"
-    style={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      overflow: "hidden",
-      borderRadius: "12px",
-      border: "1.5px solid #ddd",
-      background: "#fff",
-    }}
-  >
-    {walletQRCodes[selectedDepositCoin] ? (
-      <img
-        src={
-          walletQRCodes[selectedDepositCoin].startsWith("/uploads")
-            ? `${ADMIN_API_BASE}${walletQRCodes[selectedDepositCoin]}`
-            : walletQRCodes[selectedDepositCoin]
-        }
-        alt="Deposit QR"
-        className="max-w-full max-h-full object-contain p-1"
-        style={{ display: "block" }}
-        onError={(e) => {
-          e.target.style.display = "none";
-          const fallback = e.target.nextSibling;
-          if (fallback) fallback.style.display = "block";
-        }}
-      />
-    ) : null}
-    <div
-      style={{
-        display: walletQRCodes[selectedDepositCoin] ? "none" : "block",
-        width: "100%",
-        height: "100%",
-        position: "absolute",
-        inset: 0,
-        padding: "8px",
-      }}
-    >
-      <QRCodeCanvas
-        value={walletAddresses[selectedDepositCoin] || ""}
-        size={120}
-        bgColor="#ffffff"
-        fgColor="#000000"
-        style={{
-          width: "100%",
-          height: "100%",
-        }}
-      />
-    </div>
-  </div>
-</div>
+            <div
+              className="relative w-full max-w-[140px] aspect-square mb-3"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+                borderRadius: "12px",
+                border: "1.5px solid #ddd",
+                background: "#fff",
+              }}
+            >
+              {walletQRCodes[selectedDepositCoin] ? (
+                <img
+                  src={
+                    walletQRCodes[selectedDepositCoin].startsWith("/uploads")
+                      ? `${ADMIN_API_BASE}${walletQRCodes[selectedDepositCoin]}`
+                      : walletQRCodes[selectedDepositCoin]
+                  }
+                  alt="Deposit QR"
+                  className="max-w-full max-h-full object-contain p-1"
+                  style={{ display: "block" }}
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                    const fallback = e.target.nextSibling;
+                    if (fallback) fallback.style.display = "block";
+                  }}
+                />
+              ) : null}
+              <div
+                style={{
+                  display: walletQRCodes[selectedDepositCoin] ? "none" : "block",
+                  width: "100%",
+                  height: "100%",
+                  position: "absolute",
+                  inset: 0,
+                  padding: "8px",
+                }}
+              >
+                <QRCodeCanvas
+                  value={walletAddresses[selectedDepositCoin] || ""}
+                  size={120}
+                  bgColor="#ffffff"
+                  fgColor="#000000"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                  }}
+                />
+              </div>
+            </div>
+          </div>
 
           <span className="text-theme-tertiary font-medium text-lg">
             Network: {depositNetworks[selectedDepositCoin]}
@@ -540,31 +570,29 @@ if (isGuest) return null;
             icon="dollar-sign"
           />
           <div className="w-full">
-  <label className="block text-theme-tertiary font-medium mb-1">
-    Upload Screenshot
-  </label>
-  <div className="relative">
-    <input
-      type="file"
-      accept="image/*"
-      ref={fileInputRef}
-      onChange={e => {
-        setDepositScreenshot(e.target.files[0]);
-        setFileLocked(true);
-      }}
-      required
-      className="absolute inset-0 opacity-0 z-50 cursor-pointer"
-      disabled={fileLocked}
-    />
-    <div className={`truncate w-full text-sm text-white font-semibold text-center px-4 py-2 rounded-full ${
-      fileLocked ? "bg-gray-500 cursor-not-allowed" : "bg-theme-primary hover:bg-theme-primary/90 cursor-pointer"
-    }`}>
-      {fileLocked ? "Screenshot Uploaded" : "Choose File"}
-    </div>
-  </div>
-</div>
-
-
+            <label className="block text-theme-tertiary font-medium mb-1">
+              Upload Screenshot
+            </label>
+            <div className="relative">
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={e => {
+                  setDepositScreenshot(e.target.files[0]);
+                  setFileLocked(true);
+                }}
+                required
+                className="absolute inset-0 opacity-0 z-50 cursor-pointer"
+                disabled={fileLocked}
+              />
+              <div className={`truncate w-full text-sm text-white font-semibold text-center px-4 py-2 rounded-full ${
+                fileLocked ? "bg-gray-500 cursor-not-allowed" : "bg-theme-primary hover:bg-theme-primary/90 cursor-pointer"
+              }`}>
+                {fileLocked ? "Screenshot Uploaded" : "Choose File"}
+              </div>
+            </div>
+          </div>
           <div className="text-caption-1 text-theme-tertiary bg-theme-on-surface-2 rounded px-3 py-2">
             For your safety, please submit your deposit screenshot.
             <span className="block text-theme-yellow">
@@ -649,6 +677,7 @@ if (isGuest) return null;
                 <th className="py-3 px-2">Amount</th>
                 <th className="py-3 px-2">Coin</th>
                 <th className="py-3 px-2">Date</th>
+                <th className="py-3 px-2">Proof</th>
               </tr>
             </thead>
             <tbody>
@@ -681,6 +710,17 @@ if (isGuest) return null;
                     {row.created_at
                       ? new Date(row.created_at).toLocaleString()
                       : (row.date || "--")}
+                  </td>
+                  <td className="py-3 px-2">
+                    {historyScreenshots[row.id] && (
+                      <button
+                        className="btn-stroke px-3 py-1 rounded"
+                        onClick={() => window.open(historyScreenshots[row.id], "_blank")}
+                        title="View Screenshot"
+                      >
+                        <Icon name="image" className="w-5 h-5" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

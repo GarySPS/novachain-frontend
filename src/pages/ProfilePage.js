@@ -11,6 +11,15 @@ import Chart from "../components/chart";
 import AssetsDonut from "../components/assetsdonut";
 import { Loader2 } from "lucide-react";
 
+// --- Helper to get signed URL from Supabase if needed ---
+async function getSignedUrl(path, bucket) {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  const filename = path.split('/').pop();
+  const res = await axios.get(`${MAIN_API_BASE}/upload/${bucket}/signed-url/${filename}`);
+  return res.data.url;
+}
+
 export default function ProfilePage() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -23,7 +32,7 @@ export default function ProfilePage() {
   const [kycSubmitted, setKycSubmitted] = useState(false);
   const [showEditPic, setShowEditPic] = useState(false);
   const [showChangePw, setShowChangePw] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("/logo192_new.png");
   const [avatarFile, setAvatarFile] = useState(null);
   const pw1 = useRef("");
   const pw2 = useRef("");
@@ -36,9 +45,7 @@ export default function ProfilePage() {
   const pwCurrent = useRef("");
   const [pwSuccess, setPwSuccess] = useState("");
   const [kycSelfiePreview, setKycSelfiePreview] = useState(null);
-const [kycIdPreview, setKycIdPreview] = useState(null);
-
-
+  const [kycIdPreview, setKycIdPreview] = useState(null);
 
   // Fetch balance history for the chart
   useEffect(() => {
@@ -101,11 +108,7 @@ const [kycIdPreview, setKycIdPreview] = useState(null);
         const headers = { Authorization: `Bearer ${token}` };
         const res = await axios.get(`${MAIN_API_BASE}/profile`, { headers });
         setUser(res.data.user);
-        setAvatarUrl(
-          res.data.user.avatar && res.data.user.avatar.startsWith("/uploads/")
-            ? res.data.user.avatar
-            : "/logo192.png"
-        );
+        // No need to setAvatarUrl here! See next effect
         const balRes = await axios.get(`${MAIN_API_BASE}/balance`, { headers });
         setBalance(balRes.data.total_usd);
         setAssets(balRes.data.assets);
@@ -119,6 +122,30 @@ const [kycIdPreview, setKycIdPreview] = useState(null);
     fetchProfile();
   }, [navigate]);
 
+  // Handle Supabase or uploads avatar fetch
+  useEffect(() => {
+    async function fetchAvatarUrl() {
+      if (!user || !user.avatar) {
+        setAvatarUrl("/logo192_new.png");
+        return;
+      }
+      if (user.avatar.startsWith("profile/")) {
+        // Supabase storage: get signed URL
+        const url = await getSignedUrl(user.avatar, "profile");
+        setAvatarUrl(url);
+      } else if (user.avatar.startsWith("/uploads/")) {
+  // Remove '/api' if present in MAIN_API_BASE for image URL
+  setAvatarUrl(`${MAIN_API_BASE.replace(/\/api$/, "")}${user.avatar}`);
+}
+ else if (user.avatar.startsWith("http")) {
+        setAvatarUrl(user.avatar);
+      } else {
+        setAvatarUrl("/logo192_new.png");
+      }
+    }
+    fetchAvatarUrl();
+  }, [user]);
+
   function handleLogout() {
     localStorage.removeItem("token");
     navigate("/login");
@@ -129,15 +156,27 @@ const [kycIdPreview, setKycIdPreview] = useState(null);
     if (!kycSelfie || !kycId) return;
     try {
       setKycSubmitted(true);
+      // Upload selfie
+      const selfieForm = new FormData();
+      selfieForm.append("file", kycSelfie);
+      const selfieRes = await axios.post(`${MAIN_API_BASE}/upload/kyc`, selfieForm, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      const selfiePath = selfieRes.data.path;
+      // Upload ID card
+      const idForm = new FormData();
+      idForm.append("file", kycId);
+      const idRes = await axios.post(`${MAIN_API_BASE}/upload/kyc`, idForm, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      const idPath = idRes.data.path;
+      // Submit KYC with file paths (adapt field names as your backend expects)
       const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append("selfie", kycSelfie);
-      formData.append("id_card", kycId);
-      await axios.post(`${MAIN_API_BASE}/kyc`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data"
-        }
+      await axios.post(`${MAIN_API_BASE}/kyc`, {
+        selfie: selfiePath,
+        id_card: idPath,
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       setKycStatus("pending");
     } catch (err) {
@@ -153,64 +192,68 @@ const [kycIdPreview, setKycIdPreview] = useState(null);
     setAvatarUrl(URL.createObjectURL(file));
   }
 
-  async function saveAvatar() {
+   async function saveAvatar() {
   if (!avatarFile) return;
   try {
-    const token = localStorage.getItem("token");
+    // 1. Upload avatar image (must send JWT here!)
     const formData = new FormData();
     formData.append("avatar", avatarFile);
-    const response = await axios.post(`${MAIN_API_BASE}/profile/avatar`, formData, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (response.data.avatar) {
-      // Refetch user to update avatar in card!
+    const token = localStorage.getItem("token");
+    const uploadRes = await axios.post(
+      `${MAIN_API_BASE}/profile/avatar`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        }
+      }
+    );
+
+    // 2. The backend already sets the avatar and returns the path
+    if (uploadRes.data && uploadRes.data.avatar) {
+      // Refresh user info
       const updated = await axios.get(`${MAIN_API_BASE}/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUser(updated.data.user);
       setAvatarFile(null);
-      setAvatarUrl(updated.data.user.avatar || "/logo192_new.png");
-      // Show success to user
       alert("Profile picture updated successfully!");
     }
     setShowEditPic(false);
-  } catch {
+  } catch (err) {
     alert("Failed to update avatar.");
   }
 }
 
   async function handleChangePassword(e) {
-  e.preventDefault();
-  setPwErr("");
-  setPwSuccess("");
-
-  // ADD THIS CHECK:
-  if (pw1.current.value !== pw2.current.value) {
-    setPwErr("New passwords do not match.");
-    return;
+    e.preventDefault();
+    setPwErr("");
+    setPwSuccess("");
+    if (pw1.current.value !== pw2.current.value) {
+      setPwErr("New passwords do not match.");
+      return;
+    }
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(`${MAIN_API_BASE}/profile/change-password`, {
+        old_password: pwCurrent.current.value,
+        new_password: pw1.current.value,
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      pwCurrent.current.value = "";
+      pw1.current.value = "";
+      pw2.current.value = "";
+      setPwSuccess("Password changed successfully!");
+      setTimeout(() => {
+        setPwSuccess("");
+        setShowChangePw(false);
+      }, 1800);
+    } catch (err) {
+      setPwErr("Failed to change password. Make sure your current password is correct.");
+    }
   }
-
-  try {
-    const token = localStorage.getItem("token");
-    await axios.post(`${MAIN_API_BASE}/profile/change-password`, {
-      old_password: pwCurrent.current.value,
-      new_password: pw1.current.value,
-    }, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    pwCurrent.current.value = "";
-    pw1.current.value = "";
-    pw2.current.value = "";
-    setPwSuccess("Password changed successfully!");
-    setTimeout(() => {
-      setPwSuccess("");
-      setShowChangePw(false);
-    }, 1800);
-  } catch (err) {
-    setPwErr("Failed to change password. Make sure your current password is correct.");
-  }
-}
 
   // ----------------------------------------------------------------------
 
@@ -246,22 +289,15 @@ const [kycIdPreview, setKycIdPreview] = useState(null);
         <Card className="md:col-span-2 flex flex-col items-center bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] border-0 shadow-lg rounded-2xl py-10 px-8">
           <div className="relative flex flex-col items-center">
             <img
-  src={
-    avatarFile
-      ? URL.createObjectURL(avatarFile)
-      : (user.avatar && user.avatar.startsWith("/uploads/"))
-        ? `${MAIN_API_BASE}${user.avatar}?t=${user.avatar}`
-        : "/logo192_new.png"
-  }
-  alt="Profile Preview"
-  className="rounded-full border-4 border-yellow-400 shadow-xl object-cover bg-white"
-  style={{ width: 120, height: 120, objectFit: "cover" }}
-  onError={e => {
-    e.target.onerror = null;
-    e.target.src = "/logo192_new.png";
-  }}
-/>
-
+              src={avatarFile ? URL.createObjectURL(avatarFile) : avatarUrl}
+              alt="Profile Preview"
+              className="rounded-full border-4 border-yellow-400 shadow-xl object-cover bg-white"
+              style={{ width: 120, height: 120, objectFit: "cover" }}
+              onError={e => {
+                e.target.onerror = null;
+                e.target.src = "/logo192_new.png";
+              }}
+            />
             <div className="mt-4 text-xs tracking-wider text-gray-400 font-mono select-none">
               {user.id ? `NC-${String(user.id).padStart(7, "0")}` : "NC-USER"}
             </div>
@@ -422,20 +458,20 @@ const [kycIdPreview, setKycIdPreview] = useState(null);
                       className="hidden"
                       disabled={kycStatus === "pending" || kycStatus === "approved"}
                       onChange={e => {
-  const file = e.target.files[0];
-  if (file) {
-    setKycSelfie(file);
-    setKycSelfiePreview(URL.createObjectURL(file));
-  }
-}}
+                        const file = e.target.files[0];
+                        if (file) {
+                          setKycSelfie(file);
+                          setKycSelfiePreview(URL.createObjectURL(file));
+                        }
+                      }}
                     />
                     <label htmlFor="selfie" className="cursor-pointer flex flex-col items-center">
                       <Icon name="upload-cloud" className="w-8 h-8 text-theme-primary mb-1" />
                       <span className="text-sm text-theme-primary font-semibold">Click to upload</span>
                     </label>
                     {kycSelfiePreview && (
-  <img
-    src={kycSelfiePreview} // ✅ now stable
+                      <img
+                        src={kycSelfiePreview}
                         alt="Selfie Preview"
                         className="rounded-lg mt-3 border-2 border-green-400 shadow"
                         style={{ maxWidth: 90 }}
@@ -458,20 +494,20 @@ const [kycIdPreview, setKycIdPreview] = useState(null);
                       className="hidden"
                       disabled={kycStatus === "pending" || kycStatus === "approved"}
                       onChange={e => {
-  const file = e.target.files[0];
-  if (file) {
-    setKycId(file);
-    setKycIdPreview(URL.createObjectURL(file));
-  }
-}}
+                        const file = e.target.files[0];
+                        if (file) {
+                          setKycId(file);
+                          setKycIdPreview(URL.createObjectURL(file));
+                        }
+                      }}
                     />
                     <label htmlFor="id-card" className="cursor-pointer flex flex-col items-center">
                       <Icon name="upload-cloud" className="w-8 h-8 text-yellow-500 mb-1" />
                       <span className="text-sm text-yellow-500 font-semibold">Click to upload</span>
                     </label>
                     {kycIdPreview && (
-  <img
-    src={kycIdPreview} // ✅ now stable
+                      <img
+                        src={kycIdPreview}
                         alt="ID Preview"
                         className="rounded-lg mt-3 border-2 border-yellow-400 shadow"
                         style={{ maxWidth: 90 }}
@@ -552,72 +588,65 @@ const [kycIdPreview, setKycIdPreview] = useState(null);
       </div>
       {/* Modals */}
       <Modal visible={showChangePw} onClose={() => setShowChangePw(false)}>
-  <h3 className="text-title-2 font-semibold mb-4">Change Password</h3>
-  <form onSubmit={handleChangePassword} className="space-y-3">
-    <Field type="password" placeholder="Current Password" inputRef={pwCurrent} />
-    <Field type="password" placeholder="New Password" inputRef={pw1} />
-    <Field type="password" placeholder="Confirm New Password" inputRef={pw2} />
-    {pwErr && <div className="text-theme-red mb-2">{pwErr}</div>}
-    {pwSuccess && (
-      <div className="bg-green-100 border border-green-300 text-green-700 rounded-lg px-4 py-2 text-center mb-2 transition">
-        {pwSuccess}
-      </div>
-    )}
-    <div className="flex justify-center gap-4 mt-4">
-      <button type="submit" className="btn-primary" disabled={!!pwSuccess}>Save</button>
-      <button type="button" onClick={() => setShowChangePw(false)} className="btn-secondary">Cancel</button>
-    </div>
-  </form>
-</Modal>
-<Modal visible={showEditPic} onClose={() => setShowEditPic(false)}>
-  <h3 className="text-title-2 font-semibold mb-4">Change Profile Picture</h3>
-  <div className="flex flex-col items-center gap-4">
-    <img
-  src={
-    avatarFile
-      ? URL.createObjectURL(avatarFile)
-      : (user.avatar && user.avatar.startsWith("/uploads/"))
-        ? `${MAIN_API_BASE}${user.avatar}?t=${user.avatar}`
-        : "/logo192_new.png"
-  }
-  alt="Profile Preview"
-  className="rounded-full border-4 border-yellow-400 shadow-xl object-cover bg-white"
-  style={{ width: 120, height: 120, objectFit: "cover" }}
-  onError={e => {
-    e.target.onerror = null;
-    e.target.src = "/logo192_new.png";
-  }}
-/>
-    <input
-  type="file"
-  accept="image/*"
-  className="hidden"
-  id="profile-pic-input"
-  onChange={handleAvatarChange}
-/>
-<label htmlFor="profile-pic-input" className="w-full">
-  <span className="btn-primary mt-2 block text-center cursor-pointer">
-    Choose New Photo
-  </span>
-</label>
-    <div className="flex flex-row gap-4 mt-4">
-      <button
-        className="btn-primary"
-        onClick={saveAvatar}
-        disabled={!avatarFile}
-      >
-        Save
-      </button>
-      <button
-        className="btn-secondary"
-        onClick={() => setShowEditPic(false)}
-      >
-        Cancel
-      </button>
-    </div>
-  </div>
-</Modal>
-
+        <h3 className="text-title-2 font-semibold mb-4">Change Password</h3>
+        <form onSubmit={handleChangePassword} className="space-y-3">
+          <Field type="password" placeholder="Current Password" inputRef={pwCurrent} />
+          <Field type="password" placeholder="New Password" inputRef={pw1} />
+          <Field type="password" placeholder="Confirm New Password" inputRef={pw2} />
+          {pwErr && <div className="text-theme-red mb-2">{pwErr}</div>}
+          {pwSuccess && (
+            <div className="bg-green-100 border border-green-300 text-green-700 rounded-lg px-4 py-2 text-center mb-2 transition">
+              {pwSuccess}
+            </div>
+          )}
+          <div className="flex justify-center gap-4 mt-4">
+            <button type="submit" className="btn-primary" disabled={!!pwSuccess}>Save</button>
+            <button type="button" onClick={() => setShowChangePw(false)} className="btn-secondary">Cancel</button>
+          </div>
+        </form>
+      </Modal>
+      <Modal visible={showEditPic} onClose={() => setShowEditPic(false)}>
+        <h3 className="text-title-2 font-semibold mb-4">Change Profile Picture</h3>
+        <div className="flex flex-col items-center gap-4">
+          <img
+            src={avatarFile ? URL.createObjectURL(avatarFile) : avatarUrl}
+            alt="Profile Preview"
+            className="rounded-full border-4 border-yellow-400 shadow-xl object-cover bg-white"
+            style={{ width: 120, height: 120, objectFit: "cover" }}
+            onError={e => {
+              e.target.onerror = null;
+              e.target.src = "/logo192_new.png";
+            }}
+          />
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            id="profile-pic-input"
+            onChange={handleAvatarChange}
+          />
+          <label htmlFor="profile-pic-input" className="w-full">
+            <span className="btn-primary mt-2 block text-center cursor-pointer">
+              Choose New Photo
+            </span>
+          </label>
+          <div className="flex flex-row gap-4 mt-4">
+            <button
+              className="btn-primary"
+              onClick={saveAvatar}
+              disabled={!avatarFile}
+            >
+              Save
+            </button>
+            <button
+              className="btn-secondary"
+              onClick={() => setShowEditPic(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
