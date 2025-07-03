@@ -13,28 +13,31 @@ export default function ForgotPasswordPage() {
   const navigate = useNavigate();
 
   // Step 1: Request OTP
-  const handleRequestOtp = async e => {
-    e.preventDefault();
-    setMsg(""); setErr(""); setLoading(true);
-    try {
-      const res = await fetch(`${MAIN_API_BASE}/auth/forgot-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })
-      });
-      const data = await res.json();
-      setLoading(false);
-      if (res.ok) {
-        setStep(2);
-        setMsg("OTP sent to your email.");
-      } else {
-        setErr(data.error || "Failed to send OTP.");
-      }
-    } catch {
-      setLoading(false);
-      setErr("Network error.");
+ const handleRequestOtp = async e => {
+  e.preventDefault();
+  setMsg(""); setErr(""); setLoading(true);
+  try {
+    const res = await fetch(`${MAIN_API_BASE}/auth/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
+    console.log("Fetch response:", res);   // <--- ADD THIS
+    const data = await res.json();
+    console.log("Data:", data, "Status:", res.status); // <--- AND THIS
+
+    setLoading(false);
+    if (res.ok) {
+      setStep(2);
+      setMsg("OTP sent to your email.");
+    } else {
+      setErr(data.error || "Failed to send OTP.");
     }
-  };
+  } catch (err) {
+    setLoading(false);
+    setErr("Network error.");
+  }
+};
 
   // Step 2: Reset password with OTP
   const handleResetPw = async e => {
