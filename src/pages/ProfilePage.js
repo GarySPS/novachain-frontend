@@ -152,38 +152,26 @@ export default function ProfilePage() {
   }
 
   async function handleKycSubmit(e) {
-    e.preventDefault();
-    if (!kycSelfie || !kycId) return;
-    try {
-      setKycSubmitted(true);
-      // Upload selfie
-      const selfieForm = new FormData();
-      selfieForm.append("file", kycSelfie);
-      const selfieRes = await axios.post(`${MAIN_API_BASE}/upload/kyc`, selfieForm, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
-      const selfiePath = selfieRes.data.path;
-      // Upload ID card
-      const idForm = new FormData();
-      idForm.append("file", kycId);
-      const idRes = await axios.post(`${MAIN_API_BASE}/upload/kyc`, idForm, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
-      const idPath = idRes.data.path;
-      // Submit KYC with file paths (adapt field names as your backend expects)
-      const token = localStorage.getItem("token");
-      await axios.post(`${MAIN_API_BASE}/kyc`, {
-        selfie: selfiePath,
-        id_card: idPath,
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setKycStatus("pending");
-    } catch (err) {
-      alert("Failed to submit KYC. Try again.");
-    }
-    setKycSubmitted(false);
+  e.preventDefault();
+  if (!kycSelfie || !kycId) return;
+  try {
+    setKycSubmitted(true);
+    const formData = new FormData();
+    formData.append("selfie", kycSelfie);   // <--- must be 'selfie'
+    formData.append("id_card", kycId);      // <--- must be 'id_card'
+    const token = localStorage.getItem("token");
+    await axios.post(`${MAIN_API_BASE}/kyc`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`
+      }
+    });
+    setKycStatus("pending");
+  } catch (err) {
+    alert("Failed to submit KYC. Try again.");
   }
+  setKycSubmitted(false);
+}
 
   async function handleAvatarChange(e) {
     const file = e.target.files[0];
