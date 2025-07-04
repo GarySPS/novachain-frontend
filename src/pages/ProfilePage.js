@@ -319,8 +319,14 @@ useEffect(() => {
         <Card className="md:col-span-2 flex flex-col items-center bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] border-0 shadow-lg rounded-2xl py-10 px-8">
           <div className="relative flex flex-col items-center">
             <img
-              src={avatarFile ? URL.createObjectURL(avatarFile) : avatarUrl}
-              alt="Profile Preview"
+  src={
+    avatarFile
+      ? URL.createObjectURL(avatarFile)
+      : avatarUrl
+        ? `${avatarUrl}?v=${user?.avatar}`
+        : "/logo192_new.png"
+  }
+  alt="Profile Preview"
               className="rounded-full border-4 border-yellow-400 shadow-xl object-cover bg-white"
               style={{ width: 120, height: 120, objectFit: "cover" }}
               onError={e => {
@@ -639,8 +645,14 @@ useEffect(() => {
   <h3>Change Profile Picture</h3>
   <div className="flex flex-col items-center gap-4">
     <img
-      src={avatarFile ? URL.createObjectURL(avatarFile) : avatarUrl}
-      alt="Profile Preview"
+  src={
+    avatarFile
+      ? URL.createObjectURL(avatarFile)
+      : avatarUrl
+        ? `${avatarUrl}?v=${user?.avatar}`
+        : "/logo192_new.png"
+  }
+  alt="Profile Preview"
       className="rounded-full border-4 border-yellow-400 shadow-xl object-cover bg-white"
       style={{ width: 120, height: 120, objectFit: "cover" }}
       onError={e => {

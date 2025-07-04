@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { MAIN_API_BASE } from '../config';
-
 import Card from "../components/card";
 import NovaChainLogo from "../components/NovaChainLogo.svg"; // SVG logo
 
@@ -12,35 +11,39 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-  e.preventDefault();
-  setError("");
-  try {
-    const res = await fetch(`${MAIN_API_BASE}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
+    e.preventDefault();
+    setError("");
+    try {
+      const res = await fetch(`${MAIN_API_BASE}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
 
-    // Handle NOT verified: redirect to OTP page with email pre-filled
-    if (res.status === 403 && data.error && data.error.toLowerCase().includes("verify your email")) {
-      navigate("/verify-otp", { state: { email } });
-      return;
-    }
+      // Handle NOT verified: redirect to OTP page with email pre-filled
+      if (res.status === 403 && data.error && data.error.toLowerCase().includes("verify your email")) {
+        navigate("/verify-otp", { state: { email } });
+        return;
+      }
 
-    if (!res.ok) {
-      setError(data.error || "Login failed");
-      return;
+      if (!res.ok) {
+        setError(data.error || "Login failed");
+        return;
+      }
+
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+      // Navigate to wallet after login
+      navigate('/wallet');
+    } catch (err) {
+      setError("Login failed. Please try again.");
     }
-    if (data.token) {
-      localStorage.setItem("token", data.token);
-    }
-    localStorage.setItem("user", JSON.stringify(data.user));
-    navigate('/profile'); // or '/dashboard'
-  } catch (err) {
-    setError("Login failed. Please try again.");
-  }
-};
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#15192a] px-4 py-8">
@@ -126,46 +129,45 @@ export default function LoginPage() {
 
         {/* Extra links */}
         <div className="flex flex-col md:flex-row gap-3 mt-10 w-full">
-  <Link
-    to="/forgot"
-    className="w-full px-6 py-3 rounded-xl font-bold text-lg text-[#00eaff] bg-[#eaf8fc] hover:bg-[#00eaff] hover:text-white shadow-md transition-all duration-150 text-center"
-    style={{
-      boxShadow: "0 1.5px 0 #00eaff33, 0 2.5px 12px #00eaff11"
-    }}
-  >
-    Forgot password?
-  </Link>
-  <Link
-    to="/signup"
-    className="w-full px-6 py-3 rounded-xl font-bold text-lg text-[#ffd700] bg-[#fff8e1] hover:bg-[#ffd700] hover:text-[#232836] shadow-md transition-all duration-150 text-center"
-    style={{
-      boxShadow: "0 1.5px 0 #ffd70033, 0 2.5px 12px #ffd70011"
-    }}
-  >
-    Sign up
-  </Link>
-</div>
+          <Link
+            to="/forgot"
+            className="w-full px-6 py-3 rounded-xl font-bold text-lg text-[#00eaff] bg-[#eaf8fc] hover:bg-[#00eaff] hover:text-white shadow-md transition-all duration-150 text-center"
+            style={{
+              boxShadow: "0 1.5px 0 #00eaff33, 0 2.5px 12px #00eaff11"
+            }}
+          >
+            Forgot password?
+          </Link>
+          <Link
+            to="/signup"
+            className="w-full px-6 py-3 rounded-xl font-bold text-lg text-[#ffd700] bg-[#fff8e1] hover:bg-[#ffd700] hover:text-[#232836] shadow-md transition-all duration-150 text-center"
+            style={{
+              boxShadow: "0 1.5px 0 #ffd70033, 0 2.5px 12px #ffd70011"
+            }}
+          >
+            Sign up
+          </Link>
+        </div>
 
-{/* Customer Support Button */}
-<div className="mt-4 flex justify-center w-full">
-  <a
-    href="https://t.me/novachainsingapore"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="w-full px-6 py-3 rounded-xl font-bold text-lg text-white bg-black hover:bg-[#222] shadow-md transition-all duration-150 text-center"
-    style={{
-      maxWidth: 360,
-      boxShadow: "0 2px 20px #0002"
-    }}
-  >
-    <span role="img" aria-label="support" className="mr-2">💬</span>
-    Contact Support
-  </a>
-</div>
-
+        {/* Customer Support Button */}
+        <div className="mt-4 flex justify-center w-full">
+          <a
+            href="https://t.me/novachainsingapore"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full px-6 py-3 rounded-xl font-bold text-lg text-white bg-black hover:bg-[#222] shadow-md transition-all duration-150 text-center"
+            style={{
+              maxWidth: 360,
+              boxShadow: "0 2px 20px #0002"
+            }}
+          >
+            <span role="img" aria-label="support" className="mr-2">💬</span>
+            Contact Support
+          </a>
+        </div>
       </Card>
     
-          {/* Logo Glow Animation */}
+      {/* Logo Glow Animation */}
       <style>
         {`
         @keyframes logoGlow {

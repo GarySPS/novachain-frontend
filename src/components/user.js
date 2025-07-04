@@ -4,11 +4,21 @@ import Icon from "./icon";
 import Image from "./image";
 import Switch from "./switch";
 import NavLink from "./navlink";
+import { useNavigate } from "react-router-dom";
 
 export default function User({ className = "" }) {
-    // For demo: fake dark/light toggle (you should connect to real theme logic if you use dark mode)
     const [isLightMode, setIsLightMode] = useState(false);
     const toggleColorMode = () => setIsLightMode((v) => !v);
+    const navigate = useNavigate();
+
+    // Logout handler
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        // Optional: clear other session items if used
+        // localStorage.clear(); 
+        navigate("/login");
+        window.location.reload(); // Force logout everywhere
+    };
 
     return (
         <Menu as="div" className={`relative ${className}`}>
@@ -60,7 +70,19 @@ export default function User({ className = "" }) {
                     </div>
                     <NavLink title="News" icon="news" url="/news" />
                 </div>
-                <NavLink title="Log out" icon="logout" url="/login" />
+                {/* Updated logout: this button removes token and reloads */}
+                <button
+                    onClick={handleLogout}
+                    className="group flex items-center w-full h-12 px-4 rounded-xl transition-colors hover:bg-theme-on-surface-2 cursor-pointer"
+                >
+                    <Icon
+                        className="shrink-0 mr-4 fill-theme-secondary transition-colors group-hover:fill-theme-primary"
+                        name="logout"
+                    />
+                    <div className="mr-auto text-base-1s text-theme-secondary transition-colors group-hover:text-theme-primary">
+                        Log out
+                    </div>
+                </button>
             </Menu.Items>
         </Menu>
     );

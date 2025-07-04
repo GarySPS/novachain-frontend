@@ -7,46 +7,46 @@ import NovaChainLogo from "../components/NovaChainLogo.svg"; // SVG logo
 export default function SignUpPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
-  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleSignUp = async (e) => {
-  e.preventDefault();
-  setError("");
-  setSuccess("");
-  if (password !== confirmPassword) {
-    setError("Passwords do not match.");
-    return;
-  }
-  try {
-    const res = await fetch(`${MAIN_API_BASE}/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, email }),
-    });
-    const data = await res.json();
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    try {
+      const res = await fetch(`${MAIN_API_BASE}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password, email }),
+      });
+      const data = await res.json();
 
-    // Handle already registered but not verified (backend sends {unverified: true})
-    if (res.status === 409 && data.unverified) {
-      setSuccess("You have already registered but not verified. Please check your email for the OTP code.");
+      // Handle already registered but not verified (backend sends {unverified: true})
+      if (res.status === 409 && data.unverified) {
+        setSuccess("You have already registered but not verified. Please check your email for the OTP code.");
+        setTimeout(() => navigate("/verify-otp", { state: { email } }), 1400);
+        return;
+      }
+
+      if (!res.ok) {
+        setError(data.error || "Signup failed");
+        return;
+      }
+
+      setSuccess("OTP code sent to your email. Please verify to complete sign up.");
       setTimeout(() => navigate("/verify-otp", { state: { email } }), 1400);
-      return;
+    } catch (err) {
+      setError("Signup failed. Please try again.");
     }
-
-    if (!res.ok) {
-      setError(data.error || "Signup failed");
-      return;
-    }
-
-    setSuccess("OTP code sent to your email. Please verify to complete sign up.");
-    setTimeout(() => navigate("/verify-otp", { state: { email } }), 1400);
-  } catch (err) {
-    setError("Signup failed. Please try again.");
-  }
-};
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-theme-n-8 px-4 py-8" style={{ background: "linear-gradient(120deg, #181D2F 0%, #181A20 100%)" }}>
@@ -81,12 +81,7 @@ export default function SignUpPage() {
         {/* Signup Form */}
         <form onSubmit={handleSignUp} className="space-y-6">
           {/* Username */}
-          <label
-            htmlFor="username"
-            className="block text-lg font-bold text-[#232836] mb-1"
-          >
-            Username
-          </label>
+          <label htmlFor="username" className="block text-lg font-bold text-[#232836] mb-1">Username</label>
           <input
             id="username"
             type="text"
@@ -98,12 +93,7 @@ export default function SignUpPage() {
           />
 
           {/* Email */}
-          <label
-            htmlFor="email"
-            className="block text-lg font-bold text-[#232836] mb-1"
-          >
-            Email
-          </label>
+          <label htmlFor="email" className="block text-lg font-bold text-[#232836] mb-1">Email</label>
           <input
             id="email"
             type="email"
@@ -115,12 +105,7 @@ export default function SignUpPage() {
           />
 
           {/* Password */}
-          <label
-            htmlFor="password"
-            className="block text-lg font-bold text-[#232836] mb-1"
-          >
-            Password
-          </label>
+          <label htmlFor="password" className="block text-lg font-bold text-[#232836] mb-1">Password</label>
           <input
             id="password"
             type="password"
@@ -132,21 +117,16 @@ export default function SignUpPage() {
           />
 
           {/* Confirm Password */}
-<label
-  htmlFor="confirmPassword"
-  className="block text-lg font-bold text-[#232836] mb-1"
->
-  Confirm Password
-</label>
-<input
-  id="confirmPassword"
-  type="password"
-  value={confirmPassword}
-  onChange={e => setConfirmPassword(e.target.value)}
-  required
-  placeholder="Re-enter your password"
-  className="w-full h-14 rounded-xl px-5 bg-[#eaf1fb] text-lg font-semibold border-2 border-[#bee3f8] focus:border-[#ffd700] focus:ring-2 focus:ring-[#ffd70044] transition outline-none mb-3"
-/>
+          <label htmlFor="confirmPassword" className="block text-lg font-bold text-[#232836] mb-1">Confirm Password</label>
+          <input
+            id="confirmPassword"
+            type="password"
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
+            required
+            placeholder="Re-enter your password"
+            className="w-full h-14 rounded-xl px-5 bg-[#eaf1fb] text-lg font-semibold border-2 border-[#bee3f8] focus:border-[#ffd700] focus:ring-2 focus:ring-[#ffd70044] transition outline-none mb-3"
+          />
 
           {/* Error / Success */}
           {error && (
