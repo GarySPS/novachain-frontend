@@ -139,13 +139,12 @@ useEffect(() => {
       return;
     }
 
-    // 1. If stored in Supabase "avatar" bucket: example: "1234/avatar.png"
+    // 1. Supabase "avatar" bucket: if not http/profile/uploads
     if (
       !user.avatar.startsWith("http") &&
       !user.avatar.startsWith("profile/") &&
       !user.avatar.startsWith("/uploads/")
     ) {
-      // If your bucket is private (recommended): create a signed URL:
       const { data, error } = await supabase.storage
         .from("avatar")
         .createSignedUrl(user.avatar, 3600);
@@ -157,32 +156,30 @@ useEffect(() => {
       return;
     }
 
-    // 2. If stored in Supabase "profile" bucket (legacy?)
+    // 2. Supabase "profile" bucket (legacy)
     if (user.avatar.startsWith("profile/")) {
       const url = await getSignedUrl(user.avatar, "profile");
       setAvatarUrl(url);
       return;
     }
 
-    // 3. If stored as local upload (your own server)
+    // 3. Local uploads
     if (user.avatar.startsWith("/uploads/")) {
       setAvatarUrl(`${MAIN_API_BASE.replace(/\/api$/, "")}${user.avatar}`);
       return;
     }
 
-    // 4. If already a full http(s) url (maybe from OAuth etc)
+    // 4. Already full URL
     if (user.avatar.startsWith("http")) {
       setAvatarUrl(user.avatar);
       return;
     }
 
-    // 5. Fallback
+    // 5. fallback
     setAvatarUrl("/logo192_new.png");
   }
   fetchAvatarUrl();
 }, [user]);
-
-
 
   function handleLogout() {
     localStorage.removeItem("token");
