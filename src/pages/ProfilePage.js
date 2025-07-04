@@ -599,59 +599,58 @@ const [avatarError, setAvatarError] = useState("");
         </form>
       </Modal>
       <Modal visible={showEditPic} onClose={() => setShowEditPic(false)}>
-        <h3 className="text-title-2 font-semibold mb-4">Change Profile Picture</h3>
-        <div className="flex flex-col items-center gap-4">
-          <img
-            src={avatarFile ? URL.createObjectURL(avatarFile) : avatarUrl}
-            alt="Profile Preview"
-            className="rounded-full border-4 border-yellow-400 shadow-xl object-cover bg-white"
-            style={{ width: 120, height: 120, objectFit: "cover" }}
-            onError={e => {
-              e.target.onerror = null;
-              e.target.src = "/logo192_new.png";
-            }}
-          />
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            id="profile-pic-input"
-            onChange={handleAvatarChange}
-          />
-          <label htmlFor="profile-pic-input" className="w-full">
-            <span className="btn-primary mt-2 block text-center cursor-pointer">
-              Choose New Photo
-            </span>
-          </label>
-
-          {avatarSuccess && (
-  <div className="bg-green-100 border border-green-300 text-green-700 rounded-lg px-4 py-2 text-center mb-2 transition">
-    {avatarSuccess}
+  <h3>Change Profile Picture</h3>
+  <div className="flex flex-col items-center gap-4">
+    <img
+      src={avatarFile ? URL.createObjectURL(avatarFile) : avatarUrl}
+      alt="Profile Preview"
+      className="rounded-full border-4 border-yellow-400 shadow-xl object-cover bg-white"
+      style={{ width: 120, height: 120, objectFit: "cover" }}
+      onError={e => {
+        e.target.onerror = null;
+        e.target.src = "/logo192_new.png";
+      }}
+    />
+    <input
+      type="file"
+      accept="image/*"
+      className="hidden"
+      id="profile-pic-input"
+      onChange={handleAvatarChange}
+    />
+    <label htmlFor="profile-pic-input" className="w-full">
+      <span className="btn-primary mt-2 block text-center cursor-pointer">
+        Choose New Photo
+      </span>
+    </label>
+    {avatarSuccess && (
+      <div className="bg-green-100 border border-green-300 text-green-700 rounded-lg px-4 py-2 text-center mb-2 transition">
+        {avatarSuccess}
+      </div>
+    )}
+    {avatarError && (
+      <div className="bg-red-100 border border-red-300 text-red-700 rounded-lg px-4 py-2 text-center mb-2 transition">
+        {avatarError}
+      </div>
+    )}
+    <div className="flex flex-row gap-4 mt-4">
+      <button
+        className="btn-primary"
+        onClick={saveAvatar}
+        disabled={!avatarFile}
+      >
+        Save
+      </button>
+      <button
+        className="btn-secondary"
+        onClick={() => setShowEditPic(false)}
+      >
+        Cancel
+      </button>
+    </div>
   </div>
-)}
-{avatarError && (
-  <div className="bg-red-100 border border-red-300 text-red-700 rounded-lg px-4 py-2 text-center mb-2 transition">
-    {avatarError}
-  </div>
-)}
+</Modal>
 
-          <div className="flex flex-row gap-4 mt-4">
-            <button
-              className="btn-primary"
-              onClick={saveAvatar}
-              disabled={!avatarFile}
-            >
-              Save
-            </button>
-            <button
-              className="btn-secondary"
-              onClick={() => setShowEditPic(false)}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }
