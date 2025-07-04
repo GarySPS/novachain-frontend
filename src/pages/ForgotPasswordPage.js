@@ -17,20 +17,14 @@ export default function ForgotPasswordPage() {
   e.preventDefault();
   setMsg(""); setErr(""); setLoading(true);
   try {
-    alert("Request OTP clicked!"); // <--- ADD THIS LINE AT THE TOP
-
-  const res = await fetch(`${MAIN_API_BASE}/auth/forgot-password`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ email })
-  });
-
-
-    alert("Fetch response status: " + res.status);   // <--- ADD THIS LINE
+    // REMOVE ALL alert LINES!
+    const res = await fetch(`${MAIN_API_BASE}/auth/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
 
     const data = await res.json();
-    alert("Data: " + JSON.stringify(data) + " Status: " + res.status); // <--- AND THIS
-
     setLoading(false);
     if (res.ok) {
       setStep(2);
@@ -41,9 +35,9 @@ export default function ForgotPasswordPage() {
   } catch (err) {
     setLoading(false);
     setErr("Network error.");
-    alert("Network error in catch block!"); // <--- ADD THIS
   }
 };
+
 
   // Step 2: Reset password with OTP
   const handleResetPw = async e => {
