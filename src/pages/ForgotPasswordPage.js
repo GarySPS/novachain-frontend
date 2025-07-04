@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
   try {
     alert("Request OTP clicked!"); // <--- ADD THIS LINE AT THE TOP
 
-  const res = await fetch(`${MAIN_API_BASE}/api/auth/forgot-password`, {
+  const res = await fetch(`${MAIN_API_BASE}/auth/forgot-password`, {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ email })
@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setMsg(""); setErr(""); setLoading(true);
     try {
-      const res = await fetch(`${MAIN_API_BASE}/api/auth/reset-password`, {
+      const res = await fetch(`${MAIN_API_BASE}/auth/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp, newPassword: newPw })
@@ -73,7 +73,7 @@ export default function ForgotPasswordPage() {
   const handleResendOtp = async () => {
     setMsg(""); setErr(""); setLoading(true);
     try {
-      const res = await fetch(`${MAIN_API_BASE}/api/auth/resend-otp`, {
+      const res = await fetch(`${MAIN_API_BASE}/auth/resend-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email })
