@@ -234,10 +234,10 @@ useEffect(() => {
     const token = localStorage.getItem("token");
     // Call your backend to update avatar field (expects avatar: `avatar/${filePath}`)
     await axios.post(
-      `${MAIN_API_BASE}/profile/update-avatar`, // <-- You may need to create this endpoint if not present!
-      { avatar: `${filePath}` }, // save only the relative path!
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+  `${MAIN_API_BASE}/profile/avatar`, // <-- CORRECT
+  { avatar: `${filePath}` },
+  { headers: { Authorization: `Bearer ${token}` } }
+);
 
     // 3. Fetch the new profile data to refresh
     const updated = await axios.get(`${MAIN_API_BASE}/profile`, {
