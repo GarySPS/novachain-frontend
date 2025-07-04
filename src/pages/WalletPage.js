@@ -9,6 +9,28 @@ import Field from "../components/field";
 import Modal from "../components/modal";
 import Icon from "../components/icon";
 import { useNavigate } from "react-router-dom";
+// --- Supabase Client for uploads ---
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = "https://zgnefojwdijycgcqngke.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnbmVmb2p3ZGlqeWNnY3FuZ2tlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNTc3MjcsImV4cCI6MjA2NTczMzcyN30.RWPMuioeBKt_enKio-Z-XIr6-bryh3AEGSxmyc7UW7k";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+
+// Upload file to Supabase and return the public URL
+async function uploadDepositScreenshot(file, userId) {
+  if (!file) return null;
+  // You may use "deposit" or "deposits" as the bucket name—check your Supabase dashboard for exact bucket.
+  const filePath = `${userId}/${Date.now()}-${file.name}`;
+  const { data, error } = await supabase.storage.from('deposit').upload(filePath, file, {
+    cacheControl: '3600',
+    upsert: false,
+  });
+  if (error) throw error;
+  // Return public URL
+  return `${SUPABASE_URL}/storage/v1/object/public/deposit/${filePath}`;
+}
+
 
 // --- Helper to get signed URL from Supabase if needed ---
 async function getSignedUrl(path, bucket) {
@@ -214,38 +236,44 @@ export default function WalletPage() {
   const closeModal = () => setModal({ open: false, type: "", coin: "" });
 
   const handleDepositSubmit = async (e) => {
-    e.preventDefault();
-    setToast("Submitting deposit...");
-    try {
-      const formData = new FormData();
-      formData.append("user_id", userId);
-      formData.append("coin", selectedDepositCoin);
-      formData.append("amount", depositAmount);
-      formData.append("address", walletAddresses[selectedDepositCoin]);
-      if (depositScreenshot) formData.append("screenshot", depositScreenshot);
-
-      await axios.post(`${MAIN_API_BASE}/deposit`, formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      setToast("Deposit submitted!");
-      setDepositAmount("");
-      setDepositScreenshot(null);
-      setFileLocked(false);
-
-      setTimeout(() => {
-        setToast("");
-        closeModal();
-      }, 1600);
-
-      axios.get(`${MAIN_API_BASE}/deposits`, {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(res => setDepositHistory(res.data));
-    } catch (err) {
-      setToast("Deposit failed!");
-      console.error(err);
+  e.preventDefault();
+  setToast("Submitting deposit...");
+  try {
+    // 1. Upload screenshot to Supabase Storage if provided
+    let screenshotUrl = null;
+    if (depositScreenshot) {
+      screenshotUrl = await uploadDepositScreenshot(depositScreenshot, userId);
     }
-  };
+
+    // 2. Post deposit data to backend (screenshot is now a public URL string)
+    await axios.post(`${MAIN_API_BASE}/deposit`, {
+      coin: selectedDepositCoin,
+      amount: depositAmount,
+      address: walletAddresses[selectedDepositCoin],
+      screenshot: screenshotUrl,
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    setToast("Deposit submitted!");
+    setDepositAmount("");
+    setDepositScreenshot(null);
+    setFileLocked(false);
+
+    setTimeout(() => {
+      setToast("");
+      closeModal();
+    }, 1600);
+
+    axios.get(`${MAIN_API_BASE}/deposits`, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(res => setDepositHistory(res.data));
+  } catch (err) {
+    setToast("Deposit failed!");
+    console.error(err);
+  }
+};
+
 
   const handleWithdraw = async (e) => {
     e.preventDefault();
