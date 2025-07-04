@@ -10,6 +10,12 @@ import Icon from "../components/icon";
 import Chart from "../components/chart";
 import AssetsDonut from "../components/assetsdonut";
 import { Loader2 } from "lucide-react";
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = "https://zgnefojwdijycgcqngke.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnbmVmb2p3ZGlqeWNnY3FuZ2tlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNTc3MjcsImV4cCI6MjA2NTczMzcyN30.RWPMuioeBKt_enKio-Z-XIr6-bryh3AEGSxmyc7UW7k";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
 
 // --- Helper to get signed URL from Supabase if needed ---
 async function getSignedUrl(path, bucket) {
@@ -126,27 +132,58 @@ const [avatarError, setAvatarError] = useState("");
 
   // Handle Supabase or uploads avatar fetch
   useEffect(() => {
-    async function fetchAvatarUrl() {
-      if (!user || !user.avatar) {
-        setAvatarUrl("/logo192_new.png");
-        return;
-      }
-      if (user.avatar.startsWith("profile/")) {
-        // Supabase storage: get signed URL
-        const url = await getSignedUrl(user.avatar, "profile");
-        setAvatarUrl(url);
-      } else if (user.avatar.startsWith("/uploads/")) {
-  // Remove '/api' if present in MAIN_API_BASE for image URL
-  setAvatarUrl(`${MAIN_API_BASE.replace(/\/api$/, "")}${user.avatar}`);
-}
- else if (user.avatar.startsWith("http")) {
-        setAvatarUrl(user.avatar);
-      } else {
-        setAvatarUrl("/logo192_new.png");
-      }
+  async function fetchAvatarUrl() {
+    if (!user || !user.avatar) {
+      setAvatarUrl("/logo192_new.png");
+      return;
     }
-    fetchAvatarUrl();
-  }, [user]);
+
+    // 1. If stored in Supabase "avatar" bucket: example: "1234/avatar.png" (not starting with "http", "profile/", or "/uploads")
+    if (
+      !user.avatar.startsWith("http") &&
+      !user.avatar.startsWith("profile/") &&
+      !user.avatar.startsWith("/uploads/")
+    ) {
+      // If your bucket is public:
+      // setAvatarUrl(`${SUPABASE_URL}/storage/v1/object/public/avatar/${user.avatar}`);
+
+      // If your bucket is private (recommended): create a signed URL:
+      const { data, error } = await supabase.storage
+        .from("avatar")
+        .createSignedUrl(user.avatar, 3600);
+      if (error || !data?.signedUrl) {
+        setAvatarUrl("/logo192_new.png");
+      } else {
+        setAvatarUrl(data.signedUrl);
+      }
+      return;
+    }
+
+    // 2. If stored in Supabase "profile" bucket (legacy?)
+    if (user.avatar.startsWith("profile/")) {
+      const url = await getSignedUrl(user.avatar, "profile");
+      setAvatarUrl(url);
+      return;
+    }
+
+    // 3. If stored as local upload (your own server)
+    if (user.avatar.startsWith("/uploads/")) {
+      setAvatarUrl(`${MAIN_API_BASE.replace(/\/api$/, "")}${user.avatar}`);
+      return;
+    }
+
+    // 4. If already a full http(s) url (maybe from OAuth etc)
+    if (user.avatar.startsWith("http")) {
+      setAvatarUrl(user.avatar);
+      return;
+    }
+
+    // 5. Fallback
+    setAvatarUrl("/logo192_new.png");
+  }
+  fetchAvatarUrl();
+}, [user]);
+
 
   function handleLogout() {
     localStorage.removeItem("token");
@@ -182,42 +219,46 @@ const [avatarError, setAvatarError] = useState("");
     setAvatarUrl(URL.createObjectURL(file));
   }
 
-   async function saveAvatar() {
-  if (!avatarFile) return;
+  async function saveAvatar() {
+  if (!avatarFile || !user?.id) return;
   setAvatarSuccess("");
   setAvatarError("");
   try {
-    const formData = new FormData();
-    formData.append("avatar", avatarFile);
+    // 1. Upload to Supabase Storage ("avatar" bucket, folder per user)
+    const filePath = `${user.id}/${Date.now()}-${avatarFile.name}`;
+    const { data, error } = await supabase.storage
+      .from("avatar")
+      .upload(filePath, avatarFile, {
+        cacheControl: '3600',
+        upsert: true,
+      });
+    if (error) throw error;
+
+    // 2. Save the new avatar path in backend user profile
     const token = localStorage.getItem("token");
-    const uploadRes = await axios.post(
-      `${MAIN_API_BASE}/profile/avatar`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        }
-      }
+    // Call your backend to update avatar field (expects avatar: `avatar/${filePath}`)
+    await axios.post(
+      `${MAIN_API_BASE}/profile/update-avatar`, // <-- You may need to create this endpoint if not present!
+      { avatar: `${filePath}` }, // save only the relative path!
+      { headers: { Authorization: `Bearer ${token}` } }
     );
 
-    if (uploadRes.data && uploadRes.data.avatar) {
-      // Refresh user info
-      const updated = await axios.get(`${MAIN_API_BASE}/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setUser(updated.data.user);
-      setAvatarFile(null);
-      setAvatarSuccess("Profile picture updated successfully!");
-      setTimeout(() => {
-        setAvatarSuccess("");
-        setShowEditPic(false);
-      }, 1700);
-    }
+    // 3. Fetch the new profile data to refresh
+    const updated = await axios.get(`${MAIN_API_BASE}/profile`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setUser(updated.data.user);
+    setAvatarFile(null);
+    setAvatarSuccess("Profile picture updated successfully!");
+    setTimeout(() => {
+      setAvatarSuccess("");
+      setShowEditPic(false);
+    }, 1700);
   } catch (err) {
     setAvatarError("Failed to update avatar.");
   }
 }
+
 
   async function handleChangePassword(e) {
     e.preventDefault();
