@@ -130,23 +130,21 @@ const [avatarError, setAvatarError] = useState("");
     fetchProfile();
   }, [navigate]);
 
+
   // Handle Supabase or uploads avatar fetch
-  useEffect(() => {
+useEffect(() => {
   async function fetchAvatarUrl() {
     if (!user || !user.avatar) {
       setAvatarUrl("/logo192_new.png");
       return;
     }
 
-    // 1. If stored in Supabase "avatar" bucket: example: "1234/avatar.png" (not starting with "http", "profile/", or "/uploads")
+    // 1. If stored in Supabase "avatar" bucket: example: "1234/avatar.png"
     if (
       !user.avatar.startsWith("http") &&
       !user.avatar.startsWith("profile/") &&
       !user.avatar.startsWith("/uploads/")
     ) {
-      // If your bucket is public:
-      // setAvatarUrl(`${SUPABASE_URL}/storage/v1/object/public/avatar/${user.avatar}`);
-
       // If your bucket is private (recommended): create a signed URL:
       const { data, error } = await supabase.storage
         .from("avatar")
@@ -183,6 +181,7 @@ const [avatarError, setAvatarError] = useState("");
   }
   fetchAvatarUrl();
 }, [user]);
+
 
 
   function handleLogout() {
