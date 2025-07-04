@@ -46,6 +46,8 @@ export default function ProfilePage() {
   const [pwSuccess, setPwSuccess] = useState("");
   const [kycSelfiePreview, setKycSelfiePreview] = useState(null);
   const [kycIdPreview, setKycIdPreview] = useState(null);
+  const [avatarSuccess, setAvatarSuccess] = useState("");
+const [avatarError, setAvatarError] = useState("");
 
   // Fetch balance history for the chart
   useEffect(() => {
@@ -182,8 +184,9 @@ export default function ProfilePage() {
 
    async function saveAvatar() {
   if (!avatarFile) return;
+  setAvatarSuccess("");
+  setAvatarError("");
   try {
-    // 1. Upload avatar image (must send JWT here!)
     const formData = new FormData();
     formData.append("avatar", avatarFile);
     const token = localStorage.getItem("token");
@@ -198,7 +201,6 @@ export default function ProfilePage() {
       }
     );
 
-    // 2. The backend already sets the avatar and returns the path
     if (uploadRes.data && uploadRes.data.avatar) {
       // Refresh user info
       const updated = await axios.get(`${MAIN_API_BASE}/profile`, {
@@ -206,11 +208,14 @@ export default function ProfilePage() {
       });
       setUser(updated.data.user);
       setAvatarFile(null);
-      alert("Profile picture updated successfully!");
+      setAvatarSuccess("Profile picture updated successfully!");
+      setTimeout(() => {
+        setAvatarSuccess("");
+        setShowEditPic(false);
+      }, 1700);
     }
-    setShowEditPic(false);
   } catch (err) {
-    alert("Failed to update avatar.");
+    setAvatarError("Failed to update avatar.");
   }
 }
 
@@ -618,6 +623,18 @@ export default function ProfilePage() {
               Choose New Photo
             </span>
           </label>
+
+          {avatarSuccess && (
+  <div className="bg-green-100 border border-green-300 text-green-700 rounded-lg px-4 py-2 text-center mb-2 transition">
+    {avatarSuccess}
+  </div>
+)}
+{avatarError && (
+  <div className="bg-red-100 border border-red-300 text-red-700 rounded-lg px-4 py-2 text-center mb-2 transition">
+    {avatarError}
+  </div>
+)}
+
           <div className="flex flex-row gap-4 mt-4">
             <button
               className="btn-primary"
