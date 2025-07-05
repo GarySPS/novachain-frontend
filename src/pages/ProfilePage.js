@@ -19,6 +19,19 @@ const SUPABASE_URL = "https://zgnefojwdijycgcqngke.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnbmVmb2p3ZGlqeWNnY3FuZ2tlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNTc3MjcsImV4cCI6MjA2NTczMzcyN30.RWPMuioeBKt_enKio-Z-XIr6-bryh3AEGSxmyc7UW7k";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+function isIOSSafari() {
+  const ua = window.navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua);
+  const isWebkit = /WebKit/.test(ua);
+  const isNotChrome = !/CriOS/.test(ua);
+  return isIOS && isWebkit && isNotChrome;
+}
+
+function isAndroidChrome() {
+  const ua = window.navigator.userAgent;
+  return /android/i.test(ua) && /chrome/i.test(ua);
+}
+
 function bustCache(url) {
   if (!url) return url;
   return url + (url.includes('?') ? '&bust=' : '?bust=') + Date.now();
@@ -569,24 +582,33 @@ useEffect(() => {
       <LanguageSwitcher />
       <span className="text-xs mt-1 text-gray-600">{t('profile_language')}</span>
     </div>
-    <button
-  className="btn-stroke px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center"
-  onClick={async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const choiceResult = await deferredPrompt.userChoice;
-      if (choiceResult.outcome === 'accepted') {
-        setDeferredPrompt(null); // Hide button after install
+    {/* Unified Install Button */}
+{(isIOSSafari() || (deferredPrompt && isAndroidChrome())) && (
+  <button
+    className="btn-stroke px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center"
+    onClick={async () => {
+      if (isIOSSafari()) {
+        // For iOS Safari, open guide page
+        navigate('/guide');
+      } else if (deferredPrompt && isAndroidChrome()) {
+        deferredPrompt.prompt();
+        const choiceResult = await deferredPrompt.userChoice;
+        if (choiceResult.outcome === 'accepted') {
+          setDeferredPrompt(null);
+        }
       }
-    } else {
-      alert("If you're on Android Chrome, visit this page in your browser to install as an app. (If you don't see the prompt, try refreshing or use browser menu > Add to Home Screen.)");
-    }
-  }}
-  disabled={!deferredPrompt}
->
-  <Icon name="download" className="mb-1 w-7 h-7" />
-  {t('Download')}
-</button>
+    }}
+  >
+    <Icon name="download" className="mb-1 w-7 h-7" />
+    Install App
+  </button>
+)}
+{!(isIOSSafari() || (deferredPrompt && isAndroidChrome())) && (
+  <div className="text-gray-500 text-center text-sm">
+    Install is available on Safari (iOS) and Chrome (Android).
+  </div>
+)}
+
   </div>
 </Card>
 

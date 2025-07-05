@@ -13,6 +13,7 @@ import AboutUs from "./pages/AboutUs";
 import NavBar from './components/navbar';
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import NewsPage from "./components/Newspage";
+import GuidePage from './pages/GuidePage'; 
 import './i18n';
 
 // --- Device/platform helpers ---
@@ -32,28 +33,8 @@ function AppShell() {
   const location = useLocation();
   const hideHeader = ["/login", "/signup", "/verify-otp"].includes(location.pathname);
 
+  // You can trigger the iOS install modal from ProfilePage or elsewhere using a context or prop if you want to reuse it.
   const [showIOSModal, setShowIOSModal] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [isAndroid, setIsAndroid] = useState(false);
-
-  useEffect(() => {
-    setIsAndroid(/android/i.test(navigator.userAgent));
-    const handler = (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-    window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, []);
-
-  // Only show button if iOS Safari or Android install prompt available
-  const showDownloadButton = isIOSSafari() || (isAndroid && deferredPrompt);
-
-  // Show unsupported message on other platforms
-  const unsupported =
-    !isIOSSafari() &&
-    !(isAndroid && deferredPrompt) &&
-    !hideHeader;
 
   // Modal styling (dark mode aware)
   const modalStyles = {
@@ -73,23 +54,7 @@ function AppShell() {
     <div className="min-h-screen w-full" style={{ background: "#101726" }}>
       {!hideHeader && <NavBar />}
 
-      {showDownloadButton && (
-        <button
-          onClick={() => {
-            if (isIOSSafari()) {
-              setShowIOSModal(true);
-            } else if (isAndroid && deferredPrompt) {
-              deferredPrompt.prompt();
-              // Optionally: deferredPrompt.userChoice.then(() => setDeferredPrompt(null));
-            }
-          }}
-          className="p-2 rounded bg-blue-500 text-white m-4 shadow transition hover:bg-blue-600"
-        >
-          {t('downloadApp')}
-        </button>
-      )}
-
-      
+      {/* iOS Modal (optional: trigger this from elsewhere as needed) */}
       {showIOSModal && (
         <div
           style={{
@@ -106,7 +71,7 @@ function AppShell() {
             style={modalStyles}
             onClick={e => e.stopPropagation()}
           >
-            {/* OPTIONAL IMAGE: place in /public/ios-share-demo.png */}
+            {/* Optional guide image */}
             {/* <img
               src="/ios-share-demo.png"
               alt="How to add to home screen on iOS"
@@ -155,6 +120,7 @@ function AppShell() {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/forgot" element={<ForgotPasswordPage />} />
           <Route path="/news" element={<NewsPage />} />
+          <Route path="/guide" element={<GuidePage />} />
         </Routes>
       </main>
     </div>
