@@ -365,8 +365,7 @@ export default function WalletPage() {
                 <th className="py-3 px-2">{t('amount')}</th>
                 <th className="py-3 px-2">{t('coin')}</th>
                 <th className="py-3 px-2">{t('date')}</th>
-                <th className="py-3 px-2">{t('proof')}</th>
-              </tr>
+               </tr>
             </thead>
             <tbody>
               {balances.map(({ symbol, icon, balance }) => (
@@ -691,7 +690,6 @@ export default function WalletPage() {
                 <th className="py-3 px-2">{t('amount')}</th>
                 <th className="py-3 px-2">{t('coin')}</th>
                 <th className="py-3 px-2">{t('date')}</th>
-                <th className="py-3 px-2">{t('proof')}</th>
               </tr>
             </thead>
             <tbody>
@@ -725,17 +723,7 @@ export default function WalletPage() {
                       ? new Date(row.created_at).toLocaleString()
                       : (row.date || "--")}
                   </td>
-                  <td className="py-3 px-2">
-                    {historyScreenshots[row.id] && (
-                      <button
-                        className="btn-stroke px-3 py-1 rounded"
-                        onClick={() => window.open(historyScreenshots[row.id], "_blank")}
-                        title={t('view_screenshot')}
-                      >
-                        <Icon name="image" className="w-5 h-5" />
-                      </button>
-                    )}
-                  </td>
+                 
                 </tr>
               ))}
             </tbody>
