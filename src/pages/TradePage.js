@@ -9,7 +9,7 @@ import Tooltip from "../components/tooltip";
 import Icon from "../components/icon";
 import TimerBar from "../components/TimerBar";
 import OrderBTC from "../components/orderbtc";
-// REMOVE: import PremiumChart from "../components/PremiumChart";
+import { useTranslation } from "react-i18next";
 
 function persistTradeState(tradeState) {
   if (tradeState) localStorage.setItem("activeTrade", JSON.stringify(tradeState));
@@ -22,14 +22,13 @@ function loadTradeState() {
     return null;
   }
 }
-
 function createTradeState(trade_id, user_id, duration) {
   const endAt = Date.now() + duration * 1000;
   return { trade_id, user_id, duration, endAt };
 }
 
-
 export default function TradePage() {
+  const { t } = useTranslation();
   const [btcPrice, setBtcPrice] = useState(null);
   const [amount, setAmount] = useState(100);
   const [duration, setDuration] = useState(30);
@@ -41,8 +40,6 @@ export default function TradePage() {
   const [tradeState, setTradeState] = useState(null);
   const [timerKey, setTimerKey] = useState(0);
   const [waitingResult, setWaitingResult] = useState(false);
-
-  // CHART LOADING STATE
   const [loadingChart, setLoadingChart] = useState(true);
 
   // Restore active trade if exists
@@ -108,7 +105,7 @@ export default function TradePage() {
           overrides: {},
           loading_screen: { backgroundColor: "#101726", foregroundColor: "#ffd700" },
         });
-        setTimeout(() => setLoadingChart(false), 1400); // Adjust if needed
+        setTimeout(() => setLoadingChart(false), 1400);
       }
     };
     document.body.appendChild(script);
@@ -144,7 +141,7 @@ export default function TradePage() {
     } else {
       setTradeResult(null);
       setTradeDetail(null);
-      alert("Trade result not ready, please check history!");
+      alert(t("trade_result_not_ready", "Trade result not ready, please check history!"));
     }
   }
 
@@ -161,59 +158,59 @@ export default function TradePage() {
 
   // Start new trade (and persist)
   const executeTrade = async () => {
-  if (!btcPrice || timerActive) return;
-  setTimerActive(true);
-  setTradeResult(null);
-  setTradeDetail(null);
-  let token = localStorage.getItem("token");
-  if (!token) {
-    alert("Please log in to trade.");
-    setTimerActive(false);
-    return;
-  }
-  function parseJwt(token) {
-    try {
-      return JSON.parse(atob(token.split('.')[1]));
-    } catch (e) {
-      return {};
-    }
-  }
-  const payload = parseJwt(token);
-  const user_id = payload.id;
-
-  // === INSTANTLY SHOW TIMER BAR EVEN BEFORE API RESPONSE ===
-  const tempTradeState = createTradeState("temp", user_id, duration);
-  setTradeState(tempTradeState);
-  setTimerActive(true);
-  setTimerKey(Math.random());
-
-  try {
-    const res = await axios.post(
-      `${MAIN_API_BASE}/trade`,
-      {
-        user_id,
-        direction: direction.toUpperCase(),
-        amount: Number(amount),
-        duration: Number(duration)
-      },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    if (!res.data.trade_id) throw new Error("Failed to start trade");
-    const { trade_id } = res.data;
-    // === OVERWRITE TRADE STATE WITH REAL ID FROM BACKEND ===
-    const confirmedTradeState = createTradeState(trade_id, user_id, duration);
-    persistTradeState(confirmedTradeState);
-    setTradeState(confirmedTradeState);
+    if (!btcPrice || timerActive) return;
     setTimerActive(true);
-    setTimerKey(Math.random());
-  } catch (err) {
-    setTimerActive(false);
     setTradeResult(null);
     setTradeDetail(null);
-    persistTradeState(null);
-    alert("Trade failed: " + (err.response?.data?.error || err.message));
-  }
-};
+    let token = localStorage.getItem("token");
+    if (!token) {
+      alert(t("please_login", "Please log in to trade."));
+      setTimerActive(false);
+      return;
+    }
+    function parseJwt(token) {
+      try {
+        return JSON.parse(atob(token.split('.')[1]));
+      } catch (e) {
+        return {};
+      }
+    }
+    const payload = parseJwt(token);
+    const user_id = payload.id;
+
+    // === INSTANTLY SHOW TIMER BAR EVEN BEFORE API RESPONSE ===
+    const tempTradeState = createTradeState("temp", user_id, duration);
+    setTradeState(tempTradeState);
+    setTimerActive(true);
+    setTimerKey(Math.random());
+
+    try {
+      const res = await axios.post(
+        `${MAIN_API_BASE}/trade`,
+        {
+          user_id,
+          direction: direction.toUpperCase(),
+          amount: Number(amount),
+          duration: Number(duration)
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.data.trade_id) throw new Error("Failed to start trade");
+      const { trade_id } = res.data;
+      // === OVERWRITE TRADE STATE WITH REAL ID FROM BACKEND ===
+      const confirmedTradeState = createTradeState(trade_id, user_id, duration);
+      persistTradeState(confirmedTradeState);
+      setTradeState(confirmedTradeState);
+      setTimerActive(true);
+      setTimerKey(Math.random());
+    } catch (err) {
+      setTimerActive(false);
+      setTradeResult(null);
+      setTradeDetail(null);
+      persistTradeState(null);
+      alert(t("trade_failed", "Trade failed: ") + (err.response?.data?.error || err.message));
+    }
+  };
 
   return (
     <motion.div
@@ -236,7 +233,7 @@ export default function TradePage() {
                   <path d="M51 27a24 24 0 1 1-48 0" stroke="#FFD700" strokeWidth="5" strokeLinecap="round"/>
                 </svg>
                 <div className="text-lg font-bold text-theme-primary">
-                  Refreshing Price...
+                  {t("refreshing_price", "Refreshing Price...")}
                 </div>
               </div>
             )}
@@ -265,7 +262,7 @@ export default function TradePage() {
           {/* TRADE DIRECTION */}
           <div className="mb-3">
             <span className="font-semibold text-theme-secondary">
-              Trade Direction <Tooltip title="Buy = price up. Sell = price down." />
+              {t("trade_direction")} <Tooltip title={t("trade_direction_tooltip", "Buy = price up. Sell = price down.")} />
             </span>
             <div className="flex gap-3 mt-2">
               <button
@@ -273,31 +270,31 @@ export default function TradePage() {
                 disabled={timerActive}
                 onClick={() => setDirection("BUY")}
               >
-                <Icon name="arrow-up" className="mr-2" /> Buy
+                <Icon name="arrow-up" className="mr-2" /> {t("buy")}
               </button>
               <button
                 className={`btn-secondary flex-1 h-11 text-base rounded-full shadow ${direction === "SELL" ? "!bg-theme-red !text-white !shadow-lg scale-105" : ""}`}
                 disabled={timerActive}
                 onClick={() => setDirection("SELL")}
               >
-                <Icon name="arrow-down" className="mr-2" /> Sell
+                <Icon name="arrow-down" className="mr-2" /> {t("sell")}
               </button>
             </div>
           </div>
           {/* PRICE */}
           <div className="mb-4 flex items-center gap-2 text-theme-tertiary font-semibold text-base">
             <Icon name="dollar-sign" className="w-5 h-5" />
-            Current Price:&nbsp;
+            {t("current_price")}:&nbsp;
             {typeof btcPrice === "number" && !isNaN(btcPrice)
               ? <span className="text-theme-primary font-bold text-lg">${btcPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
               : fetchError
-                ? "API Error"
-                : "Loading..."}
+                ? t("api_error", "API Error")
+                : t("loading", "Loading...")}
           </div>
           {/* AMOUNT */}
           <div className="mb-3">
             <Field
-              label="Amount (USDT)"
+              label={t("amount") + " (USDT)"}
               type="number"
               min={1}
               value={amount}
@@ -310,7 +307,7 @@ export default function TradePage() {
           {/* DURATION */}
           <div className="flex items-center gap-3 mb-5">
             <label className="font-semibold text-theme-tertiary mr-2 whitespace-nowrap">
-              Duration (sec)
+              {t("duration")} ({t("seconds", "sec")})
             </label>
             <input
               type="range"
@@ -323,7 +320,7 @@ export default function TradePage() {
               className="flex-1 accent-theme-primary"
               style={{ minWidth: "120px", maxWidth: "200px" }}
             />
-            <span className="ml-2 text-lg font-bold text-theme-primary w-12 text-right">{duration}s</span>
+            <span className="ml-2 text-lg font-bold text-theme-primary w-12 text-right">{duration}{t("seconds_short", "s")}</span>
           </div>
           {/* INVEST BUTTON */}
           <button
@@ -340,10 +337,10 @@ export default function TradePage() {
                   <circle cx="22" cy="22" r="20" stroke="#2474ff44" strokeWidth="4"/>
                   <path d="M42 22a20 20 0 1 1-40 0" stroke="#FFD700" strokeWidth="4" strokeLinecap="round"/>
                 </svg>
-                Investing
+                {t("investing")}
               </span>
             ) : (
-              "Invest"
+              t("invest")
             )}
           </button>
           {/* RESULT / COUNTDOWN */}
@@ -359,11 +356,13 @@ export default function TradePage() {
                 className="flex flex-col items-center mt-7 w-full"
               >
                 <TimerBar
+                  key={timerKey}
                   duration={tradeState.duration}
                   onComplete={onTimerComplete}
                 />
               </motion.div>
             )}
+
             {/* Show PROCESSING spinner/message after timer */}
             {waitingResult && (
               <motion.div
@@ -380,10 +379,10 @@ export default function TradePage() {
                     <path d="M42 22a20 20 0 1 1-40 0" stroke="#FFD700" strokeWidth="4" strokeLinecap="round"/>
                   </svg>
                   <div className="text-lg font-bold text-theme-primary">
-                    Processing your trade and updating your balance...
+                    {t("processing_trade", "Processing your trade and updating your balance...")}
                   </div>
                   <div className="text-theme-tertiary mt-1 text-base font-medium text-center">
-                    Please wait while your trade settles and funds update in your wallet.
+                    {t("please_wait", "Please wait while your trade settles and funds update in your wallet.")}
                   </div>
                 </div>
               </motion.div>
@@ -416,11 +415,11 @@ export default function TradePage() {
                   <div className="flex items-center justify-center gap-2 mb-2 w-full">
                     {tradeDetail.result === "WIN" ? (
                       <span className="bg-green-500/90 text-white rounded-full px-6 py-2 text-lg font-extrabold shadow text-center">
-                        WIN
+                        {t("win", "WIN")}
                       </span>
                     ) : (
                       <span className="bg-red-500/90 text-white rounded-full px-6 py-2 text-lg font-extrabold shadow text-center">
-                        LOSS
+                        {t("loss", "LOSS")}
                       </span>
                     )}
                     <Icon
@@ -435,24 +434,24 @@ export default function TradePage() {
                   </div>
                   <div className="mt-2 w-full flex flex-col items-center justify-center">
                     <div className="text-base font-medium text-neutral-600 text-center">
-                      Entry:&nbsp;
+                      {t("entry", "Entry")}:&nbsp;
                       <span className="font-bold text-neutral-900">
                         ${!isNaN(Number(tradeDetail.start_price)) ? Number(tradeDetail.start_price).toFixed(2) : "—"}
                       </span>
                     </div>
                     <div className="text-base font-medium text-neutral-600 text-center">
-                      Result:&nbsp;
+                      {t("result", "Result")}:&nbsp;
                       <span className="font-bold text-neutral-900">
                         ${!isNaN(Number(tradeDetail.result_price)) ? Number(tradeDetail.result_price).toFixed(2) : "—"}
                       </span>
                     </div>
                     <div className="mt-1 text-xs text-neutral-400 font-semibold tracking-wide text-center">
-                      Duration: {tradeDetail.duration}s
+                      {t("duration")}: {tradeDetail.duration}{t("seconds_short", "s")}
                     </div>
                     <div className="mt-1 text-xs text-neutral-400 text-center">
                       {tradeDetail.result === "WIN"
-                        ? "Profit credited to your wallet"
-                        : "Loss deducted from your wallet"}
+                        ? t("profit_credited", "Profit credited to your wallet")
+                        : t("loss_deducted", "Loss deducted from your wallet")}
                     </div>
                   </div>
                 </Card>

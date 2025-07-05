@@ -12,6 +12,7 @@ import AssetsDonut from "../components/assetsdonut";
 import { Loader2 } from "lucide-react";
 import { createClient } from '@supabase/supabase-js';
 import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 
 const SUPABASE_URL = "https://zgnefojwdijycgcqngke.supabase.co";
@@ -538,18 +539,36 @@ export default function ProfilePage() {
         : t('profile_kyc_instruction')}
           </div>
         </Card>
+
         {/* Settings */}
         <Card className="bg-gradient-to-tr from-[#f9f7e6] to-[#f4f8ff] rounded-2xl shadow px-8 py-7 flex flex-col items-center">
-          <div className="font-bold text-lg text-gray-700 mb-3 text-center">{t('profile_settings')}</div>
-          <div className="flex flex-row gap-4 justify-center w-full">
-            <button className="btn-stroke px-6 py-3 rounded-xl font-bold" onClick={() => setShowChangePw(true)}>
-              <Icon name="lock" className="mr-2" /> {t('profile_change_password')}
-            </button>
-            <button className="btn-stroke px-6 py-3 rounded-xl font-bold" onClick={() => setShowEditPic(true)}>
-           <Icon name="edit" className="mr-2" /> {t('profile_change_profile')}
-           </button>
-          </div>
-        </Card>
+  <div className="font-bold text-lg text-gray-700 mb-3 text-center">{t('profile_settings')}</div>
+  <div className="grid grid-cols-2 gap-4 w-full max-w-md">
+    <button className="btn-stroke px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center"
+      onClick={() => setShowChangePw(true)}>
+      <Icon name="lock" className="mb-1 w-7 h-7" />
+      {t('profile_change_password')}
+    </button>
+    <button className="btn-stroke px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center"
+      onClick={() => setShowEditPic(true)}>
+      <Icon name="edit" className="mb-1 w-7 h-7" />
+      {t('profile_change_profile')}
+    </button>
+    <div className="flex flex-col items-center justify-center">
+      <Icon name="globe" className="mb-1 w-7 h-7 text-theme-primary" />
+      <LanguageSwitcher />
+      <span className="text-xs mt-1 text-gray-600">{t('profile_language')}</span>
+    </div>
+    <button
+      className="btn-stroke px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center"
+      onClick={() => alert('Download coming soon!')}
+    >
+      <Icon name="download" className="mb-1 w-7 h-7" />
+      {t('profile_download')}
+    </button>
+  </div>
+</Card>
+
       </div>
       {/* 4. Referral + Support */}
       <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">

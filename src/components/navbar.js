@@ -3,7 +3,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ReactComponent as NovaChainLogo } from './NovaChainLogo.svg';
-import LanguageSwitcher from "./LanguageSwitcher";
 import { useTranslation } from "react-i18next"; // <-- ADD THIS
 
 // Use translation keys for nav items
@@ -54,7 +53,6 @@ export default function NavBar() {
             );
           })}
         </nav>
-        <LanguageSwitcher />
       </div>
     </header>
   );

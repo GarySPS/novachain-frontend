@@ -3,11 +3,10 @@ import React, { useEffect, useRef, useState } from "react";
 export default function TimerBar({ duration, onComplete }) {
   const [timeLeft, setTimeLeft] = useState(duration);
   const intervalRef = useRef(null);
-  const hasStarted = useRef(false);
 
   useEffect(() => {
-    if (hasStarted.current) return;
-    hasStarted.current = true;
+    setTimeLeft(duration);
+    if (intervalRef.current) clearInterval(intervalRef.current);
 
     intervalRef.current = setInterval(() => {
       setTimeLeft(prev => {
@@ -21,7 +20,7 @@ export default function TimerBar({ duration, onComplete }) {
     }, 1000);
 
     return () => clearInterval(intervalRef.current);
-  }, []); // empty deps: only run once
+  }, [duration, onComplete]); // <--- Listen for duration changes
 
   const percent = ((duration - timeLeft) / duration) * 100;
 
