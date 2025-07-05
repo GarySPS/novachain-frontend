@@ -1,16 +1,6 @@
 import { useState, useEffect } from "react";
-import Tabs from "./tabs";
-import Select from "./select";
+import { useTranslation } from "react-i18next"; // <-- ADD THIS
 import Image from "./image";
-
-// Tabs definition
-const tabs = [
-  { id: "0", title: "All" },
-  { id: "1", title: "Announcements" },
-  { id: "2", title: "Crypto" },
-  { id: "3", title: "AI features" },
-  { id: "4", title: "Change logs" },
-];
 
 // Skeleton loader matching card style
 function NewsSkeleton() {
@@ -44,7 +34,7 @@ function formatDate(dateString) {
 }
 
 export default function NewsPage() {
-  const [type, setType] = useState(tabs[0]);
+  const { t } = useTranslation(); // <-- ADD THIS
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -70,14 +60,14 @@ export default function NewsPage() {
     <div className="w-full flex flex-col items-center px-2 sm:px-4 font-sans">
       <div className="w-full max-w-6xl mt-10">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-6">
-          <div className="text-3xl font-bold text-[#f5f6fa]">Latest Updates</div>
+          <div className="text-3xl font-bold text-[#f5f6fa]">{t('latest_updates')}</div>
         </div>
 
         {loading ? (
           <NewsSkeleton />
         ) : news.length === 0 ? (
           <div className="text-center py-20 text-lg text-[#9ca3af]">
-            No news found.
+            {t('no_news')}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

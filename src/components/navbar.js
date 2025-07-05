@@ -1,35 +1,39 @@
-// src/components/navbar.js
+// src/components/NavBar.js
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ReactComponent as NovaChainLogo } from './NovaChainLogo.svg';
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useTranslation } from "react-i18next"; // <-- ADD THIS
 
+// Use translation keys for nav items
 const navItems = [
-  { label: "Dashboard", to: "/" },
-  { label: "Trade", to: "/trade" },
-  { label: "History", to: "/trade-history" },
-  { label: "Wallet", to: "/wallet" },
-  { label: "Profile", to: "/profile" },
-  { label: "News", to: "/news" },      
-  { label: "About Us", to: "/about" },
+  { label: "dashboard", to: "/" },
+  { label: "trade", to: "/trade" },
+  { label: "history", to: "/trade-history" },
+  { label: "wallet", to: "/wallet" },
+  { label: "profile", to: "/profile" },
+  { label: "news", to: "/news" },      
+  { label: "about_us", to: "/about" },
 ];
 
 export default function NavBar() {
   const location = useLocation();
+  const { t } = useTranslation(); // <-- ADD THIS
 
   return (
     <header
-  className="sticky top-0 z-30 border-b border-theme-stroke shadow-md w-full"
-  style={{
-    background: "linear-gradient(120deg, #fdfcff 0%, #f8fafd 100%)",
-    backdropFilter: "blur(8px)"
-  }}
->
+      className="sticky top-0 z-30 border-b border-theme-stroke shadow-md w-full"
+      style={{
+        background: "linear-gradient(120deg, #fdfcff 0%, #f8fafd 100%)",
+        backdropFilter: "blur(8px)"
+      }}
+    >
       <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-4 sm:px-2 w-full">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3">
-        <NovaChainLogo className="h-12 md:h-10 w-auto drop-shadow-lg" />
-      </Link>
+          <NovaChainLogo className="h-12 md:h-10 w-auto drop-shadow-lg" />
+        </Link>
         {/* Nav Links */}
         <nav className="flex gap-2 md:gap-1 overflow-x-auto no-scrollbar max-w-[70vw] sm:max-w-[60vw]">
           {navItems.map((item) => {
@@ -45,11 +49,12 @@ export default function NavBar() {
                     : "text-theme-secondary hover:bg-theme-on-surface-2 hover:text-theme-primary")
                 }
               >
-                {item.label}
+                {t(item.label)}
               </Link>
             );
           })}
         </nav>
+        <LanguageSwitcher />
       </div>
     </header>
   );

@@ -23,6 +23,12 @@ function loadTradeState() {
   }
 }
 
+function createTradeState(trade_id, user_id, duration) {
+  const endAt = Date.now() + duration * 1000;
+  return { trade_id, user_id, duration, endAt };
+}
+
+
 export default function TradePage() {
   const [btcPrice, setBtcPrice] = useState(null);
   const [amount, setAmount] = useState(100);
@@ -155,52 +161,59 @@ export default function TradePage() {
 
   // Start new trade (and persist)
   const executeTrade = async () => {
-    if (!btcPrice || timerActive) return;
+  if (!btcPrice || timerActive) return;
+  setTimerActive(true);
+  setTradeResult(null);
+  setTradeDetail(null);
+  let token = localStorage.getItem("token");
+  if (!token) {
+    alert("Please log in to trade.");
+    setTimerActive(false);
+    return;
+  }
+  function parseJwt(token) {
+    try {
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch (e) {
+      return {};
+    }
+  }
+  const payload = parseJwt(token);
+  const user_id = payload.id;
+
+  // === INSTANTLY SHOW TIMER BAR EVEN BEFORE API RESPONSE ===
+  const tempTradeState = createTradeState("temp", user_id, duration);
+  setTradeState(tempTradeState);
+  setTimerActive(true);
+  setTimerKey(Math.random());
+
+  try {
+    const res = await axios.post(
+      `${MAIN_API_BASE}/trade`,
+      {
+        user_id,
+        direction: direction.toUpperCase(),
+        amount: Number(amount),
+        duration: Number(duration)
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!res.data.trade_id) throw new Error("Failed to start trade");
+    const { trade_id } = res.data;
+    // === OVERWRITE TRADE STATE WITH REAL ID FROM BACKEND ===
+    const confirmedTradeState = createTradeState(trade_id, user_id, duration);
+    persistTradeState(confirmedTradeState);
+    setTradeState(confirmedTradeState);
     setTimerActive(true);
+    setTimerKey(Math.random());
+  } catch (err) {
+    setTimerActive(false);
     setTradeResult(null);
     setTradeDetail(null);
-    let token = localStorage.getItem("token");
-    if (!token) {
-      alert("Please log in to trade.");
-      setTimerActive(false);
-      return;
-    }
-    function parseJwt(token) {
-      try {
-        return JSON.parse(atob(token.split('.')[1]));
-      } catch (e) {
-        return {};
-      }
-    }
-    const payload = parseJwt(token);
-    const user_id = payload.id;
-    try {
-      const res = await axios.post(
-        `${MAIN_API_BASE}/trade`,
-        {
-          user_id,
-          direction: direction.toUpperCase(),
-          amount: Number(amount),
-          duration: Number(duration)
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (!res.data.trade_id) throw new Error("Failed to start trade");
-      const { trade_id } = res.data;
-      const endAt = Date.now() + duration * 1000;
-      const newTradeState = { trade_id, user_id, duration, endAt };
-      persistTradeState(newTradeState);
-      setTradeState(newTradeState);
-      setTimerActive(true);
-      setTimerKey(Math.random());
-    } catch (err) {
-      setTimerActive(false);
-      setTradeResult(null);
-      setTradeDetail(null);
-      persistTradeState(null);
-      alert("Trade failed: " + (err.response?.data?.error || err.message));
-    }
-  };
+    persistTradeState(null);
+    alert("Trade failed: " + (err.response?.data?.error || err.message));
+  }
+};
 
   return (
     <motion.div

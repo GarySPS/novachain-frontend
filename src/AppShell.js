@@ -12,7 +12,7 @@ import AboutUs from "./pages/AboutUs";
 import NavBar from './components/navbar';
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import NewsPage from "./components/Newspage"; // path may vary based on your structure
-
+import './i18n';
 
 
 function AppShell() {

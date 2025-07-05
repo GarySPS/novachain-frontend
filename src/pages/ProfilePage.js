@@ -11,6 +11,8 @@ import Chart from "../components/chart";
 import AssetsDonut from "../components/assetsdonut";
 import { Loader2 } from "lucide-react";
 import { createClient } from '@supabase/supabase-js';
+import { useTranslation } from "react-i18next";
+
 
 const SUPABASE_URL = "https://zgnefojwdijycgcqngke.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnbmVmb2p3ZGlqeWNnY3FuZ2tlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNTc3MjcsImV4cCI6MjA2NTczMzcyN30.RWPMuioeBKt_enKio-Z-XIr6-bryh3AEGSxmyc7UW7k";
@@ -58,7 +60,9 @@ export default function ProfilePage() {
   const [kycSelfiePreview, setKycSelfiePreview] = useState(null);
   const [kycIdPreview, setKycIdPreview] = useState(null);
   const [avatarSuccess, setAvatarSuccess] = useState("");
-const [avatarError, setAvatarError] = useState("");
+  const [avatarError, setAvatarError] = useState("");
+  const { t } = useTranslation();
+
 
   // Fetch balance history for the chart
   useEffect(() => {
@@ -202,13 +206,13 @@ const [avatarError, setAvatarError] = useState("");
     });
     setUser(updated.data.user);
     setAvatarFile(null);
-    setAvatarSuccess("Profile picture updated successfully!");
+    setAvatarSuccess(t('profile_avatar_updated'));
     setTimeout(() => {
       setAvatarSuccess("");
       setShowEditPic(false);
     }, 1700);
   } catch (err) {
-    setAvatarError("Failed to update avatar.");
+    setAvatarError(t('profile_avatar_failed'));
   }
 }
 
@@ -217,7 +221,7 @@ const [avatarError, setAvatarError] = useState("");
     setPwErr("");
     setPwSuccess("");
     if (pw1.current.value !== pw2.current.value) {
-      setPwErr("New passwords do not match.");
+      setPwErr(t('profile_pw_no_match'));
       return;
     }
     try {
@@ -231,13 +235,13 @@ const [avatarError, setAvatarError] = useState("");
       pwCurrent.current.value = "";
       pw1.current.value = "";
       pw2.current.value = "";
-      setPwSuccess("Password changed successfully!");
+      setPwSuccess(t('profile_pw_success'));
       setTimeout(() => {
         setPwSuccess("");
         setShowChangePw(false);
       }, 1800);
     } catch (err) {
-      setPwErr("Failed to change password. Make sure your current password is correct.");
+      setPwErr(t('profile_pw_failed'));
     }
   }
 
@@ -258,7 +262,7 @@ const [avatarError, setAvatarError] = useState("");
       <div className="bg-gradient-to-br from-[#181b25] via-[#191e29] to-[#181b25] min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center">
           <Loader2 className="animate-spin text-[#ffd700] mb-3" size={48} />
-          <span className="text-[#ffd700] text-xl font-semibold tracking-tight">Refreshing Balance</span>
+         <span className="text-[#ffd700] text-xl font-semibold tracking-tight">{t('profile_refreshing_balance')}</span>
         </div>
       </div>
     );
@@ -310,17 +314,17 @@ const [avatarError, setAvatarError] = useState("");
               {kycStatus.charAt(0).toUpperCase() + kycStatus.slice(1)}
             </div>
             <button
-              className="mt-8 px-7 py-3 font-semibold text-base rounded-2xl shadow bg-black text-white hover:bg-gray-800 transition"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
+      className="mt-8 px-7 py-3 font-semibold text-base rounded-2xl shadow bg-black text-white hover:bg-gray-800 transition"
+      onClick={handleLogout}
+      >
+      {t('profile_logout')}
+      </button>
           </div>
         </Card>
         {/* Balance/Action Card */}
         <Card className="flex flex-col items-center justify-center bg-gradient-to-tr from-[#f0f3ff] to-[#fafffa] border-0 shadow-lg rounded-2xl py-10 px-8">
           <div className="flex flex-col items-center w-full">
-            <div className="text-xl text-gray-400 font-bold mb-1 text-center">Total Assets</div>
+            <div className="text-xl text-gray-400 font-bold mb-1 text-center">{t('profile_total_assets')}</div>
             <div className="font-extrabold text-3xl md:text-4xl text-[#222] mb-7 drop-shadow-sm tracking-tight text-center">
               {typeof totalUsd === "number"
                 ? `$${totalUsd.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
@@ -332,19 +336,19 @@ const [avatarError, setAvatarError] = useState("");
               className="btn-primary w-full text-lg rounded-xl py-3 font-bold"
               onClick={() => navigate(`/wallet?action=deposit&coin=USDT`)}
             >
-              <Icon name="wallet" className="mr-2" /> Deposit
+              <Icon name="wallet" className="mr-2" /> {t('profile_deposit')}
             </button>
             <button
               className="btn-secondary w-full text-lg rounded-xl py-3 font-bold"
               onClick={() => navigate(`/wallet?action=withdraw&coin=BTC`)}
             >
-              <Icon name="arrow-up-right" className="mr-2" /> Withdraw
+              <Icon name="arrow-up-right" className="mr-2" /> {t('profile_withdraw')}
             </button>
             <button
               className="btn-primary w-full text-lg rounded-xl py-3 font-bold"
               onClick={() => navigate(`/wallet?action=convert`)}
             >
-              <Icon name="swap" className="mr-2" /> Convert
+              <Icon name="swap" className="mr-2" /> {t('profile_convert')}
             </button>
           </div>
         </Card>
@@ -359,7 +363,7 @@ const [avatarError, setAvatarError] = useState("");
             <AssetsDonut assets={assets} prices={prices} />
           </div>
           <div className="flex-1 flex flex-col justify-center items-center pl-4 w-full">
-            <div className="text-lg font-bold mb-4 text-[#f8fafc] drop-shadow text-center">Assets</div>
+            <div className="text-lg font-bold mb-4 text-[#f8fafc] drop-shadow text-center">{t('profile_assets')}</div>
             <div className="w-full max-w-xs">
               {assets.filter(a => a.balance > 0).map((a, i) => {
                 const price = prices[a.symbol] || (a.symbol === "USDT" ? 1 : 0);
@@ -405,7 +409,7 @@ const [avatarError, setAvatarError] = useState("");
           <div className="flex flex-col items-center mb-2">
             <div className="flex items-center gap-2 mb-2">
               <Icon name="shield-check" className="w-7 h-7 text-theme-primary" />
-              <span className="text-2xl font-black tracking-tight text-gray-800">KYC Verification</span>
+              <span className="text-2xl font-black tracking-tight text-gray-800">{t('profile_kyc_verification')}</span>
             </div>
             <div className="flex items-center mt-2 mb-1">
               <span className={`w-3 h-3 rounded-full mr-2 ${kycStatus === "approved"
@@ -417,14 +421,14 @@ const [avatarError, setAvatarError] = useState("");
                     : "bg-gray-400"
                 }`}></span>
               <span className="text-lg font-bold capitalize text-gray-600">
-                {kycStatus === "approved"
-                  ? "KYC Approved"
-                  : kycStatus === "pending"
-                    ? "KYC Pending"
-                    : kycStatus === "rejected"
-                      ? "Rejected"
-                      : "Unverified"}
-              </span>
+        {kycStatus === "approved"
+        ? t('profile_kyc_approved')
+        : kycStatus === "pending"
+        ? t('profile_kyc_pending')
+        : kycStatus === "rejected"
+        ? t('profile_kyc_rejected')
+        : t('profile_kyc_unverified')}
+        </span>
             </div>
           </div>
           {(kycStatus === "unverified" || kycStatus === "rejected") && (
@@ -437,8 +441,8 @@ const [avatarError, setAvatarError] = useState("");
                 <div className="flex-1">
                   <label className="mb-2 block font-semibold flex items-center gap-2">
                     <Icon name="user" className="w-5 h-5 text-theme-primary" />
-                    Upload Selfie
-                    <Tooltip text="Photo showing your face holding your ID" />
+                    {t('profile_upload_selfie')}
+                    <Tooltip text={t('profile_tooltip_selfie')} />
                   </label>
                   <div className="bg-white/60 border-2 border-dashed border-theme-primary/30 rounded-xl px-3 py-6 flex flex-col items-center justify-center transition hover:border-theme-primary">
                     <input
@@ -457,7 +461,7 @@ const [avatarError, setAvatarError] = useState("");
                     />
                     <label htmlFor="selfie" className="cursor-pointer flex flex-col items-center">
                       <Icon name="upload-cloud" className="w-8 h-8 text-theme-primary mb-1" />
-                      <span className="text-sm text-theme-primary font-semibold">Click to upload</span>
+                      <span className="text-sm text-theme-primary font-semibold">{t('profile_click_to_upload')}</span>
                     </label>
                     {kycSelfiePreview && (
                       <img
@@ -469,42 +473,44 @@ const [avatarError, setAvatarError] = useState("");
                     )}
                   </div>
                 </div>
+               
                 {/* ID Upload */}
-                <div className="flex-1">
-                  <label className="mb-2 block font-semibold flex items-center gap-2">
-                    <Icon name="id-card" className="w-5 h-5 text-yellow-500" />
-                    Upload ID
-                    <Tooltip text="Photo of your government-issued ID card" />
-                  </label>
-                  <div className="bg-white/60 border-2 border-dashed border-yellow-400/30 rounded-xl px-3 py-6 flex flex-col items-center justify-center transition hover:border-yellow-400">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      id="id-card"
-                      className="hidden"
-                      disabled={kycStatus === "pending" || kycStatus === "approved"}
-                      onChange={e => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          setKycId(file);
-                          setKycIdPreview(URL.createObjectURL(file));
-                        }
-                      }}
-                    />
-                    <label htmlFor="id-card" className="cursor-pointer flex flex-col items-center">
-                      <Icon name="upload-cloud" className="w-8 h-8 text-yellow-500 mb-1" />
-                      <span className="text-sm text-yellow-500 font-semibold">Click to upload</span>
-                    </label>
-                    {kycIdPreview && (
-                      <img
-                        src={kycIdPreview}
-                        alt="ID Preview"
-                        className="rounded-lg mt-3 border-2 border-yellow-400 shadow"
-                        style={{ maxWidth: 90 }}
-                      />
-                    )}
-                  </div>
-                </div>
+<div className="flex-1">
+  <label className="mb-2 block font-semibold flex items-center gap-2">
+    <Icon name="id-card" className="w-5 h-5 text-yellow-500" />
+    {t('profile_upload_id')}
+    <Tooltip text={t('profile_tooltip_id')} />
+  </label>
+  <div className="bg-white/60 border-2 border-dashed border-yellow-400/30 rounded-xl px-3 py-6 flex flex-col items-center justify-center transition hover:border-yellow-400">
+    <input
+      type="file"
+      accept="image/*"
+      id="id-card"
+      className="hidden"
+      disabled={kycStatus === "pending" || kycStatus === "approved"}
+      onChange={e => {
+        const file = e.target.files[0];
+        if (file) {
+          setKycId(file);
+          setKycIdPreview(URL.createObjectURL(file));
+        }
+      }}
+    />
+    <label htmlFor="id-card" className="cursor-pointer flex flex-col items-center">
+      <Icon name="upload-cloud" className="w-8 h-8 text-yellow-500 mb-1" />
+      <span className="text-sm text-yellow-500 font-semibold">{t('profile_click_to_upload')}</span>
+    </label>
+    {kycIdPreview && (
+      <img
+        src={kycIdPreview}
+        alt="ID Preview"
+        className="rounded-lg mt-3 border-2 border-yellow-400 shadow"
+        style={{ maxWidth: 90 }}
+      />
+    )}
+  </div>
+</div>
+
               </div>
               <div className="flex w-full justify-center">
                 <button
@@ -512,36 +518,36 @@ const [avatarError, setAvatarError] = useState("");
                   className="btn-primary h-12 px-10 font-bold rounded-xl shadow-lg w-full md:w-72"
                   disabled={!kycSelfie || !kycId || kycStatus === "pending"}
                 >
-                  {kycStatus === "rejected" ? "Resubmit KYC" : "Submit KYC"}
+                  {kycStatus === "rejected" ? t('profile_resubmit_kyc') : t('profile_submit_kyc')}
                 </button>
               </div>
               {kycSubmitted && (
                 <div className="mt-2 text-green-600 font-semibold text-center transition-opacity animate-fade-in">
-                  KYC submitted!
+                  {t('profile_kyc_submitted')}
                 </div>
               )}
             </form>
           )}
           <div className="text-sm text-gray-500 mt-2 text-center">
             {kycStatus === "approved"
-              ? "You are fully verified."
-              : kycStatus === "pending"
-                ? "Our team is reviewing your documents."
-                : kycStatus === "rejected"
-                  ? "Your KYC was rejected. Please upload new documents."
-                  : "Upload a clear selfie holding your ID and a photo of your government-issued ID."}
+        ? t('profile_kyc_verified')
+        : kycStatus === "pending"
+        ? t('profile_kyc_reviewing')
+        : kycStatus === "rejected"
+        ? t('profile_kyc_rejected_message')
+        : t('profile_kyc_instruction')}
           </div>
         </Card>
         {/* Settings */}
         <Card className="bg-gradient-to-tr from-[#f9f7e6] to-[#f4f8ff] rounded-2xl shadow px-8 py-7 flex flex-col items-center">
-          <div className="font-bold text-lg text-gray-700 mb-3 text-center">Settings</div>
+          <div className="font-bold text-lg text-gray-700 mb-3 text-center">{t('profile_settings')}</div>
           <div className="flex flex-row gap-4 justify-center w-full">
             <button className="btn-stroke px-6 py-3 rounded-xl font-bold" onClick={() => setShowChangePw(true)}>
-              <Icon name="lock" className="mr-2" /> Change Password
+              <Icon name="lock" className="mr-2" /> {t('profile_change_password')}
             </button>
             <button className="btn-stroke px-6 py-3 rounded-xl font-bold" onClick={() => setShowEditPic(true)}>
-              <Icon name="edit" className="mr-2" /> Change Profile
-            </button>
+           <Icon name="edit" className="mr-2" /> {t('profile_change_profile')}
+           </button>
           </div>
         </Card>
       </div>
@@ -549,62 +555,64 @@ const [avatarError, setAvatarError] = useState("");
       <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
         {/* Referral */}
         <Card className="bg-gradient-to-tr from-[#ecf1fc] to-[#fff5f5] rounded-2xl shadow px-8 py-7 flex flex-col items-center">
-          <div className="font-bold text-lg text-gray-700 mb-2 text-center">Referral Code</div>
-          <div className="flex items-center mb-2 justify-center">
-            <span className="text-xl font-extrabold text-black mr-3">{user.referral || "NC-INVITE-8437"}</span>
-            <button
-              className="bg-black text-white font-bold py-1 px-4 rounded-xl hover:bg-gray-800 transition ml-2"
-              onClick={() => {
-                navigator.clipboard.writeText(user.referral || "NC-INVITE-8437");
-                alert("Copied to clipboard!");
-              }}
-            >
-              <Icon name="copy" className="mr-1" /> Copy
-            </button>
-          </div>
-          <div className="text-sm text-gray-500 text-center">
-            Invite your friends and earn rewards!
-          </div>
-        </Card>
+  <div className="font-bold text-lg text-gray-700 mb-2 text-center">{t('profile_referral_code')}</div>
+  <div className="flex items-center mb-2 justify-center">
+    <span className="text-xl font-extrabold text-black mr-3">{user.referral || "NC-INVITE-8437"}</span>
+    <button
+      className="bg-black text-white font-bold py-1 px-4 rounded-xl hover:bg-gray-800 transition ml-2"
+      onClick={() => {
+        navigator.clipboard.writeText(user.referral || "NC-INVITE-8437");
+        alert(t('profile_copied_clipboard'));
+      }}
+    >
+      <Icon name="copy" className="mr-1" /> {t('profile_copy')}
+    </button>
+  </div>
+  <div className="text-sm text-gray-500 text-center">
+    {t('profile_referral_invite')}
+  </div>
+</Card>
         {/* Support */}
         <Card className="bg-gradient-to-tr from-[#f7eefd] to-[#eafffc] rounded-2xl shadow px-8 py-7 flex flex-col items-center justify-center">
           <button
             className="w-full max-w-xs h-12 rounded-xl font-bold text-lg bg-black text-white border-2 border-black hover:bg-white hover:text-black transition"
             onClick={() => window.open('https://t.me/novachainsingapore', '_blank')}
           >
-            <Icon name="support" className="mr-2" /> Contact Support
+            <Icon name="support" className="mr-2" /> {t('profile_contact_support')}
           </button>
         </Card>
       </div>
+    
       {/* Modals */}
-      <Modal visible={showChangePw} onClose={() => setShowChangePw(false)}>
-        <h3 className="text-title-2 font-semibold mb-4">Change Password</h3>
-        <form onSubmit={handleChangePassword} className="space-y-3">
-          <Field type="password" placeholder="Current Password" inputRef={pwCurrent} />
-          <Field type="password" placeholder="New Password" inputRef={pw1} />
-          <Field type="password" placeholder="Confirm New Password" inputRef={pw2} />
-          {pwErr && <div className="text-theme-red mb-2">{pwErr}</div>}
-          {pwSuccess && (
-            <div className="bg-green-100 border border-green-300 text-green-700 rounded-lg px-4 py-2 text-center mb-2 transition">
-              {pwSuccess}
-            </div>
-          )}
-          <div className="flex justify-center gap-4 mt-4">
-            <button type="submit" className="btn-primary" disabled={!!pwSuccess}>Save</button>
-            <button type="button" onClick={() => setShowChangePw(false)} className="btn-secondary">Cancel</button>
-          </div>
-        </form>
-      </Modal>
-      <Modal visible={showEditPic} onClose={() => setShowEditPic(false)}>
-  <h3>Change Profile Picture</h3>
+<Modal visible={showChangePw} onClose={() => setShowChangePw(false)}>
+  <h3 className="text-title-2 font-semibold mb-4">{t('profile_change_password')}</h3>
+  <form onSubmit={handleChangePassword} className="space-y-3">
+    <Field type="password" placeholder={t('profile_current_password')} inputRef={pwCurrent} />
+    <Field type="password" placeholder={t('profile_new_password')} inputRef={pw1} />
+    <Field type="password" placeholder={t('profile_confirm_new_password')} inputRef={pw2} />
+    {pwErr && <div className="text-theme-red mb-2">{pwErr}</div>}
+    {pwSuccess && (
+      <div className="bg-green-100 border border-green-300 text-green-700 rounded-lg px-4 py-2 text-center mb-2 transition">
+        {pwSuccess}
+      </div>
+    )}
+    <div className="flex justify-center gap-4 mt-4">
+      <button type="submit" className="btn-primary" disabled={!!pwSuccess}>{t('profile_save')}</button>
+      <button type="button" onClick={() => setShowChangePw(false)} className="btn-secondary">{t('profile_cancel')}</button>
+    </div>
+  </form>
+</Modal>
+
+<Modal visible={showEditPic} onClose={() => setShowEditPic(false)}>
+  <h3>{t('profile_change_picture')}</h3>
   <div className="flex flex-col items-center gap-4">
     <img
-  src={
-    avatarFile
-      ? URL.createObjectURL(avatarFile)
-      : bustCache(avatarUrl) || "/logo192_new.png"
-  }
-  alt="Profile Preview"
+      src={
+        avatarFile
+          ? URL.createObjectURL(avatarFile)
+          : bustCache(avatarUrl) || "/logo192_new.png"
+      }
+      alt="Profile Preview"
       className="rounded-full border-4 border-yellow-400 shadow-xl object-cover bg-white"
       style={{ width: 120, height: 120, objectFit: "cover" }}
       onError={e => {
@@ -621,7 +629,7 @@ const [avatarError, setAvatarError] = useState("");
     />
     <label htmlFor="profile-pic-input" className="w-full">
       <span className="btn-primary mt-2 block text-center cursor-pointer">
-        Choose New Photo
+        {t('profile_choose_new_photo')}
       </span>
     </label>
     {avatarSuccess && (
@@ -640,17 +648,18 @@ const [avatarError, setAvatarError] = useState("");
         onClick={saveAvatar}
         disabled={!avatarFile}
       >
-        Save
+        {t('profile_save')}
       </button>
       <button
         className="btn-secondary"
         onClick={() => setShowEditPic(false)}
       >
-        Cancel
+        {t('profile_cancel')}
       </button>
     </div>
   </div>
 </Modal>
+
 
     </div>
   );
