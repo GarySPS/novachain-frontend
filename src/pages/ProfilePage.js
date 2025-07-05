@@ -564,7 +564,7 @@ export default function ProfilePage() {
       onClick={() => alert('Download coming soon!')}
     >
       <Icon name="download" className="mb-1 w-7 h-7" />
-      {t('profile_download')}
+      {t('Download')}
     </button>
   </div>
 </Card>
