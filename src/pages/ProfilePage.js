@@ -63,7 +63,17 @@ export default function ProfilePage() {
   const [avatarSuccess, setAvatarSuccess] = useState("");
   const [avatarError, setAvatarError] = useState("");
   const { t } = useTranslation();
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
 
+useEffect(() => {
+  const handler = (e) => {
+    e.preventDefault(); // Prevent Chrome's mini-infobar
+    setDeferredPrompt(e);
+  };
+  window.addEventListener('beforeinstallprompt', handler);
+
+  return () => window.removeEventListener('beforeinstallprompt', handler);
+}, []);
 
   // Fetch balance history for the chart
   useEffect(() => {
@@ -560,12 +570,23 @@ export default function ProfilePage() {
       <span className="text-xs mt-1 text-gray-600">{t('profile_language')}</span>
     </div>
     <button
-      className="btn-stroke px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center"
-      onClick={() => alert('Download coming soon!')}
-    >
-      <Icon name="download" className="mb-1 w-7 h-7" />
-      {t('Download')}
-    </button>
+  className="btn-stroke px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center"
+  onClick={async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const choiceResult = await deferredPrompt.userChoice;
+      if (choiceResult.outcome === 'accepted') {
+        setDeferredPrompt(null); // Hide button after install
+      }
+    } else {
+      alert("If you're on Android Chrome, visit this page in your browser to install as an app. (If you don't see the prompt, try refreshing or use browser menu > Add to Home Screen.)");
+    }
+  }}
+  disabled={!deferredPrompt}
+>
+  <Icon name="download" className="mb-1 w-7 h-7" />
+  {t('Download')}
+</button>
   </div>
 </Card>
 
