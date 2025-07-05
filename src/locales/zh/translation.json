@@ -30,5 +30,16 @@
   "profile_contact_support": "联系客服",
 
   "latest_updates": "最新动态",
-  "no_news": "未找到新闻。"
+  "no_news": "未找到新闻。",
+
+  "trade_direction": "交易方向",
+  "buy": "买入",
+  "sell": "卖出",
+  "current_price": "当前价格",
+  "amount": "金额",
+  "duration": "时长",
+  "invest": "投资",
+  "investing": "投资中",
+  "trading": "交易中",
+  "result": "结果"
 }
