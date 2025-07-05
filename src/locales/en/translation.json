@@ -94,5 +94,14 @@
   "submit_withdraw": "Submit Withdraw",
   "deposit_withdraw_history": "Deposit & Withdraw History",
   "view_screenshot": "View Screenshot",
-  "copied": "Copied!"
+  "copied": "Copied!",
+
+  "downloadApp": "Download App",
+  "installOnIOS": "Install NovaChain on iOS",
+  "step1": "Tap Share in Safari",
+  "step2": "Scroll down and tap Add to Home Screen",
+  "step3": "Tap Add in the top-right",
+  "close": "Close",
+  "unsupported": "Your browser does not support installing the app. Please use Safari on iOS or Chrome on Android."
 }
+
