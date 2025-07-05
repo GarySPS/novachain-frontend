@@ -10,9 +10,9 @@ const navItems = [
   { label: "History", to: "/trade-history" },
   { label: "Wallet", to: "/wallet" },
   { label: "Profile", to: "/profile" },
-  { label: "About Us", to: "/about" }, 
+  { label: "News", to: "/news" },      
+  { label: "About Us", to: "/about" },
 ];
-
 
 export default function NavBar() {
   const location = useLocation();

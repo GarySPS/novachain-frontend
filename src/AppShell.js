@@ -11,6 +11,8 @@ import VerifyOTPPage from "./pages/VerifyOTPPage";
 import AboutUs from "./pages/AboutUs";
 import NavBar from './components/navbar';
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import NewsPage from "./components/Newspage"; // path may vary based on your structure
+
 
 
 function AppShell() {
@@ -32,6 +34,7 @@ function AppShell() {
           <Route path="/verify-otp" element={<VerifyOTPPage />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/forgot" element={<ForgotPasswordPage />} />
+          <Route path="/news" element={<NewsPage />} />
         </Routes>
       </main>
     </div>

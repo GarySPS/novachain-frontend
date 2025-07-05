@@ -3,12 +3,6 @@ import Card from "../components/card";
 import NewsTicker from "../components/newsticker";
 import { MAIN_API_BASE } from "../config";
 
-const fakeNews = [
-  "🔥 Bitcoin surges past $105K as whales accumulate.",
-  "🚨 Ethereum 2.0 upgrade delayed again, developers confirm.",
-  "💷 XRP wins key court case, price spikes 15%.",
-];
-
 function formatBigNum(number) {
   if (!number || isNaN(number)) return "--";
   if (number >= 1e12) return "$" + (number / 1e12).toFixed(2) + "T";
@@ -21,7 +15,9 @@ function formatBigNum(number) {
 export default function Dashboard() {
   const [coins, setCoins] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [newsHeadlines, setNewsHeadlines] = useState([]);
 
+  // Fetch prices
   useEffect(() => {
     const fetchPrices = async () => {
       try {
@@ -38,6 +34,31 @@ export default function Dashboard() {
     fetchPrices();
     const interval = setInterval(fetchPrices, 12000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Fetch news headlines for the ticker
+  useEffect(() => {
+    async function fetchHeadlines() {
+      try {
+        const rssUrl = "https://cointelegraph.com/rss";
+        const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        // Grab first 10 headlines, fallback if none
+        setNewsHeadlines(
+          (data.items || []).slice(0, 10).map(
+            (item) =>
+              item.title.replace(
+                /&#(\d+);/g,
+                (m, code) => String.fromCharCode(code)
+              )
+          )
+        );
+      } catch (e) {
+        setNewsHeadlines([]);
+      }
+    }
+    fetchHeadlines();
   }, []);
 
   return (
@@ -127,7 +148,7 @@ export default function Dashboard() {
           </div>
           {/* News Ticker */}
           <div className="w-full max-w-4xl mx-auto px-2 md:px-4 py-5">
-            <NewsTicker news={fakeNews} />
+            <NewsTicker news={newsHeadlines.length ? newsHeadlines : ["Loading latest crypto headlines..."]} />
           </div>
         </Card>
       </div>
