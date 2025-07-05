@@ -16,6 +16,11 @@ const SUPABASE_URL = "https://zgnefojwdijycgcqngke.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnbmVmb2p3ZGlqeWNnY3FuZ2tlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNTc3MjcsImV4cCI6MjA2NTczMzcyN30.RWPMuioeBKt_enKio-Z-XIr6-bryh3AEGSxmyc7UW7k";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+function bustCache(url) {
+  if (!url) return url;
+  return url + (url.includes('?') ? '&bust=' : '?bust=') + Date.now();
+}
+
 
 // --- Helper to get signed URL from Supabase if needed ---
 async function getSignedUrl(path, bucket) {
@@ -131,55 +136,14 @@ const [avatarError, setAvatarError] = useState("");
   }, [navigate]);
 
 
-  // Handle Supabase or uploads avatar fetch
-useEffect(() => {
-  async function fetchAvatarUrl() {
-    if (!user || !user.avatar) {
-      setAvatarUrl("/logo192_new.png");
-      return;
-    }
-
-    // 1. Supabase "avatar" bucket: if not http/profile/uploads
-    if (
-      !user.avatar.startsWith("http") &&
-      !user.avatar.startsWith("profile/") &&
-      !user.avatar.startsWith("/uploads/")
-    ) {
-      const { data, error } = await supabase.storage
-        .from("avatar")
-        .createSignedUrl(user.avatar, 3600);
-      if (error || !data?.signedUrl) {
-        setAvatarUrl("/logo192_new.png");
-      } else {
-        setAvatarUrl(data.signedUrl);
-      }
-      return;
-    }
-
-    // 2. Supabase "profile" bucket (legacy)
-    if (user.avatar.startsWith("profile/")) {
-      const url = await getSignedUrl(user.avatar, "profile");
-      setAvatarUrl(url);
-      return;
-    }
-
-    // 3. Local uploads
-    if (user.avatar.startsWith("/uploads/")) {
-      setAvatarUrl(`${MAIN_API_BASE.replace(/\/api$/, "")}${user.avatar}`);
-      return;
-    }
-
-    // 4. Already full URL
-    if (user.avatar.startsWith("http")) {
-      setAvatarUrl(user.avatar);
-      return;
-    }
-
-    // 5. fallback
+  useEffect(() => {
+  if (!user || !user.avatar) {
     setAvatarUrl("/logo192_new.png");
+    return;
   }
-  fetchAvatarUrl();
+  setAvatarUrl(user.avatar);  // <- always treat avatar as URL now
 }, [user]);
+
 
   function handleLogout() {
     localStorage.removeItem("token");
@@ -220,26 +184,19 @@ useEffect(() => {
   setAvatarSuccess("");
   setAvatarError("");
   try {
-    // 1. Upload to Supabase Storage ("avatar" bucket, folder per user)
-    const filePath = `${user.id}/${Date.now()}-${avatarFile.name}`;
-    const { data, error } = await supabase.storage
-      .from("avatar")
-      .upload(filePath, avatarFile, {
-        cacheControl: '3600',
-        upsert: true,
-      });
-    if (error) throw error;
-
-    // 2. Save the new avatar path in backend user profile
+    // 1. Send avatarFile to your backend API with auth
     const token = localStorage.getItem("token");
-    // Call your backend to update avatar field (expects avatar: `avatar/${filePath}`)
-    await axios.post(
-  `${MAIN_API_BASE}/profile/avatar`, // <-- CORRECT
-  { avatar: `${filePath}` },
-  { headers: { Authorization: `Bearer ${token}` } }
-);
+    const formData = new FormData();
+    formData.append("avatar", avatarFile); // <-- must match backend "upload.single('avatar')"
 
-    // 3. Fetch the new profile data to refresh
+    // Call your backend API
+    await axios.post(
+      `${MAIN_API_BASE}/profile/avatar`,
+      formData,
+      { headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" } }
+    );
+
+    // 2. Fetch profile again to get new avatar
     const updated = await axios.get(`${MAIN_API_BASE}/profile`, {
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -254,7 +211,6 @@ useEffect(() => {
     setAvatarError("Failed to update avatar.");
   }
 }
-
 
   async function handleChangePassword(e) {
     e.preventDefault();
@@ -322,9 +278,7 @@ useEffect(() => {
   src={
     avatarFile
       ? URL.createObjectURL(avatarFile)
-      : avatarUrl
-        ? `${avatarUrl}?v=${user?.avatar}`
-        : "/logo192_new.png"
+      : bustCache(avatarUrl) || "/logo192_new.png"
   }
   alt="Profile Preview"
               className="rounded-full border-4 border-yellow-400 shadow-xl object-cover bg-white"
@@ -648,9 +602,7 @@ useEffect(() => {
   src={
     avatarFile
       ? URL.createObjectURL(avatarFile)
-      : avatarUrl
-        ? `${avatarUrl}?v=${user?.avatar}`
-        : "/logo192_new.png"
+      : bustCache(avatarUrl) || "/logo192_new.png"
   }
   alt="Profile Preview"
       className="rounded-full border-4 border-yellow-400 shadow-xl object-cover bg-white"

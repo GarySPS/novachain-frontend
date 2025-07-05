@@ -17,19 +17,20 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 
-// Upload file to Supabase and return the public URL
+// Upload file to Supabase and return the FLAT filename (not URL)
 async function uploadDepositScreenshot(file, userId) {
   if (!file) return null;
-  // You may use "deposit" or "deposits" as the bucket name—check your Supabase dashboard for exact bucket.
-  const filePath = `${userId}/${Date.now()}-${file.name}`;
+  // Flat, unique filename:
+  const filePath = `${userId}-${Date.now()}-${file.name}`;
   const { data, error } = await supabase.storage.from('deposit').upload(filePath, file, {
     cacheControl: '3600',
     upsert: false,
   });
   if (error) throw error;
-  // Return public URL
-  return `${SUPABASE_URL}/storage/v1/object/public/deposit/${filePath}`;
+  // Return just the path, not the URL!
+  return filePath;
 }
+
 
 
 // --- Helper to get signed URL from Supabase if needed ---
@@ -92,17 +93,17 @@ export default function WalletPage() {
     async function fetchHistoryScreenshots() {
       let shots = {};
       for (let row of allHistory) {
-        if (row.screenshot) {
-          // Screenshot can be "deposits/xyz.png" (Supabase), or "/uploads/..." (local)
-          if (row.screenshot.startsWith("deposits/")) {
-            shots[row.id] = await getSignedUrl(row.screenshot, "deposits");
-          } else if (row.screenshot.startsWith("/uploads/")) {
-            shots[row.id] = `${MAIN_API_BASE}${row.screenshot}`;
-          } else if (row.screenshot.startsWith("http")) {
-            shots[row.id] = row.screenshot;
-          }
-        }
-      }
+  if (row.screenshot) {
+    // If the screenshot is just a filename (no "/"), it's Supabase flat file!
+    if (!row.screenshot.includes("/")) {
+      shots[row.id] = `https://zgnefojwdijycgcqngke.supabase.co/storage/v1/object/public/deposit/${encodeURIComponent(row.screenshot)}`;
+    } else if (row.screenshot.startsWith("/uploads/")) {
+      shots[row.id] = `${MAIN_API_BASE}${row.screenshot}`;
+    } else if (row.screenshot.startsWith("http")) {
+      shots[row.id] = row.screenshot;
+    }
+  }
+}
       setHistoryScreenshots(shots);
     }
     fetchHistoryScreenshots();
