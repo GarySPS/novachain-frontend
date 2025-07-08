@@ -65,8 +65,8 @@ export default function Dashboard() {
     <div className="min-h-screen w-full flex flex-col items-center px-1 pt-1 pb-2">
       <div className="w-full max-w-6xl mx-auto space-y-0">
         <Card className="w-full max-w-6xl mx-auto p-0 mt-0 mb-0 bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] shadow-lg rounded-2xl border border-[#f6e8ff]/80">
-          <div className="overflow-x-auto rounded-2xl">
-            <table className="min-w-[700px] w-full text-sm md:text-base">
+          <div className="w-full overflow-x-auto rounded-2xl">
+            <table className="w-full table-auto text-sm md:text-base">
               <thead>
                 <tr className="text-left text-theme-tertiary border-b border-theme-stroke">
                   <th className="py-3 px-3 md:px-4 font-semibold text-center whitespace-nowrap">Logo</th>
@@ -137,8 +137,8 @@ export default function Dashboard() {
                       {/* Market Cap */}
                       <td className="py-3 px-3 md:px-4 font-mono whitespace-nowrap">
                         <span className="inline-block w-[86px] px-2 py-1 rounded-lg font-bold text-base text-white text-center bg-green-500">
-                          {mcap ? formatBigNum(mcap) : "--"}
-                        </span>
+                            {mcap ? formatBigNum(mcap) : "--"}
+                       </span>
                       </td>
                     </tr>
                   );

@@ -73,8 +73,9 @@ export default function TradeHistory() {
             No trade history yet.
           </Card>
         ) : (
-          <Card className="max-w-5xl mx-auto mb-8 px-0 py-0 rounded-2xl shadow-lg border border-[#f6e8ff]/80 bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] overflow-x-auto">
-            <table className="w-full min-w-[950px] border-separate border-spacing-y-0.5">
+          <Card className="max-w-5xl mx-auto mb-8 px-0 py-0 rounded-2xl shadow-lg border border-[#f6e8ff]/80 bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff]">
+  <div className="w-full overflow-x-auto">
+            <table className="w-full table-auto text-sm md:text-base border-separate border-spacing-y-0.5">
               <thead>
                 <tr className="text-theme-tertiary border-b border-theme-stroke text-base font-semibold uppercase bg-theme-n-10/90">
                   <th className="py-4 px-3 rounded-tl-2xl">#</th>
@@ -102,7 +103,7 @@ export default function TradeHistory() {
                     {/* ID */}
                     <td className="py-3 px-3 font-mono text-theme-yellow text-center">{t.id}</td>
                     {/* Direction */}
-                    <td className="py-3 px-3 capitalize font-bold text-center">
+                    <td className="py-3 px-3 capitalize font-bold text-center trade-history-direction">
                       <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full shadow
                         ${t.direction === "BUY"
                           ? "bg-theme-green/10 text-theme-green border border-theme-green/50"
@@ -158,8 +159,10 @@ export default function TradeHistory() {
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </Card>
+                </table>
+  </div>
+</Card>
+
         )}
       </div>
     </div>

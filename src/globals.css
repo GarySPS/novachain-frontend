@@ -133,6 +133,79 @@ body, html, #root {
   -ms-overflow-style: none;  /* IE/Edge */
   scrollbar-width: none;     /* Firefox */
 }
+
+@media (max-width: 768px) {
+  table {
+    font-size: 12px;
+  }
+
+  th, td {
+    padding: 6px 4px !important;
+  }
+
+  td img {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .dashboard-coin-row td {
+    white-space: nowrap;
+  }
+}
+@media (max-width: 768px) {
+  table {
+    font-size: 13px;
+  }
+
+  th, td {
+    padding: 6px 4px !important;
+    white-space: nowrap;
+  }
+
+  td span, td div {
+    font-size: 12px !important;
+  }
+
+  .trade-history-direction span {
+    padding: 3px 6px !important;
+  }
+}
+@media (max-width: 768px) {
+  .trade-history-direction span {
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+  }
+}
+@media (max-width: 768px) {
+  table, thead, tbody, th, td, tr {
+    font-size: 13px !important;
+  }
+  th, td {
+    padding: 6px 4px !important;
+    white-space: nowrap;
+  }
+  .wallet-btn {
+    padding: 6px 8px !important;
+    font-size: 13px !important;
+  }
+  .wallet-table-type span {
+    padding: 4px 8px !important;
+  }
+}
+@media (max-width: 768px) {
+  table, thead, tbody, th, td, tr {
+    font-size: 13px !important;
+  }
+  th, td {
+    padding: 6px 4px !important;
+    white-space: nowrap;
+  }
+  .wallet-btn {
+    padding: 7px 9px !important;
+    font-size: 12.5px !important;
+  }
+}
+
 @keyframes fadein {
   from { opacity: 0; }
   to   { opacity: 1; }

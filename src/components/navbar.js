@@ -28,9 +28,9 @@ export default function NavBar() {
         backdropFilter: "blur(8px)"
       }}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-4 sm:px-2 w-full">
+      <div className="w-full flex items-center justify-between h-16 px-2 md:max-w-7xl md:mx-auto md:px-4">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-3">
+        <Link to="/" className="flex items-center gap-4">
           <NovaChainLogo className="h-12 md:h-10 w-auto drop-shadow-lg" />
         </Link>
         {/* Nav Links */}

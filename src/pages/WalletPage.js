@@ -358,7 +358,7 @@ export default function WalletPage() {
         {/* -- Assets Table -- */}
         <Card className="flex-[2] rounded-3xl shadow-lg px-7 py-6 overflow-x-auto mb-8 border bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] border-[#f6e8ff]/80">
           <div className="font-bold text-lg text-theme-secondary mb-3">{t('my_assets')}</div>
-          <table className="w-full">
+          <table className="w-full table-auto text-base md:text-lg">
             <thead>
               <tr className="text-left text-theme-tertiary border-b border-theme-stroke">
                 <th className="py-3 px-2">{t('type')}</th>
@@ -367,48 +367,58 @@ export default function WalletPage() {
                 <th className="py-3 px-2">{t('date')}</th>
                </tr>
             </thead>
-            <tbody>
-              {balances.map(({ symbol, icon, balance }) => (
-                <tr
-                  key={symbol}
-                  className="border-b border-theme-stroke last:border-0 hover:bg-theme-on-surface-2/80 transition"
-                >
-                  <td className="py-3 px-2 text-lg font-bold">
-                    <div className="flex items-center gap-2">
-                      <Icon name={symbol?.toLowerCase() || "coin"} className="w-7 h-7" />
-                      <span>{symbol}</span>
-                    </div>
-                  </td>
-                  <td className="font-mono text-theme-green py-3 px-2 text-lg">
-                    {Number(balance).toLocaleString(undefined, { minimumFractionDigits: symbol === "BTC" ? 6 : 2 })}
-                  </td>
-                  <td className="py-3 px-2 text-lg">
-                    {(prices[symbol] ? (
-                      "$" + (prices[symbol] * Number(balance)).toLocaleString(undefined, { maximumFractionDigits: 2 })
-                    ) : "--")}
-                  </td>
-                  <td className="py-3 px-2">
-                    <div className="flex gap-3">
-                      <button
-                        className="btn-primary px-4 py-2 rounded-xl font-bold"
-                        onClick={() => {
-                          setSelectedDepositCoin(symbol);
-                          openModal("deposit", symbol);
-                        }}
-                      >
-                        <Icon name="download" className="mr-1" /> {t('deposit')}
-                      </button>
-                      <button
-                        className="btn-secondary px-4 py-2 rounded-xl font-bold"
-                        onClick={() => openModal("withdraw", symbol)}
-                      >
-                        <Icon name="upload" className="mr-1" /> {t('withdraw')}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+              <tbody>
+  {balances.map(({ symbol, icon, balance }) => (
+    <tr
+      key={symbol}
+      className="border-b border-theme-stroke last:border-0 hover:bg-theme-on-surface-2/80 transition"
+    >
+      {/* Asset Name */}
+      <td className="py-4 px-2">
+        <div className="flex items-center gap-2">
+          <Icon name={symbol?.toLowerCase() || "coin"} className="w-7 h-7" />
+          <span className="font-extrabold text-xl md:text-2xl text-theme-primary">
+            {symbol}
+          </span>
+        </div>
+      </td>
+      {/* Amount */}
+      <td className="py-4 px-2">
+        <span className="font-mono text-theme-green text-lg md:text-xl font-bold tracking-wide">
+          {Number(balance).toLocaleString(undefined, { minimumFractionDigits: symbol === "BTC" ? 6 : 2 })}
+        </span>
+      </td>
+      {/* USD Value */}
+      <td className="py-4 px-2">
+        <span className="font-extrabold text-theme-primary text-lg md:text-xl">
+          {(prices[symbol] ? (
+            "$" + (prices[symbol] * Number(balance)).toLocaleString(undefined, { maximumFractionDigits: 2 })
+          ) : "--")}
+        </span>
+      </td>
+      {/* Buttons */}
+      <td className="py-4 px-2">
+        <div className="flex flex-col md:flex-row gap-2 md:gap-3">
+          <button
+            className="btn-primary px-4 py-2 rounded-xl font-bold wallet-btn w-full md:w-auto"
+            onClick={() => {
+              setSelectedDepositCoin(symbol);
+              openModal("deposit", symbol);
+            }}
+          >
+            <Icon name="download" className="mr-1" /> {t('deposit')}
+          </button>
+          <button
+            className="btn-secondary px-4 py-2 rounded-xl font-bold wallet-btn w-full md:w-auto"
+            onClick={() => openModal("withdraw", symbol)}
+          >
+            <Icon name="upload" className="mr-1" /> {t('withdraw')}
+          </button>
+        </div>
+      </td>
+    </tr>
+  ))}
+</tbody>
           </table>
         </Card>
       </div>
@@ -683,7 +693,7 @@ export default function WalletPage() {
           <Icon name="clock" className="w-7 h-7" /> {t('deposit_withdraw_history')}
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-lg">
+          <table className="w-full table-auto text-base md:text-lg">
             <thead>
               <tr className="text-left text-theme-tertiary border-b border-theme-stroke">
                 <th className="py-3 px-2">{t('type')}</th>
