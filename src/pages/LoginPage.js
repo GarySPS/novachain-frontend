@@ -150,14 +150,13 @@ export default function LoginPage() {
         </div>
 
         {/* Customer Support Button */}
-        <div className="mt-4 flex flex-col md:flex-row gap-3 justify-center w-full">
+         <div className="mt-4 flex flex-col items-center w-full">
   <a
     href="https://wa.me/66642822983"
     target="_blank"
     rel="noopener noreferrer"
-    className="w-full px-6 py-3 rounded-xl font-bold text-lg bg-[#25D366] text-white border-2 border-[#25D366] hover:bg-white hover:text-[#25D366] flex items-center justify-center transition-all"
+    className="w-full max-w-[340px] mb-3 px-6 py-3 rounded-xl font-bold text-lg bg-[#25D366] text-white border-2 border-[#25D366] hover:bg-white hover:text-[#25D366] flex items-center justify-center transition-all shadow"
     style={{
-      maxWidth: 180,
       boxShadow: "0 2px 10px #25D36622"
     }}
   >
@@ -170,9 +169,8 @@ export default function LoginPage() {
     href="https://t.me/novachainsingapore"
     target="_blank"
     rel="noopener noreferrer"
-    className="w-full px-6 py-3 rounded-xl font-bold text-lg bg-[#229ED9] text-white border-2 border-[#229ED9] hover:bg-white hover:text-[#229ED9] flex items-center justify-center transition-all"
+    className="w-full max-w-[340px] px-6 py-3 rounded-xl font-bold text-lg bg-[#229ED9] text-white border-2 border-[#229ED9] hover:bg-white hover:text-[#229ED9] flex items-center justify-center transition-all shadow"
     style={{
-      maxWidth: 180,
       boxShadow: "0 2px 10px #229ED922"
     }}
   >
