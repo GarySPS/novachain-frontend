@@ -364,7 +364,7 @@ export default function WalletPage() {
                 <th className="py-3 px-2">{t('type')}</th>
                 <th className="py-3 px-2">{t('amount')}</th>
                 <th className="py-3 px-2">{t('coin')}</th>
-                <th className="py-3 px-2">{t('date')}</th>
+                <th className="py-3 px-2">{t('Transfer')}</th>
                </tr>
             </thead>
               <tbody>
@@ -730,8 +730,8 @@ export default function WalletPage() {
                   </td>
                   <td className="py-3 px-2 text-lg">
                     {row.created_at
-                      ? new DataTransfer(row.created_at).toLocaleString()
-                      : (row.transfer || "--")}
+                      ? new Date(row.created_at).toLocaleString()
+                      : (row.date || "--")}
                   </td>
                  
                 </tr>
