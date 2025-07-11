@@ -605,7 +605,7 @@ useEffect(() => {
 )}
 {!(isIOSSafari() || (deferredPrompt && isAndroidChrome())) && (
   <div className="text-gray-500 text-center text-sm">
-    Install is available on Safari (iOS) and Chrome (Android).
+    Install is available on iOS and Android.
   </div>
 )}
 
