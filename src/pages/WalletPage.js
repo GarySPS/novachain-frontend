@@ -72,6 +72,7 @@ export default function WalletPage() {
   const [authChecked, setAuthChecked] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
   const [historyScreenshots, setHistoryScreenshots] = useState({});
+  const [totalUsd, setTotalUsd] = useState(0);
 
   // --- HISTORY LOGIC ---
   const userDepositHistory = depositHistory.filter(d => userId && Number(d.user_id) === Number(userId));
@@ -82,6 +83,19 @@ export default function WalletPage() {
   ].sort((a, b) =>
     new Date(b.created_at || b.date) - new Date(a.created_at || a.date)
   );
+
+  useEffect(() => {
+  if (!balances.length || !Object.keys(prices).length) {
+    setTotalUsd(0);
+    return;
+  }
+  let sum = 0;
+  balances.forEach(({ symbol, balance }) => {
+    const coinPrice = prices[symbol] || (symbol === "USDT" ? 1 : 0);
+    sum += Number(balance) * coinPrice;
+  });
+  setTotalUsd(sum);
+}, [balances, prices]);
 
   useEffect(() => {
     async function fetchHistoryScreenshots() {
@@ -131,10 +145,14 @@ export default function WalletPage() {
   }, [authChecked, isGuest, navigate]);
 
   useEffect(() => {
-    setPrices({
-      BTC: 107419.98, ETH: 2453.07, SOL: 143.66, XRP: 2.17, TON: 6.34, USDT: 1
+  axios.get(`${MAIN_API_BASE}/prices`).then(res => {
+    const priceObj = {};
+    (res.data.data || []).forEach(c => {
+      priceObj[c.symbol] = c.quote.USD.price;
     });
-  }, []);
+    setPrices(priceObj);
+  });
+}, []);
 
   useEffect(() => {
     axios.get(`${MAIN_API_BASE}/deposit-addresses`)
@@ -347,10 +365,8 @@ export default function WalletPage() {
               <span className="font-extrabold text-2xl tracking-wide text-theme-primary">{t('total_balance')}</span>
             </div>
             <div className="font-extrabold text-5xl text-theme-primary text-center tracking-tight drop-shadow-lg">
-              {`$${balances.reduce((acc, { symbol, balance }) =>
-                acc + ((prices[symbol] || (symbol === "USDT" ? 1 : 0)) * Number(balance)), 0
-              ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-            </div>
+  {`$${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+</div>
             <div className="text-theme-tertiary mt-1 text-base font-semibold tracking-wide">{t('usd')}</div>
           </div>
         </Card>

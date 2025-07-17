@@ -10,14 +10,10 @@ import Icon from "../components/icon";
 import Chart from "../components/chart";
 import AssetsDonut from "../components/assetsdonut";
 import { Loader2 } from "lucide-react";
-import { createClient } from '@supabase/supabase-js';
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 
-
-const SUPABASE_URL = "https://zgnefojwdijycgcqngke.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnbmVmb2p3ZGlqeWNnY3FuZ2tlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNTc3MjcsImV4cCI6MjA2NTczMzcyN30.RWPMuioeBKt_enKio-Z-XIr6-bryh3AEGSxmyc7UW7k";
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+// Remove all balance logic from user table, only use assets array from API
 
 function isIOSSafari() {
   const ua = window.navigator.userAgent;
@@ -37,21 +33,12 @@ function bustCache(url) {
   return url + (url.includes('?') ? '&bust=' : '?bust=') + Date.now();
 }
 
-
-// --- Helper to get signed URL from Supabase if needed ---
-async function getSignedUrl(path, bucket) {
-  if (!path) return null;
-  if (path.startsWith('http')) return path;
-  const filename = path.split('/').pop();
-  const res = await axios.get(`${MAIN_API_BASE}/upload/${bucket}/signed-url/${filename}`);
-  return res.data.url;
-}
-
 export default function ProfilePage() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [balance, setBalance] = useState(null);
   const [assets, setAssets] = useState([]);
+  const [prices, setPrices] = useState({});
+  const [totalUsd, setTotalUsd] = useState(0);
   const [loading, setLoading] = useState(true);
   const [kycStatus, setKycStatus] = useState("unverified");
   const [kycSelfie, setKycSelfie] = useState(null);
@@ -63,32 +50,40 @@ export default function ProfilePage() {
   const [avatarFile, setAvatarFile] = useState(null);
   const pw1 = useRef("");
   const pw2 = useRef("");
-  const [pwErr, setPwErr] = useState("");
-  const fileInputRef = useRef();
-  const [prices, setPrices] = useState({});
-  const [totalUsd, setTotalUsd] = useState(null);
-  const [balanceHistory, setBalanceHistory] = useState([]);
-  const [authChecked, setAuthChecked] = useState(false);
   const pwCurrent = useRef("");
+  const [pwErr, setPwErr] = useState("");
   const [pwSuccess, setPwSuccess] = useState("");
   const [kycSelfiePreview, setKycSelfiePreview] = useState(null);
   const [kycIdPreview, setKycIdPreview] = useState(null);
   const [avatarSuccess, setAvatarSuccess] = useState("");
   const [avatarError, setAvatarError] = useState("");
+  const [balanceHistory, setBalanceHistory] = useState([]);
+  const [authChecked, setAuthChecked] = useState(false);
   const { t } = useTranslation();
   const [deferredPrompt, setDeferredPrompt] = useState(null);
 
-useEffect(() => {
-  const handler = (e) => {
-    e.preventDefault(); // Prevent Chrome's mini-infobar
-    setDeferredPrompt(e);
-  };
-  window.addEventListener('beforeinstallprompt', handler);
+  // For install PWA
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
 
-  return () => window.removeEventListener('beforeinstallprompt', handler);
-}, []);
+  // Fetch prices
+  useEffect(() => {
+    axios.get(`${MAIN_API_BASE}/prices`).then(res => {
+      const priceObj = {};
+      (res.data.data || []).forEach(c => {
+        priceObj[c.symbol] = c.quote.USD.price;
+      });
+      setPrices(priceObj);
+    });
+  }, []);
 
-  // Fetch balance history for the chart
+  // Fetch balance history for chart
   useEffect(() => {
     async function fetchBalanceHistory() {
       try {
@@ -105,18 +100,36 @@ useEffect(() => {
     fetchBalanceHistory();
   }, []);
 
+  // Always fetch profile and balances from backend
   useEffect(() => {
-    axios.get(`${MAIN_API_BASE}/prices`).then(res => {
-      const priceObj = {};
-      (res.data.data || []).forEach(c => {
-        priceObj[c.symbol] = c.quote.USD.price;
-      });
-      setPrices(priceObj);
-    });
-  }, []);
+    async function fetchProfileAndAssets() {
+      try {
+        const token = localStorage.getItem("token");
+        const headers = { Authorization: `Bearer ${token}` };
+        // User info
+        const res = await axios.get(`${MAIN_API_BASE}/profile`, { headers });
+        setUser(res.data.user);
+        // Balances per coin
+        const balRes = await axios.get(`${MAIN_API_BASE}/balance`, { headers });
+        setAssets(balRes.data.assets || []);
+        // KYC
+        const kycRes = await axios.get(`${MAIN_API_BASE}/kyc/status`, { headers });
+        setKycStatus((kycRes.data.status || "unverified").toLowerCase());
+        setLoading(false);
+      } catch (err) {
+        navigate("/login", { replace: true });
+      }
+    }
+    fetchProfileAndAssets();
+    setAuthChecked(true);
+  }, [navigate]);
 
+  // Calculate totalUsd (exactly as wallet page)
   useEffect(() => {
-    if (!assets.length || !Object.keys(prices).length) return;
+    if (!assets.length || !Object.keys(prices).length) {
+      setTotalUsd(0);
+      return;
+    }
     let sum = 0;
     assets.forEach(({ symbol, balance }) => {
       const coinPrice = prices[symbol] || (symbol === "USDT" ? 1 : 0);
@@ -126,9 +139,22 @@ useEffect(() => {
   }, [assets, prices]);
 
   useEffect(() => {
-    setAuthChecked(true);
-  }, []);
+    if (!user || !user.avatar) {
+      setAvatarUrl("/logo192_new.png");
+      return;
+    }
+    setAvatarUrl(user.avatar);
+  }, [user]);
 
+  useEffect(() => {
+    if (!authChecked) return;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login", { replace: true });
+    }
+  }, [authChecked, navigate]);
+
+  // KYC polling (optional)
   useEffect(() => {
     if (kycStatus !== "pending") return;
     const interval = setInterval(async () => {
@@ -142,63 +168,33 @@ useEffect(() => {
     return () => clearInterval(interval);
   }, [kycStatus]);
 
-  useEffect(() => {
-    async function fetchProfile() {
-      try {
-        const token = localStorage.getItem("token");
-        const headers = { Authorization: `Bearer ${token}` };
-        const res = await axios.get(`${MAIN_API_BASE}/profile`, { headers });
-        setUser(res.data.user);
-        // No need to setAvatarUrl here! See next effect
-        const balRes = await axios.get(`${MAIN_API_BASE}/balance`, { headers });
-        setBalance(balRes.data.total_usd);
-        setAssets(balRes.data.assets);
-        const kycRes = await axios.get(`${MAIN_API_BASE}/kyc/status`, { headers });
-        setKycStatus((kycRes.data.status || "unverified").toLowerCase());
-        setLoading(false);
-      } catch (err) {
-        navigate("/login", { replace: true });
-      }
-    }
-    fetchProfile();
-  }, [navigate]);
-
-
-  useEffect(() => {
-  if (!user || !user.avatar) {
-    setAvatarUrl("/logo192_new.png");
-    return;
-  }
-  setAvatarUrl(user.avatar);  // <- always treat avatar as URL now
-}, [user]);
-
-
+  // --- Actions ---
   function handleLogout() {
     localStorage.removeItem("token");
     navigate("/login");
   }
 
   async function handleKycSubmit(e) {
-  e.preventDefault();
-  if (!kycSelfie || !kycId) return;
-  try {
-    setKycSubmitted(true);
-    const formData = new FormData();
-    formData.append("selfie", kycSelfie);   // <--- must be 'selfie'
-    formData.append("id_card", kycId);      // <--- must be 'id_card'
-    const token = localStorage.getItem("token");
-    await axios.post(`${MAIN_API_BASE}/kyc`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`
-      }
-    });
-    setKycStatus("pending");
-  } catch (err) {
-    alert("Failed to submit KYC. Try again.");
+    e.preventDefault();
+    if (!kycSelfie || !kycId) return;
+    try {
+      setKycSubmitted(true);
+      const formData = new FormData();
+      formData.append("selfie", kycSelfie);
+      formData.append("id_card", kycId);
+      const token = localStorage.getItem("token");
+      await axios.post(`${MAIN_API_BASE}/kyc`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setKycStatus("pending");
+    } catch (err) {
+      alert("Failed to submit KYC. Try again.");
+    }
+    setKycSubmitted(false);
   }
-  setKycSubmitted(false);
-}
 
   async function handleAvatarChange(e) {
     const file = e.target.files[0];
@@ -208,37 +204,33 @@ useEffect(() => {
   }
 
   async function saveAvatar() {
-  if (!avatarFile || !user?.id) return;
-  setAvatarSuccess("");
-  setAvatarError("");
-  try {
-    // 1. Send avatarFile to your backend API with auth
-    const token = localStorage.getItem("token");
-    const formData = new FormData();
-    formData.append("avatar", avatarFile); // <-- must match backend "upload.single('avatar')"
-
-    // Call your backend API
-    await axios.post(
-      `${MAIN_API_BASE}/profile/avatar`,
-      formData,
-      { headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" } }
-    );
-
-    // 2. Fetch profile again to get new avatar
-    const updated = await axios.get(`${MAIN_API_BASE}/profile`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    setUser(updated.data.user);
-    setAvatarFile(null);
-    setAvatarSuccess(t('profile_avatar_updated'));
-    setTimeout(() => {
-      setAvatarSuccess("");
-      setShowEditPic(false);
-    }, 1700);
-  } catch (err) {
-    setAvatarError(t('profile_avatar_failed'));
+    if (!avatarFile || !user?.id) return;
+    setAvatarSuccess("");
+    setAvatarError("");
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("avatar", avatarFile);
+      await axios.post(
+        `${MAIN_API_BASE}/profile/avatar`,
+        formData,
+        { headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" } }
+      );
+      // Fetch profile again
+      const updated = await axios.get(`${MAIN_API_BASE}/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUser(updated.data.user);
+      setAvatarFile(null);
+      setAvatarSuccess(t('profile_avatar_updated'));
+      setTimeout(() => {
+        setAvatarSuccess("");
+        setShowEditPic(false);
+      }, 1700);
+    } catch (err) {
+      setAvatarError(t('profile_avatar_failed'));
+    }
   }
-}
 
   async function handleChangePassword(e) {
     e.preventDefault();
@@ -269,29 +261,19 @@ useEffect(() => {
     }
   }
 
-  // ----------------------------------------------------------------------
-
-  useEffect(() => {
-    if (!authChecked) return;
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login", { replace: true });
-    }
-  }, [authChecked, navigate]);
-
   if (!authChecked) return null;
-
   if (loading || !user) {
     return (
       <div className="bg-gradient-to-br from-[#181b25] via-[#191e29] to-[#181b25] min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center">
           <Loader2 className="animate-spin text-[#ffd700] mb-3" size={48} />
-         <span className="text-[#ffd700] text-xl font-semibold tracking-tight">{t('profile_refreshing_balance')}</span>
+          <span className="text-[#ffd700] text-xl font-semibold tracking-tight">{t('profile_refreshing_balance')}</span>
         </div>
       </div>
     );
   }
 
+  // --- UI ---
   return (
     <div className="min-h-screen py-10 px-2 flex flex-col items-center" style={{
       background: "linear-gradient(120deg, #181D2F 0%, #181A20 100%)"
