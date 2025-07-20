@@ -1,27 +1,24 @@
-import { FaTools } from "react-icons/fa";
+import { FiTool } from "react-icons/fi";
 
 export default function DatabaseErrorCard() {
   return (
-    <div className="flex justify-center items-center min-h-[65vh] bg-transparent animate-fadein">
-      <div className="card rounded-2xl px-8 py-10 flex flex-col items-center shadow-2xl border-0"
+    <div className="w-full flex justify-center animate-fadein">
+      <div
+        className="bg-white border-2 border-[#ffd700] shadow-xl rounded-2xl p-7 max-w-md w-full flex flex-col items-center"
         style={{
-          background: "var(--on-surface-1)",
-          color: "var(--primary)",
-          border: "2px solid var(--yellow)",
-        }}>
-        <FaTools className="text-[50px] mb-3 text-yellow animate-spin-slow" />
-        <h2 className="text-2xl font-bold mb-2 text-yellow">Service Under Maintenance</h2>
-        <p className="text-[16px] text-secondary text-center mb-6">
+          marginTop: 16,
+          marginBottom: 16,
+        }}
+      >
+        <FiTool className="text-5xl text-[#00eaff] mb-3 animate-spin-slow" />
+        <h2 className="text-2xl font-extrabold text-gray-800 mb-2 text-center">
+          Service Under Maintenance
+        </h2>
+        <p className="text-base text-gray-500 font-medium text-center leading-relaxed">
           Our database is temporarily unavailable.<br />
           Please try again in a few minutes.<br />
-          <span className="text-yellow">We appreciate your patience!</span>
+          We appreciate your patience!
         </p>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-6 py-2 rounded-lg bg-yellow hover:bg-yellow-100 text-white font-semibold shadow"
-        >
-          Try Again
-        </button>
       </div>
     </div>
   );
