@@ -15,7 +15,6 @@ export default function DatabaseErrorCard() {
           Service Under Maintenance
         </h2>
         <p className="text-base text-gray-500 font-medium text-center leading-relaxed">
-          Under Maintanence.<br />
           Our platform is temporarily unavailable.<br />
           Please try again shortly.<br />
           Thank you for your understanding!
