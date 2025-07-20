@@ -114,13 +114,15 @@ export default function LoginPage() {
             />
 
             {/* Error or Maintenance Card */}
-            {error && error.toLowerCase().includes("maintain") ? (
-              <DatabaseErrorCard />
-            ) : error && (
-              <div className="bg-red-50 border border-red-200 text-red-500 rounded-lg px-4 py-2 text-center mb-2">
-                {error}
-              </div>
-            )}
+             {error && (
+  (error.toLowerCase().includes("maintain") || error.toLowerCase().includes("database")) ? (
+    <DatabaseErrorCard />
+  ) : (
+    <div className="bg-red-50 border border-red-200 text-red-500 rounded-lg px-4 py-2 text-center mb-2">
+      {error}
+    </div>
+  )
+)}
 
             {/* Animated Login button */}
             <button
