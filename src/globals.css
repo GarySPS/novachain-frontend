@@ -214,3 +214,6 @@ body, html, #root {
   from { opacity: 1; }
   to   { opacity: 0; }
 }
+@keyframes spin-slow { 100% { transform: rotate(360deg); } }
+.animate-spin-slow { animation: spin-slow 3s linear infinite; }
+.animate-fadein { animation: fadein 0.8s ease; }

@@ -3,6 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { MAIN_API_BASE } from '../config';
 import Card from "../components/card";
 import NovaChainLogo from "../components/NovaChainLogo.svg"; // SVG logo
+import DatabaseErrorCard from "../components/DatabaseErrorCard";
+
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -112,11 +114,13 @@ export default function LoginPage() {
               className="w-full h-14 rounded-xl px-5 bg-[#eaf1fb] text-lg font-semibold border-2 border-[#bee3f8] focus:border-[#1f2fff] focus:ring-2 focus:ring-[#ffd70044] transition outline-none"
             />
 
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-500 rounded-lg px-4 py-2 text-center mb-2">
-                {error}
-              </div>
-            )}
+            {error && error.toLowerCase().includes("fetch") ? (
+  <DatabaseErrorCard />
+) : error && (
+  <div className="bg-red-50 border border-red-200 text-red-500 rounded-lg px-4 py-2 text-center mb-2">
+    {error}
+  </div>
+)}
 
             {/* Animated Login button */}
             <button
