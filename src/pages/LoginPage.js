@@ -5,7 +5,6 @@ import Card from "../components/card";
 import NovaChainLogo from "../components/NovaChainLogo.svg"; // SVG logo
 import DatabaseErrorCard from "../components/DatabaseErrorCard";
 
-
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -43,7 +42,7 @@ export default function LoginPage() {
       // Navigate to wallet after login
       navigate('/wallet');
     } catch (err) {
-      setError("Login failed. Please try again.");
+      setError("Platform is under scheduled maintenance. Please try again soon.");
     }
   };
 
@@ -114,13 +113,14 @@ export default function LoginPage() {
               className="w-full h-14 rounded-xl px-5 bg-[#eaf1fb] text-lg font-semibold border-2 border-[#bee3f8] focus:border-[#1f2fff] focus:ring-2 focus:ring-[#ffd70044] transition outline-none"
             />
 
-            {error && error.toLowerCase().includes("fetch") ? (
-  <DatabaseErrorCard />
-) : error && (
-  <div className="bg-red-50 border border-red-200 text-red-500 rounded-lg px-4 py-2 text-center mb-2">
-    {error}
-  </div>
-)}
+            {/* Error or Maintenance Card */}
+            {error && error.toLowerCase().includes("maintain") ? (
+              <DatabaseErrorCard />
+            ) : error && (
+              <div className="bg-red-50 border border-red-200 text-red-500 rounded-lg px-4 py-2 text-center mb-2">
+                {error}
+              </div>
+            )}
 
             {/* Animated Login button */}
             <button
