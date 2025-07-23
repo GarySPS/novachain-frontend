@@ -16,14 +16,6 @@ import NewsPage from "./components/Newspage";
 import GuidePage from './pages/GuidePage'; 
 import './i18n';
 
-// --- Device/platform helpers ---
-function isIOSSafari() {
-  const ua = window.navigator.userAgent;
-  const isIOS = /iPad|iPhone|iPod/.test(ua);
-  const isWebkit = /WebKit/.test(ua);
-  const isNotChrome = !/CriOS/.test(ua);
-  return isIOS && isWebkit && isNotChrome;
-}
 function isDarkMode() {
   return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 }
@@ -33,10 +25,8 @@ function AppShell() {
   const location = useLocation();
   const hideHeader = ["/login", "/signup", "/verify-otp"].includes(location.pathname);
 
-  // You can trigger the iOS install modal from ProfilePage or elsewhere using a context or prop if you want to reuse it.
   const [showIOSModal, setShowIOSModal] = useState(false);
 
-  // Modal styling (dark mode aware)
   const modalStyles = {
     background: isDarkMode() ? "#191c24" : "white",
     color: isDarkMode() ? "#fff" : "#222",
@@ -52,21 +42,22 @@ function AppShell() {
 
   return (
     <div className="min-h-screen w-full relative">
-      {/* Overlay for darkness/gradient */}
+      {/* Fixed BG: gradient + image, always covers, no flash */}
       <div
         style={{
           position: "fixed",
           zIndex: 1,
           inset: 0,
-          background: "linear-gradient(120deg, #15192ae0 0%, #181c25bb 70%, #101622cc 100%)",
+          background: `linear-gradient(120deg, #15192ae0 0%, #181c25bb 70%, #101622cc 100%), url("/novachain.jpg") center center / cover no-repeat fixed`,
           pointerEvents: "none",
+          minHeight: "100vh",
+          width: "100vw"
         }}
       />
       {/* Main content sits above the overlay */}
       <div style={{ position: "relative", zIndex: 2 }}>
         {!hideHeader && <NavBar />}
 
-        {/* iOS Modal (optional: trigger this from elsewhere as needed) */}
         {showIOSModal && (
           <div
             style={{
