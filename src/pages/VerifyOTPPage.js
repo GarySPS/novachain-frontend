@@ -91,9 +91,9 @@ export default function VerifyOTPPage() {
 
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center relative overflow-hidden px-4 py-8"
+      className="min-h-screen w-full flex items-center justify-center relative overflow-hidden px-3 py-6"
       style={{
-        backgroundImage: 'url("/novachainlogin.png")',
+        backgroundImage: 'url("/novachain.jpg")',
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -102,24 +102,32 @@ export default function VerifyOTPPage() {
       {/* Blurred overlay */}
       <div className="absolute inset-0 bg-[#181c2cbb] backdrop-blur-[1.5px]" style={{ zIndex: 1 }}></div>
       {/* Centered Card */}
-      <div className="relative z-10 w-full max-w-md">
-        <Card className="w-full p-8 rounded-3xl shadow-2xl border-0 bg-white/90" style={{ overflow: "visible" }}>
+      <div className="relative z-10 w-full mx-auto"
+        style={{
+          maxWidth: 420,
+          minWidth: 0,
+          margin: "0 auto",
+        }}
+      >
+        <Card
+          className="w-full rounded-3xl shadow-2xl border-0 bg-white/90"
+          style={{
+            overflow: "visible",
+            padding: "2.2rem 1.3rem",
+            maxWidth: 420,
+            minWidth: 0,
+            boxSizing: "border-box",
+          }}
+        >
           {/* Logo with Glow */}
-          <div
-            className="w-full flex items-center justify-center"
-            style={{
-              marginBottom: 36,
-              marginTop: -10,
-              userSelect: "none",
-            }}
-          >
+          <div className="flex items-center justify-center w-full mb-7 mt-[-10px]">
             <img
               src={NovaChainLogo}
               alt="NovaChain Logo"
               className="block select-none pointer-events-none"
               style={{
                 width: "90%",
-                maxWidth: 340,
+                maxWidth: 320,
                 minWidth: 170,
                 height: "auto",
                 objectFit: "contain"
@@ -134,7 +142,6 @@ export default function VerifyOTPPage() {
           <p className="text-base text-[#1f2fff] text-center mb-6 font-medium tracking-wide" style={{ opacity: 0.74 }}>
             Enter the 6-digit code sent to your email below.
           </p>
-
           <form onSubmit={handleVerify}>
             {/* Email input */}
             <input
@@ -144,7 +151,7 @@ export default function VerifyOTPPage() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
-              disabled={!!location.state?.email}
+              disabled={!!email}
             />
 
             {/* OTP/Pin code input */}
@@ -191,7 +198,7 @@ export default function VerifyOTPPage() {
               style={{
                 background: "linear-gradient(90deg,#00eaff 0%,#1f2fff 53%,#ffd700 100%)",
                 color: "#232836",
-                letterSpacing: 1.1,
+                letterSpacing: 1.5,
                 boxShadow: "0 2px 24px #1f2fff22, 0 1.5px 0 #ffd700",
                 border: "none",
                 outline: "none",
@@ -205,7 +212,6 @@ export default function VerifyOTPPage() {
               Verify
             </button>
           </form>
-          
           {/* --- RESEND OTP BUTTON --- */}
           <div className="flex justify-center items-center mt-4 mb-2 text-base text-[#1f2fff] font-bold">
             <button
@@ -221,7 +227,6 @@ export default function VerifyOTPPage() {
                 : "Resend OTP"}
             </button>
           </div>
-
           <div className="flex justify-center items-center mt-8 text-base text-[#1f2fff] font-bold">
             <Link to="/login" className="hover:underline hover:text-[#00eaff] transition">Back to login</Link>
           </div>

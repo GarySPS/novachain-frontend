@@ -267,7 +267,7 @@ export default function ProfilePage() {
       <div className="bg-gradient-to-br from-[#181b25] via-[#191e29] to-[#181b25] min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center">
           <Loader2 className="animate-spin text-[#ffd700] mb-3" size={48} />
-          <span className="text-[#ffd700] text-xl font-semibold tracking-tight">{t('profile_refreshing_balance')}</span>
+          <span className="text-[#ffd700] text-xl font-semibold tracking-tight">{t('Refreshing Balance')}</span>
         </div>
       </div>
     );
@@ -275,9 +275,9 @@ export default function ProfilePage() {
 
   // --- UI ---
   return (
-    <div className="min-h-screen py-10 px-2 flex flex-col items-center" style={{
-      background: "linear-gradient(120deg, #181D2F 0%, #181A20 100%)"
-    }}>
+  <div className="min-h-screen py-10 px-2 flex flex-col items-center" style={{
+    background: "rgba(24,29,47,0.86)"
+  }}>
 
       {/* 1. Profile and Balance Top */}
       <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
@@ -313,9 +313,9 @@ export default function ProfilePage() {
               )}
             </div>
             <div className={`inline-flex items-center px-4 py-1.5 mt-2 rounded-xl text-base font-semibold
-              ${kycStatus === "approved" ? "bg-green-100 text-green-600" :
-                kycStatus === "pending" ? "bg-yellow-100 text-yellow-600" :
-                  kycStatus === "rejected" ? "bg-red-100 text-red-600" :
+              ${kycStatus === "Verified" ? "bg-green-100 text-green-600" :
+                kycStatus === "Pending" ? "bg-yellow-100 text-yellow-600" :
+                  kycStatus === "Rejected" ? "bg-red-100 text-red-600" :
                     "bg-gray-200 text-gray-600"}`}>
               {kycStatus.charAt(0).toUpperCase() + kycStatus.slice(1)}
             </div>
@@ -415,29 +415,29 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center mb-2">
             <div className="flex items-center gap-2 mb-2">
               <Icon name="shield-check" className="w-7 h-7 text-theme-primary" />
-              <span className="text-2xl font-black tracking-tight text-gray-800">{t('profile_kyc_verification')}</span>
+              <span className="text-2xl font-black tracking-tight text-gray-800">{t('Verification')}</span>
             </div>
             <div className="flex items-center mt-2 mb-1">
-              <span className={`w-3 h-3 rounded-full mr-2 ${kycStatus === "approved"
+              <span className={`w-3 h-3 rounded-full mr-2 ${kycStatus === "Verified"
                 ? "bg-green-500"
-                : kycStatus === "pending"
+                : kycStatus === "Pending"
                   ? "bg-yellow-400"
-                  : kycStatus === "rejected"
+                  : kycStatus === "Rejected"
                     ? "bg-red-400"
                     : "bg-gray-400"
                 }`}></span>
               <span className="text-lg font-bold capitalize text-gray-600">
         {kycStatus === "approved"
-        ? t('profile_kyc_approved')
-        : kycStatus === "pending"
-        ? t('profile_kyc_pending')
-        : kycStatus === "rejected"
-        ? t('profile_kyc_rejected')
-        : t('profile_kyc_unverified')}
+        ? t('KYC Approved')
+        : kycStatus === "Pending"
+        ? t('Verification Pending')
+        : kycStatus === "Rejected"
+        ? t('KYC Rejected')
+        : t('KYC Unverified')}
         </span>
             </div>
           </div>
-          {(kycStatus === "unverified" || kycStatus === "rejected") && (
+          {(kycStatus === "Unverified" || kycStatus === "Rejected") && (
             <form
               className="w-full max-w-lg mx-auto mt-5 mb-3 flex flex-col gap-5"
               onSubmit={handleKycSubmit}
@@ -536,18 +536,18 @@ export default function ProfilePage() {
           )}
           <div className="text-sm text-gray-500 mt-2 text-center">
             {kycStatus === "approved"
-        ? t('profile_kyc_verified')
+        ? t('Verified')
         : kycStatus === "pending"
-        ? t('profile_kyc_reviewing')
+        ? t('Peviewing')
         : kycStatus === "rejected"
-        ? t('profile_kyc_rejected_message')
-        : t('profile_kyc_instruction')}
+        ? t('Rekected')
+        : t('Instruction')}
           </div>
         </Card>
 
         {/* Settings */}
         <Card className="bg-gradient-to-tr from-[#f9f7e6] to-[#f4f8ff] rounded-2xl shadow px-8 py-7 flex flex-col items-center">
-  <div className="font-bold text-lg text-gray-700 mb-3 text-center">{t('profile_settings')}</div>
+  <div className="font-bold text-lg text-gray-700 mb-3 text-center">{t('Settings')}</div>
   <div className="grid grid-cols-2 gap-4 w-full max-w-md">
     <button className="btn-stroke px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center"
       onClick={() => setShowChangePw(true)}>
@@ -562,7 +562,7 @@ export default function ProfilePage() {
     <div className="flex flex-col items-center justify-center">
       <Icon name="globe" className="mb-1 w-7 h-7 text-theme-primary" />
       <LanguageSwitcher />
-      <span className="text-xs mt-1 text-gray-600">{t('profile_language')}</span>
+      <span className="text-xs mt-1 text-gray-600">{t('Language')}</span>
     </div>
     {/* Unified Install Button */}
 {(isIOSSafari() || (deferredPrompt && isAndroidChrome())) && (
@@ -637,7 +637,7 @@ export default function ProfilePage() {
 </div>
 
   <div className="text-sm text-gray-500 text-center mt-3">
-    You can contact support via WhatsApp or Telegram, 24/7.
+    You can contact support via WhatsApp or Telegram, 9-5 office hours.
   </div>
 </Card>
 

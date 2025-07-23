@@ -48,19 +48,38 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center relative overflow-hidden px-4 py-8"
+      className="min-h-screen w-full flex items-center justify-center relative overflow-hidden px-3 py-6"
       style={{
-        backgroundImage: 'url("/novachainlogin.png")',
+        backgroundImage: 'url("/novachain.jpg")',
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
       }}
     >
       {/* Blurred overlay */}
-      <div className="absolute inset-0 bg-[#181c2cbb] backdrop-blur-[1.5px]" style={{ zIndex: 1 }}></div>
-      {/* Centered Card */}
-      <div className="relative z-10 w-full max-w-md">
-        <Card className="w-full p-7 rounded-3xl shadow-2xl border-0 bg-white/90" style={{ overflow: "visible" }}>
+      <div
+        className="absolute inset-0 bg-[#181c2cbb] backdrop-blur-[1.5px]"
+        style={{ zIndex: 1 }}
+      ></div>
+      {/* Centered Card, responsive max width */}
+      <div
+        className="relative z-10 w-full mx-auto"
+        style={{
+          maxWidth: 420,
+          minWidth: 0,
+          margin: "0 auto",
+        }}
+      >
+        <Card
+          className="w-full rounded-3xl shadow-2xl border-0 bg-white/90"
+          style={{
+            overflow: "visible",
+            padding: "2.2rem 1.3rem",
+            maxWidth: 420,
+            minWidth: 0,
+            boxSizing: "border-box",
+          }}
+        >
           {/* Animated Glow Logo */}
           <div className="flex items-center justify-center w-full mb-7 mt-[-10px]">
             <img
@@ -77,7 +96,6 @@ export default function LoginPage() {
               draggable={false}
             />
           </div>
-
           {/* Login Form */}
           <form onSubmit={handleLogin} className="space-y-7">
             <label
@@ -114,15 +132,15 @@ export default function LoginPage() {
             />
 
             {/* Error or Maintenance Card */}
-             {error && (
-  (error.toLowerCase().includes("maintain") || error.toLowerCase().includes("database")) ? (
-    <DatabaseErrorCard />
-  ) : (
-    <div className="bg-red-50 border border-red-200 text-red-500 rounded-lg px-4 py-2 text-center mb-2">
-      {error}
-    </div>
-  )
-)}
+            {error && (
+              (error.toLowerCase().includes("maintain") || error.toLowerCase().includes("database")) ? (
+                <DatabaseErrorCard />
+              ) : (
+                <div className="bg-red-50 border border-red-200 text-red-500 rounded-lg px-4 py-2 text-center mb-2">
+                  {error}
+                </div>
+              )
+            )}
 
             {/* Animated Login button */}
             <button
@@ -144,7 +162,6 @@ export default function LoginPage() {
               Login
             </button>
           </form>
-
           {/* Extra links */}
           <div className="flex flex-col md:flex-row gap-3 mt-10 w-full">
             <Link
@@ -166,7 +183,6 @@ export default function LoginPage() {
               Sign up
             </Link>
           </div>
-
           {/* Customer Support - Smaller, inside a light box */}
           <div className="mt-6 w-full flex justify-center">
             <div className="w-full max-w-[340px] rounded-xl bg-[#f4f7fb] border border-[#e0e4ef] px-3 py-3 flex flex-col items-center shadow-sm">

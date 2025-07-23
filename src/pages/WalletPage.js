@@ -580,24 +580,26 @@ export default function WalletPage() {
           <span className="text-theme-tertiary font-medium text-lg">
             {t('network')}: {depositNetworks[selectedDepositCoin]}
           </span>
-          <div className="flex items-center gap-2 mt-2 w-full">
-            <div className="flex-1 min-w-0">
-              <span
-                className="font-mono bg-theme-on-surface-2 px-2 py-1 rounded block overflow-x-auto whitespace-nowrap text-base"
-                style={{ maxWidth: "290px" }}
-              >
-                {walletAddresses[selectedDepositCoin]}
-              </span>
-            </div>
-            <button
-              type="button"
-              className="btn-secondary px-3 py-1 rounded-xl"
-              onClick={() => {
-                navigator.clipboard.writeText(walletAddresses[selectedDepositCoin]);
-                setToast(t("copied"));
-              }}
-            ><Icon name="copy" className="mr-1" />{t('copy')}</button>
-          </div>
+          <div className="flex items-center gap-1 w-full justify-center">
+  <span
+    className="font-mono bg-theme-on-surface-2 px-2 py-1 rounded whitespace-nowrap text-base"
+    style={{ maxWidth: "230px", overflowX: "auto" }}
+  >
+    {walletAddresses[selectedDepositCoin]}
+  </span>
+  <button
+    type="button"
+    className="btn-secondary px-3 py-1 rounded-xl ml-2"
+    style={{ flexShrink: 0 }}
+    onClick={() => {
+      navigator.clipboard.writeText(walletAddresses[selectedDepositCoin]);
+      setToast(t("copied"));
+    }}
+  >
+    <Icon name="copy" className="mr-1" />{t('copy')}
+  </button>
+</div>
+
           <Field
             label={t('deposit_amount_with_coin', { coin: selectedDepositCoin })}
             type="number"
