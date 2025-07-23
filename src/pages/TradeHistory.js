@@ -66,12 +66,6 @@ export default function TradeHistory() {
       />
       {/* Content */}
       <div style={{ position: "relative", zIndex: 1 }} className="w-full max-w-6xl">
-        <div className="mb-8 flex items-center gap-3">
-          <Icon name="activity" className="w-7 h-7 text-theme-yellow" />
-          <h1 className="text-2xl font-extrabold text-theme-primary tracking-wide">
-            BTC/USDT Trade History
-          </h1>
-        </div>
         {loading ? (
           <div className="flex flex-col justify-center items-center min-h-[380px] py-12">
             <svg className="animate-spin h-14 w-14 mb-3 text-[#ffd700]" viewBox="0 0 24 24" fill="none">
