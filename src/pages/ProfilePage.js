@@ -237,7 +237,7 @@ export default function ProfilePage() {
     setPwErr("");
     setPwSuccess("");
     if (pw1.current.value !== pw2.current.value) {
-      setPwErr(t('profile_pw_no_match'));
+      setPwErr(t('Password Unmatch'));
       return;
     }
     try {
@@ -251,13 +251,13 @@ export default function ProfilePage() {
       pwCurrent.current.value = "";
       pw1.current.value = "";
       pw2.current.value = "";
-      setPwSuccess(t('profile_pw_success'));
+      setPwSuccess(t('Success'));
       setTimeout(() => {
         setPwSuccess("");
         setShowChangePw(false);
       }, 1800);
     } catch (err) {
-      setPwErr(t('profile_pw_failed'));
+      setPwErr(t('Failed'));
     }
   }
 

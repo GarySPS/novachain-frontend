@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import TradePage from './pages/TradePage';
@@ -51,16 +51,7 @@ function AppShell() {
   };
 
   return (
-    <div
-      className="min-h-screen w-full relative"
-      style={{
-        minHeight: "100vh",
-        minWidth: "100vw",
-        background: 'url("/novachain.jpg") no-repeat center center fixed',
-        backgroundSize: "cover",
-        zIndex: 0,
-      }}
-    >
+    <div className="min-h-screen w-full relative">
       {/* Overlay for darkness/gradient */}
       <div
         style={{
