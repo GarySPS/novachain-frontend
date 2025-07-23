@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { MAIN_API_BASE } from '../config';
 import Card from "../components/card";
-import NovaChainLogo from "../components/NovaChainLogo.svg"; // SVG logo
+import NovaChainLogo from "../components/NovaChainLogo.svg";
 
 export default function SignUpPage() {
   const [username, setUsername] = useState("");
@@ -29,18 +29,15 @@ export default function SignUpPage() {
       });
       const data = await res.json();
 
-      // Handle already registered but not verified (backend sends {unverified: true})
       if (res.status === 409 && data.unverified) {
         setSuccess("You have already registered but not verified. Please check your email for the OTP code.");
         setTimeout(() => navigate("/verify-otp", { state: { email } }), 1400);
         return;
       }
-
       if (!res.ok) {
         setError(data.error || "Signup failed");
         return;
       }
-
       setSuccess("OTP code sent to your email. Please verify to complete sign up.");
       setTimeout(() => navigate("/verify-otp", { state: { email } }), 1400);
     } catch (err) {
@@ -50,7 +47,7 @@ export default function SignUpPage() {
 
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center relative overflow-hidden px-3 py-6"
+      className="min-h-screen w-full flex items-center justify-center relative px-2 py-4"
       style={{
         backgroundImage: 'url("/novachain.jpg")',
         backgroundSize: "cover",
@@ -58,130 +55,135 @@ export default function SignUpPage() {
         backgroundRepeat: "no-repeat",
       }}
     >
-      {/* Blurred overlay */}
-      <div className="absolute inset-0 bg-[#181c2cbb] backdrop-blur-[1.5px]" style={{ zIndex: 1 }}></div>
-      {/* Centered Card, responsive max width */}
-      <div className="relative z-10 w-full mx-auto"
-        style={{
-          maxWidth: 420,
-          minWidth: 0,
-          margin: "0 auto",
-        }}
-      >
+      <div className="absolute inset-0 bg-[#181c2cbb] backdrop-blur-[2px]" style={{ zIndex: 1 }} />
+      <div className="relative z-10 w-full flex flex-col items-center">
         <Card
-          className="w-full rounded-3xl shadow-2xl border-0 bg-white/90"
+          className="rounded-2xl shadow-2xl border-0 bg-white/90 mx-auto"
           style={{
-            overflow: "visible",
-            padding: "2.2rem 1.3rem",
-            maxWidth: 420,
+            width: "100%",
+            maxWidth: "420px",
             minWidth: 0,
+            padding: "2.3rem 2rem 1.8rem 2rem",
+            margin: "0 auto",
             boxSizing: "border-box",
           }}
         >
-          {/* Animated Glow Logo */}
-          <div className="flex items-center justify-center w-full mb-7 mt-[-10px]">
+          <div className="flex items-center justify-center w-full mb-6 mt-[-10px]">
             <img
               src={NovaChainLogo}
               alt="NovaChain Logo"
               className="block select-none pointer-events-none"
               style={{
-                width: "90%",
-                maxWidth: 320,
-                minWidth: 170,
+                width: "93%",
+                maxWidth: 210,
+                minWidth: 120,
                 height: "auto",
                 objectFit: "contain"
               }}
               draggable={false}
             />
           </div>
-          <h2 className="text-2xl font-extrabold mb-8 text-center tracking-tight text-[#232836]">
+          <h2 className="text-2xl font-extrabold mb-7 text-center tracking-tight text-[#232836]">
             Create Account
           </h2>
-
-          {/* Signup Form */}
-          <form onSubmit={handleSignUp} className="space-y-6">
-            {/* Username */}
-            <label htmlFor="username" className="block text-lg font-bold text-[#232836] mb-1">Username</label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              required
-              placeholder="Create your username"
-              className="w-full h-14 rounded-xl px-5 bg-[#eaf1fb] text-lg font-semibold border-2 border-[#bee3f8] focus:border-[#00eaff] focus:ring-2 focus:ring-[#1f2fff22] transition outline-none mb-3"
-            />
-
-            {/* Email */}
-            <label htmlFor="email" className="block text-lg font-bold text-[#232836] mb-1">Email</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-              placeholder="Enter your email"
-              className="w-full h-14 rounded-xl px-5 bg-[#eaf1fb] text-lg font-semibold border-2 border-[#bee3f8] focus:border-[#00eaff] focus:ring-2 focus:ring-[#00eaff22] transition outline-none mb-3"
-            />
-
-            {/* Password */}
-            <label htmlFor="password" className="block text-lg font-bold text-[#232836] mb-1">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              placeholder="Create a password"
-              className="w-full h-14 rounded-xl px-5 bg-[#eaf1fb] text-lg font-semibold border-2 border-[#bee3f8] focus:border-[#ffd700] focus:ring-2 focus:ring-[#ffd70044] transition outline-none mb-3"
-            />
-
-            {/* Confirm Password */}
-            <label htmlFor="confirmPassword" className="block text-lg font-bold text-[#232836] mb-1">Confirm Password</label>
-            <input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
-              required
-              placeholder="Re-enter your password"
-              className="w-full h-14 rounded-xl px-5 bg-[#eaf1fb] text-lg font-semibold border-2 border-[#bee3f8] focus:border-[#ffd700] focus:ring-2 focus:ring-[#ffd70044] transition outline-none mb-3"
-            />
-
-            {/* Error / Success */}
+          <form onSubmit={handleSignUp} className="flex flex-col gap-5 items-center w-full">
+            <div className="w-full flex flex-col items-center">
+              <label htmlFor="username" className="block text-lg font-bold text-[#232836] mb-1 w-full text-left">Username</label>
+              <input
+                id="username"
+                type="text"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                required
+                placeholder="Create your username"
+                className="w-full h-12 rounded-xl px-4 bg-[#eaf1fb] text-base font-medium border border-[#c9e3fc] focus:border-[#00eaff] focus:ring-2 focus:ring-[#1f2fff22] outline-none transition"
+                style={{
+                  maxWidth: 320,
+                  fontSize: "1.06rem"
+                }}
+              />
+            </div>
+            <div className="w-full flex flex-col items-center">
+              <label htmlFor="email" className="block text-lg font-bold text-[#232836] mb-1 w-full text-left">Email</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                placeholder="Enter your email"
+                className="w-full h-12 rounded-xl px-4 bg-[#eaf1fb] text-base font-medium border border-[#c9e3fc] focus:border-[#00eaff] focus:ring-2 focus:ring-[#00eaff22] outline-none transition"
+                style={{
+                  maxWidth: 320,
+                  fontSize: "1.06rem"
+                }}
+              />
+            </div>
+            <div className="w-full flex flex-col items-center">
+              <label htmlFor="password" className="block text-lg font-bold text-[#232836] mb-1 w-full text-left">Password</label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                placeholder="Create a password"
+                className="w-full h-12 rounded-xl px-4 bg-[#eaf1fb] text-base font-medium border border-[#c9e3fc] focus:border-[#ffd700] focus:ring-2 focus:ring-[#ffd70044] outline-none transition"
+                style={{
+                  maxWidth: 320,
+                  fontSize: "1.06rem"
+                }}
+              />
+            </div>
+            <div className="w-full flex flex-col items-center">
+              <label htmlFor="confirmPassword" className="block text-lg font-bold text-[#232836] mb-1 w-full text-left">Confirm Password</label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                required
+                placeholder="Re-enter your password"
+                className="w-full h-12 rounded-xl px-4 bg-[#eaf1fb] text-base font-medium border border-[#c9e3fc] focus:border-[#ffd700] focus:ring-2 focus:ring-[#ffd70044] outline-none transition"
+                style={{
+                  maxWidth: 320,
+                  fontSize: "1.06rem"
+                }}
+              />
+            </div>
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-500 rounded-lg px-4 py-2 text-center mb-2">
+              <div className="bg-red-50 border border-red-200 text-red-500 rounded-md px-3 py-2 text-center text-base w-full max-w-[320px]">
                 {error}
               </div>
             )}
             {success && (
-              <div className="bg-green-50 border border-green-200 text-green-700 rounded-lg px-4 py-2 text-center mb-2">
+              <div className="bg-green-50 border border-green-200 text-green-700 rounded-md px-3 py-2 text-center text-base w-full max-w-[320px]">
                 {success}
               </div>
             )}
-
-            {/* Register Button */}
             <button
-              className="w-full h-14 rounded-xl font-extrabold text-2xl tracking-wider shadow-lg"
+              className="h-12 rounded-xl font-extrabold text-lg tracking-wide shadow-md transition-all block mx-auto"
               type="submit"
               style={{
+                width: "100%",
+                maxWidth: 320,
+                minWidth: 120,
                 background: "linear-gradient(90deg,#00eaff 0%,#1f2fff 53%,#ffd700 100%)",
                 color: "#232836",
-                letterSpacing: 1.5,
-                boxShadow: "0 2px 24px #1f2fff22, 0 1.5px 0 #ffd700",
+                letterSpacing: 1.2,
+                boxShadow: "0 2px 16px #1f2fff14, 0 1.5px 0 #ffd70044",
                 border: "none",
                 outline: "none",
-                transition: "filter 0.23s, box-shadow 0.16s, background 0.4s",
+                fontSize: "1.17rem"
               }}
-              onMouseDown={e => { e.target.style.filter = "brightness(0.93)"; e.target.style.boxShadow = "0 1px 10px #00eaff44"; }}
-              onMouseUp={e => { e.target.style.filter = ""; e.target.style.boxShadow = "0 2px 24px #1f2fff22, 0 1.5px 0 #ffd700"; }}
-              onMouseLeave={e => { e.target.style.filter = ""; e.target.style.boxShadow = "0 2px 24px #1f2fff22, 0 1.5px 0 #ffd700"; }}
+              onMouseDown={e => { e.target.style.filter = "brightness(0.93)"; }}
+              onMouseUp={e => { e.target.style.filter = ""; }}
+              onMouseLeave={e => { e.target.style.filter = ""; }}
             >
               Register
             </button>
           </form>
-          {/* Terms */}
-          <div className="mt-10 mb-1 text-xs text-gray-500 text-center font-semibold">
+          <div className="mt-9 mb-1 text-xs text-gray-500 text-center font-semibold">
             By signing up, you agree to the&nbsp;
             <a className="text-[#00eaff] hover:underline transition" href="/" target="_blank" rel="noopener noreferrer">
               Terms of Use
@@ -204,6 +206,21 @@ export default function SignUpPage() {
       {/* Logo Glow Animation */}
       <style>
         {`
+        @media (max-width: 480px) {
+          .responsive-card {
+            max-width: 340px !important;
+            padding-left: 1.1rem !important;
+            padding-right: 1.1rem !important;
+          }
+          .responsive-input {
+            max-width: 210px !important;
+            font-size: 0.98rem !important;
+          }
+          .responsive-button {
+            max-width: 210px !important;
+            font-size: 1rem !important;
+          }
+        }
         @keyframes logoGlow {
           0% { filter: drop-shadow(0 0 16px #00eaff99); }
           48% { filter: drop-shadow(0 0 52px #00eaff66); }
