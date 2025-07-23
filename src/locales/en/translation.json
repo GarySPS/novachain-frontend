@@ -90,7 +90,7 @@
   "paste_recipient_address": "Paste recipient address ({{coin}})",
   "amount_with_coin": "Amount ({{coin}})",
   "enter_amount_with_coin": "Enter {{coin}} amount",
-  "double_check_withdraw": "Double-check network and address! Withdrawals processed by admin. Demo only.",
+  "double_check_withdraw": "Double-check network and address!",
   "submit_withdraw": "Submit Withdraw",
   "deposit_withdraw_history": "Deposit & Withdraw History",
   "view_screenshot": "View Screenshot",
@@ -102,6 +102,17 @@
   "step2": "Scroll down and tap Add to Home Screen",
   "step3": "Tap Add in the top-right",
   "close": "Close",
-  "unsupported": "Your browser does not support installing the app. Please use Safari on iOS or Chrome on Android."
+  "unsupported": "Your browser does not support installing the app. Please use Safari on iOS or Chrome on Android.",
+  
+  "team_ceo": "Chief Executive Officer & Co-Founder",
+  "team_ceo_desc": "Ethan leads NovaChain’s vision and strategic growth, bringing a decade of experience in fintech and digital assets. Previously, he launched successful fintech startups and is passionate about making crypto trading accessible and secure.",
+
+  "team_cto": "Chief Technology Officer & Co-Founder",
+  "team_cto_desc": "Sophia is the tech mastermind behind NovaChain, architecting its secure trading engine and blockchain infrastructure. With a strong background in computer science, she has led engineering teams at top tech firms.",
+
+  "team_compliance": "Chief Compliance Officer",
+  "team_compliance_desc": "Victor ensures NovaChain stays ahead in regulatory standards and risk management. He brings years of compliance leadership in financial institutions and is dedicated to building trust and transparency for users."
+
+
 }
 

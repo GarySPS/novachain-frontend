@@ -71,9 +71,20 @@
   "paste_recipient_address": "粘贴收款地址（{{coin}}）",
   "amount_with_coin": "数量（{{coin}}）",
   "enter_amount_with_coin": "输入{{coin}}数量",
-  "double_check_withdraw": "请再次确认网络和地址！提现由管理员审核，仅供演示。",
+  "double_check_withdraw": "请再次确认网络和地址！",
   "submit_withdraw": "提交提现",
   "deposit_withdraw_history": "充值和提现历史",
   "view_screenshot": "查看截图",
-  "copied": "已复制！"
+  "copied": "已复制！",
+  
+  "team_ceo": "首席执行官兼联合创始人",
+  "team_ceo_desc": "Ethan 领导 NovaChain 的愿景和战略发展，拥有十年金融科技和数字资产领域经验。曾创办多家成功的金融科技初创企业，致力于让加密货币交易更安全、易用。",
+
+  "team_cto": "首席技术官兼联合创始人",
+  "team_cto_desc": "Sophia 是 NovaChain 的技术核心，设计并开发了安全的交易引擎和区块链基础架构。拥有计算机科学背景，曾在顶级科技公司领导工程团队。",
+
+  "team_compliance": "首席合规官",
+  "team_compliance_desc": "Victor 负责确保 NovaChain 合规与风险管理领先业界，拥有多年金融机构合规管理经验，致力于为用户建立信任与透明。"
+
+
 }
