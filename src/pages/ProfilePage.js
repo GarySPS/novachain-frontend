@@ -262,16 +262,43 @@ export default function ProfilePage() {
   }
 
   if (!authChecked) return null;
-  if (loading || !user) {
-    return (
-      <div className="bg-gradient-to-br from-[#181b25] via-[#191e29] to-[#181b25] min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <Loader2 className="animate-spin text-[#ffd700] mb-3" size={48} />
-          <span className="text-[#ffd700] text-xl font-semibold tracking-tight">{t('Refreshing Balance')}</span>
+if (loading || !user) {
+  return (
+    <div
+      className="min-h-screen w-full flex flex-col items-center justify-center"
+      style={{
+        background: 'url("/novachain.jpg") no-repeat center center fixed',
+        backgroundSize: "cover",
+        minHeight: "100vh",
+        position: "relative",
+      }}
+    >
+      {/* Overlay */}
+      <div
+        style={{
+          position: "fixed",
+          zIndex: 0,
+          inset: 0,
+          background: "linear-gradient(120deg, #15192ae0 0%, #181c25bb 70%, #101622cc 100%)",
+          pointerEvents: "none",
+        }}
+      />
+      {/* Loader Content */}
+      <div style={{ position: "relative", zIndex: 1 }} className="w-full max-w-6xl">
+        <div className="flex flex-col justify-center items-center min-h-[380px] py-12">
+          <svg className="animate-spin h-14 w-14 mb-3 text-[#ffd700]" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-20" cx="12" cy="12" r="10" stroke="#ffd700" strokeWidth="4" />
+            <path className="opacity-85" fill="#ffd700" d="M4 12a8 8 0 018-8v8z" />
+          </svg>
+          <span className="text-[#ffd700] font-extrabold text-xl drop-shadow-lg mt-1 tracking-wide">
+            {t('Refreshing Balance')}
+          </span>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
 
   // --- UI ---
   return (
