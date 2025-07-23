@@ -476,9 +476,11 @@ export default function TradePage() {
             </AnimatePresence>
           </Card>
         </div>
-        <div className="w-full max-w-5xl mt-8">
-          <OrderBTC />
-        </div>
+        <div className="w-full flex justify-center mt-8">
+  <div className="max-w-5xl w-full px-4">
+    <OrderBTC />
+  </div>
+</div>
       </div>
     </motion.div>
   );
