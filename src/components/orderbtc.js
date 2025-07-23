@@ -20,7 +20,7 @@ export default function OrderBTC() {
   const [asks, setAsks] = useState([]);
   const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+  useEffect(() => {
     let timer;
     const fetchPrice = async () => {
       setLoading(true);
@@ -42,14 +42,11 @@ export default function OrderBTC() {
     return () => clearInterval(timer);
   }, []);
 
-
   // For nice table alignment, use same length for bids/asks (take shorter)
   const rowCount = Math.min(bids.length, asks.length);
 
   return (
-    <div
-      className="w-full max-w-2xl mx-auto my-8 rounded-2xl bg-[#15161e] border border-[#242630] shadow-lg"
-    >
+    <div className="w-full max-w-2xl mx-auto my-8 rounded-2xl bg-[#15161e] border border-[#242630] shadow-lg">
       {/* Top Tabs */}
       <div className="flex items-center px-6 pt-5 pb-2 border-b border-[#23232c]">
         <span className="text-white font-bold text-lg mr-8 border-b-2 border-blue-500 pb-1 cursor-pointer">Order Book</span>
@@ -76,16 +73,19 @@ export default function OrderBTC() {
           <div className="text-center text-gray-400 py-12 text-base">Loading...</div>
         ) : (
           Array.from({ length: rowCount }).map((_, i) => (
-            <div className="flex items-center py-[2.5px] text-[13px] border-b border-[#212130] gap-x-4" key={i}>
-  {/* Bid Size */}
-  <div className="w-[22%] text-left text-gray-400 pr-2">{bids[i]?.amount}</div>
-  {/* Bid Price */}
-  <div className="w-[25%] text-left font-bold text-green-500 pr-4">{bids[i]?.price}</div>
-  {/* Ask Price */}
-  <div className="w-[25%] text-right font-bold text-red-500 pl-4">{asks[i]?.price}</div>
-  {/* Ask Size */}
-  <div className="w-[22%] text-right text-gray-400 pl-2">{asks[i]?.amount}</div>
-</div>
+            <div
+              className="flex items-center py-[2.5px] text-[13px] border-b border-[#212130] gap-x-2 sm:gap-x-4"
+              key={i}
+            >
+              {/* Bid Size */}
+              <div className="w-1/4 min-w-0 truncate text-left text-gray-400 pr-1">{bids[i]?.amount}</div>
+              {/* Bid Price */}
+              <div className="w-1/4 min-w-0 truncate text-left font-bold text-green-500 pr-1">{bids[i]?.price}</div>
+              {/* Ask Price */}
+              <div className="w-1/4 min-w-0 truncate text-right font-bold text-red-500 pl-1">{asks[i]?.price}</div>
+              {/* Ask Size */}
+              <div className="w-1/4 min-w-0 truncate text-right text-gray-400 pl-1">{asks[i]?.amount}</div>
+            </div>
           ))
         )}
       </div>
