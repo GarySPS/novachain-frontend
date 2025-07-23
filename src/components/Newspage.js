@@ -60,7 +60,7 @@ export default function NewsPage() {
     <div className="w-full flex flex-col items-center px-2 sm:px-4 font-sans">
       <div className="w-full max-w-6xl mt-10">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-6">
-          <div className="text-3xl font-bold text-[#f5f6fa]">{t('latest_updates')}</div>
+          <div className="text-3xl font-bold text-[#f5f6fa]">{t('Latest News')}</div>
         </div>
 
         {loading ? (

@@ -251,7 +251,7 @@ export default function ProfilePage() {
       pwCurrent.current.value = "";
       pw1.current.value = "";
       pw2.current.value = "";
-      setPwSuccess(t('Success'));
+      setPwSuccess(t('Successful'));
       setTimeout(() => {
         setPwSuccess("");
         setShowChangePw(false);
