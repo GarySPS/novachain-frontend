@@ -12,8 +12,8 @@ import AssetsDonut from "../components/assetsdonut";
 import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import i18n from "i18next";
 
-// Remove all balance logic from user table, only use assets array from API
 
 function isIOSSafari() {
   const ua = window.navigator.userAgent;
