@@ -11,6 +11,14 @@ import TimerBar from "../components/TimerBar";
 import OrderBTC from "../components/orderbtc";
 import { useTranslation } from "react-i18next";
 
+const COINS = [
+  { symbol: "BTC", name: "Bitcoin", tv: "BINANCE:BTCUSDT", api: "BTC" },
+  { symbol: "ETH", name: "Ethereum", tv: "BINANCE:ETHUSDT", api: "ETH" },
+  { symbol: "SOL", name: "Solana", tv: "BINANCE:SOLUSDT", api: "SOL" },
+  { symbol: "XRP", name: "Ripple", tv: "BINANCE:XRPUSDT", api: "XRP" },
+  { symbol: "TON", name: "Toncoin", tv: "BINANCE:TONUSDT", api: "TON" },
+];
+
 function persistTradeState(tradeState) {
   if (tradeState) localStorage.setItem("activeTrade", JSON.stringify(tradeState));
   else localStorage.removeItem("activeTrade");
@@ -29,7 +37,12 @@ function createTradeState(trade_id, user_id, duration) {
 
 export default function TradePage() {
   const { t } = useTranslation();
-  const [btcPrice, setBtcPrice] = useState(null);
+
+  // ---- Coin selection logic ----
+  const [selectedCoin, setSelectedCoin] = useState(COINS[0]);
+  const [coinPrice, setCoinPrice] = useState(null);
+
+  // ---- Other states ----
   const [amount, setAmount] = useState(100);
   const [duration, setDuration] = useState(30);
   const [direction, setDirection] = useState("BUY");
@@ -42,7 +55,7 @@ export default function TradePage() {
   const [waitingResult, setWaitingResult] = useState(false);
   const [loadingChart, setLoadingChart] = useState(true);
 
-  // Restore active trade if exists
+  // ---- Restore active trade if exists ----
   useEffect(() => {
     const saved = loadTradeState();
     if (saved && saved.endAt > Date.now()) {
@@ -56,24 +69,25 @@ export default function TradePage() {
     }
   }, []);
 
-  // BTC price polling
+  // ---- Price polling (whenever coin changes) ----
   useEffect(() => {
+    let interval;
     const fetchPrice = async () => {
       try {
-        const res = await axios.get(`${MAIN_API_BASE}/price/BTC`);
-        setBtcPrice(res.data.price);
+        const res = await axios.get(`${MAIN_API_BASE}/price/${selectedCoin.api}`);
+        setCoinPrice(res.data.price);
         setFetchError(false);
       } catch {
-        setBtcPrice(null);
+        setCoinPrice(null);
         setFetchError(true);
       }
     };
     fetchPrice();
-    const interval = setInterval(fetchPrice, 5000);
+    interval = setInterval(fetchPrice, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [selectedCoin]);
 
-  // TradingView widget loader
+  // ---- TradingView widget loader (reloads on coin change) ----
   useEffect(() => {
     setLoadingChart(true);
     const script = document.createElement("script");
@@ -83,10 +97,10 @@ export default function TradePage() {
     script.onload = () => {
       if (window.TradingView) {
         new window.TradingView.widget({
-          container_id: "tradingview_btcusdt_chart",
+          container_id: "tradingview_chart_container",
           width: "100%",
           height: 400,
-          symbol: "BINANCE:BTCUSDT",
+          symbol: selectedCoin.tv,
           interval: "15",
           timezone: "Etc/UTC",
           theme: "dark",
@@ -112,12 +126,12 @@ export default function TradePage() {
     return () => {
       const sc = document.getElementById("tradingview-widget-script");
       if (sc) sc.remove();
-      const container = document.getElementById("tradingview_btcusdt_chart");
+      const container = document.getElementById("tradingview_chart_container");
       if (container) container.innerHTML = "";
     };
-  }, []);
+  }, [selectedCoin]);
 
-  // When timer ends: poll trade result
+  // ---- Trade result polling ----
   async function pollResult(trade_id, user_id) {
     let tries = 0, trade = null;
     const token = localStorage.getItem("token");
@@ -156,9 +170,9 @@ export default function TradePage() {
     return { shouldRepeat: false, delay: 0 };
   };
 
-  // Start new trade (and persist)
+  // ---- Start new trade ----
   const executeTrade = async () => {
-    if (!btcPrice || timerActive) return;
+    if (!coinPrice || timerActive) return;
     setTimerActive(true);
     setTradeResult(null);
     setTradeDetail(null);
@@ -177,13 +191,10 @@ export default function TradePage() {
     }
     const payload = parseJwt(token);
     const user_id = payload.id;
-
-    // === INSTANTLY SHOW TIMER BAR EVEN BEFORE API RESPONSE ===
     const tempTradeState = createTradeState("temp", user_id, duration);
     setTradeState(tempTradeState);
     setTimerActive(true);
     setTimerKey(Math.random());
-
     try {
       const res = await axios.post(
         `${MAIN_API_BASE}/trade`,
@@ -191,13 +202,13 @@ export default function TradePage() {
           user_id,
           direction: direction.toUpperCase(),
           amount: Number(amount),
-          duration: Number(duration)
+          duration: Number(duration),
+          symbol: selectedCoin.api // <<-- IMPORTANT: must send symbol to backend!
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!res.data.trade_id) throw new Error("Failed to start trade");
       const { trade_id } = res.data;
-      // === OVERWRITE TRADE STATE WITH REAL ID FROM BACKEND ===
       const confirmedTradeState = createTradeState(trade_id, user_id, duration);
       persistTradeState(confirmedTradeState);
       setTradeState(confirmedTradeState);
@@ -223,7 +234,6 @@ export default function TradePage() {
         minHeight: "100vh",
       }}
     >
-      {/* Overlay for gradient/darkness */}
       <div
         style={{
           position: "fixed",
@@ -237,8 +247,55 @@ export default function TradePage() {
         <div className="w-full max-w-[1300px] mx-auto flex flex-col lg:flex-row lg:items-start gap-7 lg:gap-10 overflow-x-hidden">
           {/* Chart */}
           <div className="w-full lg:w-[70%] 2xl:w-[75%] mb-5 lg:mb-0">
+            {/* --- Responsive coin selector (Novachain Blue Theme) --- */}
+<div className="w-full flex flex-col md:flex-row md:items-center gap-3 mb-3">
+  {/* Desktop: horizontal buttons */}
+  <div className="hidden md:flex flex-wrap gap-3 justify-center md:justify-start w-full">
+    {COINS.map(coin => (
+      <button
+        key={coin.symbol}
+        className={`px-6 py-2 rounded-full font-extrabold text-base transition-all duration-200 shadow
+          ${selectedCoin.symbol === coin.symbol
+            ? "bg-[#2474ff] text-white shadow-lg scale-105"
+            : "bg-[#191e29] text-[#2474ff] opacity-80 hover:opacity-100 border border-[#2474ff]/40"
+          }
+        `}
+        onClick={() => setSelectedCoin(coin)}
+        disabled={timerActive}
+        style={{
+          minWidth: 120,
+          border: selectedCoin.symbol === coin.symbol
+            ? "2px solid #2474ff"
+            : "2px solid #23243a"
+        }}
+      >
+        {coin.symbol}/USDT
+      </button>
+    ))}
+  </div>
+  {/* Mobile: dropdown select */}
+  <div className="md:hidden flex w-full">
+    <select
+      className="w-full p-3 rounded-full font-bold bg-[#191e29] text-[#2474ff] border-2 border-[#2474ff] text-base"
+      value={selectedCoin.symbol}
+      onChange={e => {
+        const coin = COINS.find(c => c.symbol === e.target.value);
+        if (coin) setSelectedCoin(coin);
+      }}
+      disabled={timerActive}
+    >
+      {COINS.map(coin => (
+        <option key={coin.symbol} value={coin.symbol}>
+          {coin.symbol}/USDT
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
+
+            {/* --- Chart container --- */}
             <div className="relative w-full rounded-2xl shadow-xl bg-gradient-to-br from-[#23243a] via-[#171b24] to-[#11151c] border border-[#23243a] min-h-[420px] overflow-hidden">
-              <div id="tradingview_btcusdt_chart" className="w-full h-[420px]" />
+              <div id="tradingview_chart_container" className="w-full h-[420px]" />
               {loadingChart && (
                 <div
                   className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#101726e6] backdrop-blur-sm"
@@ -271,7 +328,7 @@ export default function TradePage() {
                   textShadow: "0 2px 18px #1f2fff22"
                 }}
               >
-                BTC/USDT
+                {selectedCoin.symbol}/USDT
               </span>
               <img src={NovaChainLogo} alt="NovaChain" className="h-9 w-auto ml-4" />
             </div>
@@ -301,8 +358,8 @@ export default function TradePage() {
             <div className="mb-4 flex items-center gap-2 text-theme-tertiary font-semibold text-base">
               <Icon name="dollar-sign" className="w-5 h-5" />
               {t("Current Price")}:&nbsp;
-              {typeof btcPrice === "number" && !isNaN(btcPrice)
-                ? <span className="text-theme-primary font-bold text-lg">${btcPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+              {typeof coinPrice === "number" && !isNaN(coinPrice)
+                ? <span className="text-theme-primary font-bold text-lg">${coinPrice.toLocaleString(undefined, { maximumFractionDigits: 6 })}</span>
                 : fetchError
                   ? t("api_error", "API Error")
                   : t("loading", "Loading...")}
@@ -343,7 +400,7 @@ export default function TradePage() {
               className={`btn-primary w-full h-12 mt-2 rounded-full font-extrabold text-lg shadow transition-all duration-200
                 ${timerActive ? "cursor-not-allowed opacity-80" : "hover:scale-[1.03]"}
               `}
-              disabled={timerActive || !btcPrice}
+              disabled={timerActive || !coinPrice}
               onClick={executeTrade}
             >
               {timerActive ? (
@@ -378,7 +435,6 @@ export default function TradePage() {
                   />
                 </motion.div>
               )}
-
               {/* Show PROCESSING spinner/message after timer */}
               {waitingResult && (
                 <motion.div
@@ -448,28 +504,32 @@ export default function TradePage() {
                         ? `+ $${Math.abs(tradeDetail.profit).toFixed(2)}`
                         : `- $${Math.abs(tradeDetail.profit).toFixed(2)}`}
                     </div>
-                    <div className="mt-2 w-full flex flex-col items-center justify-center">
-                      <div className="text-base font-medium text-neutral-600 text-center">
-                        {t("entry", "Entry")}:&nbsp;
-                        <span className="font-bold text-neutral-900">
-                          ${!isNaN(Number(tradeDetail.start_price)) ? Number(tradeDetail.start_price).toFixed(2) : "—"}
-                        </span>
-                      </div>
-                      <div className="text-base font-medium text-neutral-600 text-center">
-                        {t("result", "Result")}:&nbsp;
-                        <span className="font-bold text-neutral-900">
-                          ${!isNaN(Number(tradeDetail.result_price)) ? Number(tradeDetail.result_price).toFixed(2) : "—"}
-                        </span>
-                      </div>
-                      <div className="mt-1 text-xs text-neutral-400 font-semibold tracking-wide text-center">
-                        {t("duration")}: {tradeDetail.duration}{t("seconds_short", "s")}
-                      </div>
-                      <div className="mt-1 text-xs text-neutral-400 text-center">
-                        {tradeDetail.result === "WIN"
-                          ? t("profit_credited", "Profit credited to your wallet")
-                          : t("loss_deducted", "Loss deducted from your wallet")}
-                      </div>
-                    </div>
+<div className="mt-2 w-full flex flex-col items-center justify-center">
+  <div className="text-base font-medium text-neutral-600 text-center">
+    {t("entry", "Entry")}:&nbsp;
+    <span className="font-bold text-neutral-900">
+      {!isNaN(Number(tradeDetail.start_price))
+        ? `$${Number(tradeDetail.start_price).toLocaleString(undefined, { maximumFractionDigits: 6 })}`
+        : "—"}
+    </span>
+  </div>
+  <div className="text-base font-medium text-neutral-600 text-center">
+    {t("result", "Result")}:&nbsp;
+    <span className="font-bold text-neutral-900">
+      {!isNaN(Number(tradeDetail.result_price))
+        ? `$${Number(tradeDetail.result_price).toLocaleString(undefined, { maximumFractionDigits: 6 })}`
+        : "—"}
+    </span>
+  </div>
+  <div className="mt-1 text-xs text-neutral-400 font-semibold tracking-wide text-center">
+    {t("duration")}: {tradeDetail.duration}{t("seconds_short", "s")}
+  </div>
+  <div className="mt-1 text-xs text-neutral-400 text-center">
+    {tradeDetail.result === "WIN"
+      ? t("profit_credited", "Profit credited to your wallet")
+      : t("loss_deducted", "Loss deducted from your wallet")}
+  </div>
+</div>
                   </Card>
                 </motion.div>
               )}
@@ -477,10 +537,10 @@ export default function TradePage() {
           </Card>
         </div>
         <div className="w-full flex justify-center mt-8">
-  <div className="max-w-5xl w-full px-4">
-    <OrderBTC />
-  </div>
-</div>
+          <div className="max-w-5xl w-full px-4">
+            <OrderBTC />
+          </div>
+        </div>
       </div>
     </motion.div>
   );
