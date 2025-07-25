@@ -173,33 +173,33 @@ export default function LoginPage() {
               Sign up
             </Link>
           </div>
-          <div className="mt-7 w-full flex justify-center">
-            <div className="w-full max-w-[220px] rounded-xl bg-[#f4f7fb] border border-[#e0e4ef] px-2 py-2 flex flex-col items-center shadow-sm">
-              <div className="flex flex-row gap-2 w-full">
-                <a
-                  href="https://wa.me/66642822983"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 px-2 py-2 rounded font-semibold text-sm bg-[#25D366] text-white hover:bg-[#22b95f] transition text-center"
-                  style={{ minWidth: 0 }}
-                >
-                  WhatsApp
-                </a>
-                <a
-                  href="https://t.me/novachainsingapore"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 px-2 py-2 rounded font-semibold text-sm bg-[#229ED9] text-white hover:bg-[#178fca] transition text-center"
-                  style={{ minWidth: 0 }}
-                >
-                  Telegram
-                </a>
-              </div>
-              <div className="text-xs text-gray-500 text-center mt-1">
-                Support: WhatsApp or Telegram
-              </div>
-            </div>
-          </div>
+<div className="mt-7 w-full flex justify-center">
+  <div className="w-full max-w-[180px] rounded-lg bg-[#f4f7fb] border border-[#e0e4ef] px-1.5 py-1 flex flex-col items-center shadow-sm">
+    <div className="flex flex-row gap-1 w-full">
+      <a
+        href="https://wa.me/66642822983"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex-1 px-1.5 py-1 rounded font-bold text-xs bg-[#25D366] text-white hover:bg-[#22b95f] transition text-center shadow"
+        style={{ minWidth: 0, letterSpacing: 0.2 }}
+      >
+        WhatsApp
+      </a>
+      <a
+        href="https://t.me/novachainsingapore"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex-1 px-1.5 py-1 rounded font-bold text-xs bg-[#229ED9] text-white hover:bg-[#178fca] transition text-center shadow"
+        style={{ minWidth: 0, letterSpacing: 0.2 }}
+      >
+        Telegram
+      </a>
+    </div>
+    <div className="text-[11px] text-gray-400 text-center mt-1">
+      Support: WhatsApp or Telegram
+    </div>
+  </div>
+</div>
         </Card>
       </div>
       {/* Logo Glow Animation */}
