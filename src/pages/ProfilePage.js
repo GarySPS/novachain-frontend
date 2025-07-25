@@ -586,16 +586,10 @@ if (loading || !user) {
       <Icon name="edit" className="mb-1 w-7 h-7" />
       {t('profile_change_profile')}
     </button>
-    <div className="flex flex-col items-center justify-center">
-  {/* Beautiful Language Select */}
+<div className="flex flex-col items-center justify-center">
   <div className="relative w-full max-w-xs mt-2">
-    <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
-      <svg className="w-6 h-6 text-[#2474ff]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 12c2.5-2.5 5.5-7.5 0-9-5.5 1.5-2.5 6.5 0 9zm0 0c-2.5 2.5-5.5 7.5 0 9 5.5-1.5 2.5-6.5 0-9zm-9 0a9 9 0 1118 0 9 9 0 01-18 0z" />
-      </svg>
-    </div>
     <select
-      className="pl-10 pr-6 py-3 w-full rounded-xl bg-white/90 font-extrabold text-[#2474ff] border-2 border-transparent focus:border-[#2474ff] focus:ring-2 focus:ring-[#ffd70077] shadow-lg transition-all duration-200 outline-none"
+      className="pl-4 pr-6 py-3 w-full rounded-xl bg-white/90 font-extrabold text-[#2474ff] border-2 border-transparent focus:border-[#2474ff] focus:ring-2 focus:ring-[#ffd70077] shadow-lg transition-all duration-200 outline-none"
       style={{
         background: "linear-gradient(92deg, #eafffc 0%, #f5f6ff 60%, #ffd70022 100%)",
         fontFamily: "'Plus Jakarta Sans', 'Inter', Arial, sans-serif"
@@ -609,9 +603,9 @@ if (loading || !user) {
       <option value="es">Español</option>
       {/* Add more languages here */}
     </select>
-    <span className="block text-xs text-gray-500 font-medium mt-2 ml-2">{t('Language')}</span>
   </div>
 </div>
+
     {/* Unified Install Button */}
 {(isIOSSafari() || (deferredPrompt && isAndroidChrome())) && (
   <button
