@@ -606,33 +606,41 @@ if (loading || !user) {
   </div>
 </div>
 
-    {/* Unified Install Button */}
-{(isIOSSafari() || (deferredPrompt && isAndroidChrome())) && (
+<div className="flex flex-col md:flex-row gap-4 w-full justify-center mt-4">
+  {/* Android Install Button */}
   <button
-    className="btn-stroke px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center"
+    className="btn-stroke px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center w-full md:w-44"
+    style={{ background: 'linear-gradient(90deg, #f1fff7 0%, #faffd6 100%)' }}
     onClick={async () => {
-      if (isIOSSafari()) {
-        // For iOS Safari, open guide page
-        navigate('/guide');
-      } else if (deferredPrompt && isAndroidChrome()) {
+      if (deferredPrompt && isAndroidChrome()) {
         deferredPrompt.prompt();
         const choiceResult = await deferredPrompt.userChoice;
         if (choiceResult.outcome === 'accepted') {
           setDeferredPrompt(null);
         }
+      } else {
+        alert('Open this site in Chrome on Android for the install prompt.');
       }
     }}
+    disabled={!(deferredPrompt && isAndroidChrome())}
   >
     <Icon name="download" className="mb-1 w-7 h-7" />
-    Install App
+    Android Install
   </button>
-)}
-{!(isIOSSafari() || (deferredPrompt && isAndroidChrome())) && (
-  <div className="text-gray-500 text-center text-sm">
-    Install is available on iOS and Android.
-  </div>
-)}
 
+  {/* iOS Install Button */}
+  <button
+    className="btn-stroke px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center w-full md:w-44"
+    style={{ background: 'linear-gradient(90deg, #f1f3ff 0%, #fff4ee 100%)' }}
+    onClick={() => {
+      navigate('/guide');
+    }}
+    disabled={!isIOSSafari()}
+  >
+    <Icon name="download" className="mb-1 w-7 h-7" />
+    iOS Install
+  </button>
+</div>
   </div>
 </Card>
 
