@@ -607,26 +607,28 @@ if (loading || !user) {
 </div>
 
 <div className="flex flex-col md:flex-row gap-4 w-full justify-center mt-4">
-  {/* Android Install Button */}
-  <button
-    className="btn-stroke px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center w-full md:w-44"
-    style={{ background: 'linear-gradient(90deg, #f1fff7 0%, #faffd6 100%)' }}
-    onClick={async () => {
-      if (deferredPrompt && isAndroidChrome()) {
-        deferredPrompt.prompt();
-        const choiceResult = await deferredPrompt.userChoice;
-        if (choiceResult.outcome === 'accepted') {
-          setDeferredPrompt(null);
-        }
-      } else {
-        alert('Open this site in Chrome on Android for the install prompt.');
+
+{/* Android Install Button */}
+<button
+  className="btn-stroke px-4 py-4 rounded-xl font-bold flex flex-col items-center justify-center w-full md:w-44"
+  style={{ background: 'linear-gradient(90deg, #f1fff7 0%, #faffd6 100%)' }}
+  onClick={async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const choiceResult = await deferredPrompt.userChoice;
+      if (choiceResult.outcome === 'accepted') {
+        setDeferredPrompt(null);
       }
-    }}
-    disabled={!(deferredPrompt && isAndroidChrome())}
-  >
-    <Icon name="download" className="mb-1 w-7 h-7" />
-    Android Install
-  </button>
+    } else {
+      alert('To install: Open this site in any Android browser, tap menu or address bar, then "Add to Home screen". Try Chrome, Samsung Internet, Brave, or Opera if you do not see the option.');
+    }
+  }}
+>
+  <Icon name="download" className="mb-1 w-7 h-7" />
+  Android Install
+</button>
+
+
 
   {/* iOS Install Button */}
   <button
