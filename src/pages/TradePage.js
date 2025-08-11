@@ -12,11 +12,11 @@ import OrderBTC from "../components/orderbtc";
 import { useTranslation } from "react-i18next";
 
 const COINS = [
-  { symbol: "BTC", name: "Bitcoin", tv: "BINANCE:BTCUSDT", api: "BTC" },
-  { symbol: "ETH", name: "Ethereum", tv: "BINANCE:ETHUSDT", api: "ETH" },
-  { symbol: "SOL", name: "Solana", tv: "BINANCE:SOLUSDT", api: "SOL" },
-  { symbol: "XRP", name: "Ripple", tv: "BINANCE:XRPUSDT", api: "XRP" },
-  { symbol: "TON", name: "Toncoin", tv: "BINANCE:TONUSDT", api: "TON" },
+  { symbol: "BTC", name: "Bitcoin", tv: "BINANCE:BTCUSDT", api: "bitcoin" },
+  { symbol: "ETH", name: "Ethereum", tv: "BINANCE:ETHUSDT", api: "ethereum" },
+  { symbol: "SOL", name: "Solana", tv: "BINANCE:SOLUSDT", api: "solana" },
+  { symbol: "XRP", name: "Ripple", tv: "BINANCE:XRPUSDT", api: "ripple" },
+  { symbol: "TON", name: "Toncoin", tv: "BINANCE:TONUSDT", api: "toncoin" },
 ];
 
 function persistTradeState(tradeState) {
@@ -74,8 +74,10 @@ export default function TradePage() {
     let interval;
     const fetchPrice = async () => {
       try {
-        const res = await axios.get(`${MAIN_API_BASE}/price/${selectedCoin.api}`);
-        setCoinPrice(res.data.price);
+const res = await axios.get(
+  `https://api.coingecko.com/api/v3/simple/price?ids=${selectedCoin.api.toLowerCase()}&vs_currencies=usd`
+);
+setCoinPrice(res.data[selectedCoin.api.toLowerCase()].usd);
         setFetchError(false);
       } catch {
         setCoinPrice(null);

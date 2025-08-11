@@ -144,14 +144,18 @@ export default function WalletPage() {
     }
   }, [authChecked, isGuest, navigate]);
 
-  useEffect(() => {
+useEffect(() => {
   axios.get(`${MAIN_API_BASE}/prices`).then(res => {
-    const priceObj = {};
-    (res.data.data || []).forEach(c => {
-      priceObj[c.symbol] = c.quote.USD.price;
-    });
-    setPrices(priceObj);
-  });
+    if (res.data?.prices) {
+      setPrices(res.data.prices);
+    } else {
+      const priceObj = {};
+      (res.data.data || []).forEach(c => {
+        priceObj[c.symbol] = c.quote?.USD?.price;
+      });
+      setPrices(priceObj);
+    }
+  }).catch(() => setPrices({}));
 }, []);
 
   useEffect(() => {
@@ -324,7 +328,7 @@ export default function WalletPage() {
       }, { headers: { Authorization: `Bearer ${token}` } });
 
       if (res.data && res.data.success) {
-        setSuccessMsg(t("convert_success", {
+        setSuccessMsg(t("Convert Successful", {
           amount: amount,
           fromCoin,
           received: Number(res.data.received).toLocaleString(undefined, { maximumFractionDigits: 6 }),
@@ -332,7 +336,7 @@ export default function WalletPage() {
         }));
         fetchBalances();
       } else {
-        setSuccessMsg(t("convert_failed"));
+        setSuccessMsg(t("Convert Failed"));
       }
     } catch (err) {
       setSuccessMsg(err.response?.data?.error || t("convert_failed"));
