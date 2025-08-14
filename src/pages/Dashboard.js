@@ -18,23 +18,43 @@ export default function Dashboard() {
   const [newsHeadlines, setNewsHeadlines] = useState([]);
 
   // Fetch prices
-  useEffect(() => {
-    const fetchPrices = async () => {
-      try {
-        const res = await fetch(`${MAIN_API_BASE}/prices`);
-        const response = await res.json();
-        setCoins(response.data || []);
-        setLoading(false);
-      } catch (err) {
-        setCoins([]);
-        setLoading(false);
-      }
-    };
+// Fetch prices with stale-cache + localStorage
+useEffect(() => {
+  // preload last coins from localStorage so UI isn't empty
+  try {
+    const raw = localStorage.getItem("nc_coins");
+    if (raw) setCoins(JSON.parse(raw));
+  } catch {}
 
-    fetchPrices();
-    const interval = setInterval(fetchPrices, 12000);
-    return () => clearInterval(interval);
-  }, []);
+  const fetchPrices = async () => {
+    try {
+      const res = await fetch(`${MAIN_API_BASE}/prices`);
+      const response = await res.json();
+      const freshCoins = response.data || [];
+
+      if (freshCoins.length) {
+        setCoins(prev => {
+          // merge so we don’t lose symbols if API skips some
+          const merged = prev.length
+            ? prev.map(c => freshCoins.find(fc => fc.symbol === c.symbol) || c)
+            : freshCoins;
+          try { localStorage.setItem("nc_coins", JSON.stringify(merged)); } catch {}
+          return merged;
+        });
+      }
+      // if no data, keep existing coins
+    } catch {
+      // on error: keep previous coins
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchPrices();
+  const interval = setInterval(fetchPrices, 12000);
+  return () => clearInterval(interval);
+}, []);
+
 
   // Fetch news headlines for the ticker
   useEffect(() => {
