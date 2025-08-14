@@ -1,28 +1,35 @@
 import React, { useEffect, useRef, useState } from "react";
 
-export default function TimerBar({ duration, onComplete }) {
-  const [timeLeft, setTimeLeft] = useState(duration);
+export default function TimerBar({ endAt, onComplete }) {
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const secs = Math.ceil((endAt - Date.now()) / 1000);
+    return secs > 0 ? secs : 0;
+  });
+
   const intervalRef = useRef(null);
+  const initialDuration = useRef(timeLeft);
 
   useEffect(() => {
-    setTimeLeft(duration);
+    // Clear any old interval
     if (intervalRef.current) clearInterval(intervalRef.current);
 
     intervalRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(intervalRef.current);
-          onComplete();
-          return 0;
-        }
-        return prev - 1;
-      });
+      const remaining = Math.ceil((endAt - Date.now()) / 1000);
+      setTimeLeft(remaining > 0 ? remaining : 0);
+
+      if (remaining <= 0) {
+        clearInterval(intervalRef.current);
+        onComplete?.();
+      }
     }, 1000);
 
     return () => clearInterval(intervalRef.current);
-  }, [duration, onComplete]); // <--- Listen for duration changes
+  }, [endAt, onComplete]);
 
-  const percent = ((duration - timeLeft) / duration) * 100;
+  const percent =
+    initialDuration.current > 0
+      ? ((initialDuration.current - timeLeft) / initialDuration.current) * 100
+      : 100;
 
   return (
     <div className="w-full max-w-[290px]">
@@ -37,7 +44,10 @@ export default function TimerBar({ duration, onComplete }) {
             filter: "blur(0.5px)",
           }}
         />
-        <div className="absolute inset-0 flex items-center justify-center font-semibold text-theme-primary text-lg" style={{ letterSpacing: "1px" }}>
+        <div
+          className="absolute inset-0 flex items-center justify-center font-semibold text-theme-primary text-lg"
+          style={{ letterSpacing: "1px" }}
+        >
           Trading...
         </div>
       </div>

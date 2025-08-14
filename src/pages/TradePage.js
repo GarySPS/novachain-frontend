@@ -440,11 +440,11 @@ const executeTrade = async () => {
                   transition={{ duration: 0.32, type: "spring" }}
                   className="flex flex-col items-center mt-7 w-full"
                 >
-                  <TimerBar
-                    key={timerKey}
-                    duration={tradeState.duration}
-                    onComplete={onTimerComplete}
-                  />
+<TimerBar
+  key={timerKey}
+  endAt={tradeState.endAt}   // <-- drive by endAt, not duration
+  onComplete={onTimerComplete}
+/>
                 </motion.div>
               )}
               {/* Show PROCESSING spinner/message after timer */}
