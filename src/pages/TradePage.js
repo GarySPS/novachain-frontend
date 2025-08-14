@@ -23,13 +23,13 @@ function persistTradeState(tradeState) {
   if (tradeState) localStorage.setItem("activeTrade", JSON.stringify(tradeState));
   else localStorage.removeItem("activeTrade");
 }
- function loadTradeState() {
-   try {
-     return JSON.parse(localStorage.getItem("activeTrade") || "null");
-   } catch {
-     return null;
-   }
- }
+function loadTradeState() {
+  try {
+    return JSON.parse(localStorage.getItem("activeTrade") || "null");
+  } catch {
+    return null;
+  }
+}
 function createTradeState(trade_id, user_id, duration) {
   const endAt = Date.now() + duration * 1000;
   return { trade_id, user_id, duration, endAt };
@@ -223,7 +223,8 @@ export default function TradePage() {
       setTradeDetail(null);
       persistTradeState(null);
       alert(t("trade_failed", "Trade failed: ") + (err.response?.data?.error || err.message));
-    }    
+    }
+  };  
 
   return (
     <motion.div
