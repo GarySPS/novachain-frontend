@@ -72,16 +72,36 @@ export default function ProfilePage() {
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
-  // Fetch prices
-  useEffect(() => {
-    axios.get(`${MAIN_API_BASE}/prices`).then(res => {
-      const priceObj = {};
-      (res.data.data || []).forEach(c => {
-        priceObj[c.symbol] = c.quote.USD.price;
-      });
-      setPrices(priceObj);
-    });
-  }, []);
+// Fetch prices (robust to both API shapes) + keep fresh like WalletPage
+useEffect(() => {
+  let stopped = false;
+
+  const load = async () => {
+    try {
+      const res = await axios.get(`${MAIN_API_BASE}/prices`);
+      if (stopped) return;
+
+      if (res.data?.prices) {
+        // backend shape: { prices: { BTC: 64000, ETH: 3000, ... } }
+        setPrices(res.data.prices);
+      } else {
+        // CoinMarketCap-like shape: { data: [{ symbol, quote: { USD: { price }}}] }
+        const map = {};
+        (res.data.data || []).forEach(c => {
+          map[c.symbol] = c.quote?.USD?.price;
+        });
+        setPrices(map);
+      }
+    } catch {
+      if (!stopped) setPrices({});
+    }
+  };
+
+  load();                         // initial
+  const id = setInterval(load, 10000); // refresh every 10s
+  return () => { stopped = true; clearInterval(id); };
+}, []);
+
 
   // Fetch balance history for chart
   useEffect(() => {
