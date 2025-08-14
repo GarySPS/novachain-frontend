@@ -197,17 +197,19 @@ export default function TradePage() {
     setTimerKey(Math.random());
 
     try {
-      const res = await axios.post(
-        `${MAIN_API_BASE}/trade`,
-        {
-          user_id,
-          direction: direction.toUpperCase(), // "BUY" | "SELL"
-          amount: Number(amount),
-          duration: Number(duration),
-          symbol: selectedCoin.symbol        // send "BTC" | "ETH" | "SOL" | "XRP" | "TON"
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+const res = await axios.post(
+  `${MAIN_API_BASE}/trade`,
+  {
+    user_id,
+    direction: direction.toUpperCase(),   // "BUY" | "SELL"
+    amount: Number(amount),
+    duration: Number(duration),
+    symbol: selectedCoin.symbol,          // "BTC" | "ETH" | "SOL" | "XRP" | "TON"
+    client_price: Number(coinPrice) || null  // <— send the UI price as fallback
+  },
+  { headers: { Authorization: `Bearer ${token}` } }
+);
+
 
       if (!res.data.trade_id) throw new Error("Failed to start trade");
 
