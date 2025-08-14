@@ -23,13 +23,13 @@ function persistTradeState(tradeState) {
   if (tradeState) localStorage.setItem("activeTrade", JSON.stringify(tradeState));
   else localStorage.removeItem("activeTrade");
 }
-function loadTradeState() {
-  try {
-    return JSON.parse(localStorage.getItem("activeTrade") || "null");
-  } catch {
-    return null;
-  }
-}
+ function loadTradeState() {
+   try {
+     return JSON.parse(localStorage.getItem("activeTrade") || "null");
+   } catch {
+     return null;
+   }
+ }
 function createTradeState(trade_id, user_id, duration) {
   const endAt = Date.now() + duration * 1000;
   return { trade_id, user_id, duration, endAt };
@@ -74,10 +74,8 @@ export default function TradePage() {
     let interval;
     const fetchPrice = async () => {
       try {
-const res = await axios.get(
-  `https://api.coingecko.com/api/v3/simple/price?ids=${selectedCoin.api.toLowerCase()}&vs_currencies=usd`
-);
-setCoinPrice(res.data[selectedCoin.api.toLowerCase()].usd);
+ const res = await axios.get(`${MAIN_API_BASE}/prices/${selectedCoin.symbol}`);
+ setCoinPrice(res.data.price);
         setFetchError(false);
       } catch {
         setCoinPrice(null);
@@ -197,19 +195,22 @@ setCoinPrice(res.data[selectedCoin.api.toLowerCase()].usd);
     setTradeState(tempTradeState);
     setTimerActive(true);
     setTimerKey(Math.random());
+
     try {
       const res = await axios.post(
         `${MAIN_API_BASE}/trade`,
         {
           user_id,
-          direction: direction.toUpperCase(),
+          direction: direction.toUpperCase(), // "BUY" | "SELL"
           amount: Number(amount),
           duration: Number(duration),
-          symbol: selectedCoin.api // <<-- IMPORTANT: must send symbol to backend!
+          symbol: selectedCoin.symbol        // send "BTC" | "ETH" | "SOL" | "XRP" | "TON"
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       if (!res.data.trade_id) throw new Error("Failed to start trade");
+
       const { trade_id } = res.data;
       const confirmedTradeState = createTradeState(trade_id, user_id, duration);
       persistTradeState(confirmedTradeState);
@@ -222,8 +223,7 @@ setCoinPrice(res.data[selectedCoin.api.toLowerCase()].usd);
       setTradeDetail(null);
       persistTradeState(null);
       alert(t("trade_failed", "Trade failed: ") + (err.response?.data?.error || err.message));
-    }
-  };
+    }    
 
   return (
     <motion.div
