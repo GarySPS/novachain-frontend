@@ -49,6 +49,17 @@ export default function WalletPage() {
   const token = localStorage.getItem("token");
   const [userId, setUserId] = useState(null);
   const [prices, setPrices] = useState({});
+  // preload last known prices so page never starts at $0
+useEffect(() => {
+  try {
+    const raw = localStorage.getItem("nc_prices");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") setPrices(parsed);
+    }
+  } catch {}
+}, []);
+
   const [balances, setBalances] = useState([]);
   const [depositHistory, setDepositHistory] = useState([]);
   const [withdrawHistory, setWithdrawHistory] = useState([]);
@@ -84,11 +95,15 @@ export default function WalletPage() {
     new Date(b.created_at || b.date) - new Date(a.created_at || a.date)
   );
 
-  useEffect(() => {
-  if (!balances.length || !Object.keys(prices).length) {
+useEffect(() => {
+  if (!balances.length) {            // truly no assets
     setTotalUsd(0);
     return;
   }
+  if (!Object.keys(prices).length) { // outage or first load
+    return;                          // keep previous total
+  }
+
   let sum = 0;
   balances.forEach(({ symbol, balance }) => {
     const coinPrice = prices[symbol] || (symbol === "USDT" ? 1 : 0);
@@ -144,7 +159,7 @@ export default function WalletPage() {
     }
   }, [authChecked, isGuest, navigate]);
 
-// Live prices (list) with 10s refresh so Convert preview stays current
+// Live prices (list) with 10s refresh; never wipe prices on error
 useEffect(() => {
   let stopped = false;
 
@@ -153,26 +168,34 @@ useEffect(() => {
       const res = await axios.get(`${MAIN_API_BASE}/prices`);
       if (stopped) return;
 
-      if (res.data?.prices) {
-        setPrices(res.data.prices);
-      } else {
-        const map = {};
-        (res.data.data || []).forEach(c => {
-          map[c.symbol] = c.quote?.USD?.price;
+      // prefer explicit prices map
+      let map = res.data?.prices;
+      if (!map || !Object.keys(map).length) {
+        map = {};
+        (res.data?.data || []).forEach(c => {
+          if (c?.symbol) map[c.symbol] = c?.quote?.USD?.price;
         });
-        setPrices(map);
       }
+
+      if (map && Object.keys(map).length) {
+        setPrices(prev => {
+          const next = { ...prev, ...map };
+          try { localStorage.setItem("nc_prices", JSON.stringify(next)); } catch {}
+          return next;
+        });
+      }
+      // if empty, keep previous prices (do nothing)
     } catch {
-      if (!stopped) setPrices({});
+      // network error – keep previous prices; do nothing
     }
   };
 
   load();                               // initial
-  const id = setInterval(load, 10000);  // refresh every 10s
+  const id = setInterval(load, 10_000); // refresh every 10s
   return () => { stopped = true; clearInterval(id); };
-}, []);
+}, [MAIN_API_BASE]);
 
-// Extra-fresh quotes for exactly the two coins being converted
+// Extra-fresh quotes for the two coins being converted; keep last good values on error
 useEffect(() => {
   let canceled = false;
 
@@ -183,18 +206,24 @@ useEffect(() => {
         axios.get(`${MAIN_API_BASE}/prices/${toCoin}`)
       ]);
       if (canceled) return;
-      setPrices(p => ({
-        ...p,
-        [fromCoin]: Number(a.data?.price),
-        [toCoin]: Number(b.data?.price),
-      }));
+
+      const pa = Number(a.data?.price);
+      const pb = Number(b.data?.price);
+
+      setPrices(prev => {
+        const next = { ...prev };
+        if (Number.isFinite(pa) && pa > 0) next[fromCoin] = pa;
+        if (Number.isFinite(pb) && pb > 0) next[toCoin] = pb;
+        try { localStorage.setItem("nc_prices", JSON.stringify(next)); } catch {}
+        return next;
+      });
     } catch {
-      // ignore; list-polling hook still keeps prices reasonably current
+      // ignore; keep last known prices
     }
   };
 
-  refreshPair();                         // when user changes coins
-  const id = setInterval(refreshPair, 10000);
+  refreshPair();
+  const id = setInterval(refreshPair, 10_000);
   return () => { canceled = true; clearInterval(id); };
 }, [fromCoin, toCoin, MAIN_API_BASE]);
 
@@ -448,14 +477,19 @@ useEffect(() => {
           {Number(balance).toLocaleString(undefined, { minimumFractionDigits: symbol === "BTC" ? 6 : 2 })}
         </span>
       </td>
-      {/* USD Value */}
-      <td className="py-4 px-2">
-        <span className="font-extrabold text-theme-primary text-lg md:text-xl">
-          {(prices[symbol] ? (
-            "$" + (prices[symbol] * Number(balance)).toLocaleString(undefined, { maximumFractionDigits: 2 })
-          ) : "--")}
-        </span>
-      </td>
+{/* USD Value */}
+<td className="py-4 px-2">
+  {(() => {
+    const p = prices[symbol] ?? (symbol === "USDT" ? 1 : undefined);
+    return (
+      <span className="font-extrabold text-theme-primary text-lg md:text-xl">
+        {p !== undefined
+          ? "$" + (Number(balance) * p).toLocaleString(undefined, { maximumFractionDigits: 2 })
+          : "--"}
+      </span>
+    );
+  })()}
+</td>
       {/* Buttons */}
       <td className="py-4 px-2">
         <div className="flex flex-col md:flex-row gap-2 md:gap-3">

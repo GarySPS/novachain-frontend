@@ -38,6 +38,17 @@ export default function ProfilePage() {
   const [user, setUser] = useState(null);
   const [assets, setAssets] = useState([]);
   const [prices, setPrices] = useState({});
+
+  useEffect(() => {
+  try {
+    const raw = localStorage.getItem("nc_prices");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") setPrices(parsed);
+    }
+  } catch {}
+}, []);
+
   const [totalUsd, setTotalUsd] = useState(0);
   const [loading, setLoading] = useState(true);
   const [kycStatus, setKycStatus] = useState("unverified");
@@ -81,27 +92,32 @@ useEffect(() => {
       const res = await axios.get(`${MAIN_API_BASE}/prices`);
       if (stopped) return;
 
-      if (res.data?.prices) {
-        // backend shape: { prices: { BTC: 64000, ETH: 3000, ... } }
-        setPrices(res.data.prices);
-      } else {
-        // CoinMarketCap-like shape: { data: [{ symbol, quote: { USD: { price }}}] }
-        const map = {};
-        (res.data.data || []).forEach(c => {
-          map[c.symbol] = c.quote?.USD?.price;
+      // normalize to a {SYM: price} map
+      let map = res.data?.prices;
+      if (!map || !Object.keys(map).length) {
+        map = {};
+        (res.data?.data || []).forEach(c => {
+          if (c?.symbol) map[c.symbol] = c?.quote?.USD?.price;
         });
-        setPrices(map);
       }
+
+      if (map && Object.keys(map).length) {
+        setPrices(prev => {
+          const next = { ...prev, ...map };
+          try { localStorage.setItem("nc_prices", JSON.stringify(next)); } catch {}
+          return next;
+        });
+      }
+      // if empty: keep previous prices (do nothing)
     } catch {
-      if (!stopped) setPrices({});
+      // on error: keep previous prices (do nothing)
     }
   };
 
-  load();                         // initial
-  const id = setInterval(load, 10000); // refresh every 10s
+  load();
+  const id = setInterval(load, 10_000);
   return () => { stopped = true; clearInterval(id); };
-}, []);
-
+}, [MAIN_API_BASE]);
 
   // Fetch balance history for chart
   useEffect(() => {
@@ -145,18 +161,22 @@ useEffect(() => {
   }, [navigate]);
 
   // Calculate totalUsd (exactly as wallet page)
-  useEffect(() => {
-    if (!assets.length || !Object.keys(prices).length) {
-      setTotalUsd(0);
-      return;
-    }
-    let sum = 0;
-    assets.forEach(({ symbol, balance }) => {
-      const coinPrice = prices[symbol] || (symbol === "USDT" ? 1 : 0);
-      sum += Number(balance) * coinPrice;
-    });
-    setTotalUsd(sum);
-  }, [assets, prices]);
+useEffect(() => {
+  if (!assets.length) {
+    setTotalUsd(0);
+    return;
+  }
+  // outage or first load with no prices? keep the previous total
+  if (!Object.keys(prices).length) return;
+
+  let sum = 0;
+  assets.forEach(({ symbol, balance }) => {
+    const coinPrice = prices[symbol] || (symbol === "USDT" ? 1 : 0);
+    sum += Number(balance) * coinPrice;
+  });
+  setTotalUsd(sum);
+}, [assets, prices]);
+
 
   useEffect(() => {
     if (!user || !user.avatar) {
