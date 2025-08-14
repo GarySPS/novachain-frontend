@@ -69,23 +69,25 @@ export default function TradePage() {
     }
   }, []);
 
-  // ---- Price polling (whenever coin changes) ----
-  useEffect(() => {
-    let interval;
-    const fetchPrice = async () => {
-      try {
- const res = await axios.get(`${MAIN_API_BASE}/prices/${selectedCoin.symbol}`);
- setCoinPrice(res.data.price);
-        setFetchError(false);
-      } catch {
-        setCoinPrice(null);
-        setFetchError(true);
-      }
-    };
-    fetchPrice();
-    interval = setInterval(fetchPrice, 5000);
-    return () => clearInterval(interval);
-  }, [selectedCoin]);
+// ---- Price polling (whenever coin changes) ----
+// Pull price from YOUR backend so it matches the entry price logic.
+useEffect(() => {
+  let interval;
+  const fetchPrice = async () => {
+    try {
+      const res = await axios.get(`${MAIN_API_BASE}/prices/${selectedCoin.symbol}`);
+      setCoinPrice(Number(res.data?.price));
+      setFetchError(false);
+    } catch {
+      setCoinPrice(null);
+      setFetchError(true);
+    }
+  };
+  fetchPrice();
+  interval = setInterval(fetchPrice, 5000);
+  return () => clearInterval(interval);
+}, [selectedCoin]);
+
 
   // ---- TradingView widget loader (reloads on coin change) ----
   useEffect(() => {
@@ -170,63 +172,68 @@ export default function TradePage() {
     return { shouldRepeat: false, delay: 0 };
   };
 
-  // ---- Start new trade ----
-  const executeTrade = async () => {
-    if (!coinPrice || timerActive) return;
-    setTimerActive(true);
+// ---- Start new trade ----
+const executeTrade = async () => {
+  if (!coinPrice || timerActive) return;
+  setTimerActive(true);
+  setTradeResult(null);
+  setTradeDetail(null);
+
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert(t("please_login", "Please log in to trade."));
+    setTimerActive(false);
+    return;
+  }
+
+  function parseJwt(token) {
+    try { return JSON.parse(atob(token.split(".")[1])); } catch { return {}; }
+  }
+
+  const payload = parseJwt(token);
+  const user_id = payload.id;
+
+  // Start a single countdown using a fixed endAt
+  const endAt = Date.now() + duration * 1000;
+  const temp = { trade_id: "temp", user_id, duration, endAt };
+
+  setTradeState(temp);
+  // Remount the timer ONCE here
+  setTimerKey(Math.random());
+
+  try {
+    const res = await axios.post(
+      `${MAIN_API_BASE}/trade`,
+      {
+        user_id,
+        direction: direction.toUpperCase(),  // "BUY" | "SELL"
+        amount: Number(amount),
+        duration: Number(duration),
+        symbol: selectedCoin.symbol,         // "BTC" | "ETH" | "SOL" | "XRP" | "TON"
+        client_price: Number(coinPrice) || null
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    if (!res.data.trade_id) throw new Error("Failed to start trade");
+    const { trade_id } = res.data;
+
+    // IMPORTANT: only update the id; keep the same endAt/duration so the timer doesn't restart
+    setTradeState(prev =>
+      prev ? { ...prev, trade_id } : { trade_id, user_id, duration, endAt }
+    );
+
+    persistTradeState({ trade_id, user_id, duration, endAt });
+
+    // Do NOT call setTimerActive(true) or setTimerKey(...) again here
+  } catch (err) {
+    setTimerActive(false);
     setTradeResult(null);
     setTradeDetail(null);
-    let token = localStorage.getItem("token");
-    if (!token) {
-      alert(t("please_login", "Please log in to trade."));
-      setTimerActive(false);
-      return;
-    }
-    function parseJwt(token) {
-      try {
-        return JSON.parse(atob(token.split('.')[1]));
-      } catch (e) {
-        return {};
-      }
-    }
-    const payload = parseJwt(token);
-    const user_id = payload.id;
-    const tempTradeState = createTradeState("temp", user_id, duration);
-    setTradeState(tempTradeState);
-    setTimerActive(true);
-    setTimerKey(Math.random());
-
-    try {
-const res = await axios.post(
-  `${MAIN_API_BASE}/trade`,
-  {
-    user_id,
-    direction: direction.toUpperCase(),   // "BUY" | "SELL"
-    amount: Number(amount),
-    duration: Number(duration),
-    symbol: selectedCoin.symbol,          // "BTC" | "ETH" | "SOL" | "XRP" | "TON"
-    client_price: Number(coinPrice) || null  // <— send the UI price as fallback
-  },
-  { headers: { Authorization: `Bearer ${token}` } }
-);
-
-
-      if (!res.data.trade_id) throw new Error("Failed to start trade");
-
-      const { trade_id } = res.data;
-      const confirmedTradeState = createTradeState(trade_id, user_id, duration);
-      persistTradeState(confirmedTradeState);
-      setTradeState(confirmedTradeState);
-      setTimerActive(true);
-      setTimerKey(Math.random());
-    } catch (err) {
-      setTimerActive(false);
-      setTradeResult(null);
-      setTradeDetail(null);
-      persistTradeState(null);
-      alert(t("trade_failed", "Trade failed: ") + (err.response?.data?.error || err.message));
-    }
-  };  
+    persistTradeState(null);
+    alert(t("trade_failed", "Trade failed: ") + (err.response?.data?.error || err.message));
+  }
+};
 
   return (
     <motion.div
