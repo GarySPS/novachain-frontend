@@ -144,19 +144,59 @@ export default function WalletPage() {
     }
   }, [authChecked, isGuest, navigate]);
 
+// Live prices (list) with 10s refresh so Convert preview stays current
 useEffect(() => {
-  axios.get(`${MAIN_API_BASE}/prices`).then(res => {
-    if (res.data?.prices) {
-      setPrices(res.data.prices);
-    } else {
-      const priceObj = {};
-      (res.data.data || []).forEach(c => {
-        priceObj[c.symbol] = c.quote?.USD?.price;
-      });
-      setPrices(priceObj);
+  let stopped = false;
+
+  const load = async () => {
+    try {
+      const res = await axios.get(`${MAIN_API_BASE}/prices`);
+      if (stopped) return;
+
+      if (res.data?.prices) {
+        setPrices(res.data.prices);
+      } else {
+        const map = {};
+        (res.data.data || []).forEach(c => {
+          map[c.symbol] = c.quote?.USD?.price;
+        });
+        setPrices(map);
+      }
+    } catch {
+      if (!stopped) setPrices({});
     }
-  }).catch(() => setPrices({}));
+  };
+
+  load();                               // initial
+  const id = setInterval(load, 10000);  // refresh every 10s
+  return () => { stopped = true; clearInterval(id); };
 }, []);
+
+// Extra-fresh quotes for exactly the two coins being converted
+useEffect(() => {
+  let canceled = false;
+
+  const refreshPair = async () => {
+    try {
+      const [a, b] = await Promise.all([
+        axios.get(`${MAIN_API_BASE}/prices/${fromCoin}`),
+        axios.get(`${MAIN_API_BASE}/prices/${toCoin}`)
+      ]);
+      if (canceled) return;
+      setPrices(p => ({
+        ...p,
+        [fromCoin]: Number(a.data?.price),
+        [toCoin]: Number(b.data?.price),
+      }));
+    } catch {
+      // ignore; list-polling hook still keeps prices reasonably current
+    }
+  };
+
+  refreshPair();                         // when user changes coins
+  const id = setInterval(refreshPair, 10000);
+  return () => { canceled = true; clearInterval(id); };
+}, [fromCoin, toCoin, MAIN_API_BASE]);
 
   useEffect(() => {
     axios.get(`${MAIN_API_BASE}/deposit-addresses`)
