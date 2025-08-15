@@ -72,6 +72,7 @@ export default function ProfilePage() {
   const [authChecked, setAuthChecked] = useState(false);
   const { t } = useTranslation();
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [kycError, setKycError] = useState("");
 
   // For install PWA
   useEffect(() => {
@@ -82,6 +83,11 @@ export default function ProfilePage() {
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
+
+ // Reset "submitted" banner once not pending
+ useEffect(() => {
+   if (kycStatus !== "pending") setKycSubmitted(false);
+ }, [kycStatus]);
 
 // Fetch prices (robust to both API shapes) + keep fresh like WalletPage
 useEffect(() => {
@@ -214,27 +220,46 @@ useEffect(() => {
     navigate("/login");
   }
 
-  async function handleKycSubmit(e) {
-    e.preventDefault();
-    if (!kycSelfie || !kycId || kycStatus === "pending" || kycStatus === "approved") return;
-    try {
-      setKycSubmitted(true);
-      const formData = new FormData();
-      formData.append("selfie", kycSelfie);
-      formData.append("id_card", kycId);
-      const token = localStorage.getItem("token");
-      await axios.post(`${MAIN_API_BASE}/kyc`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`
-        }
-      });
-      setKycStatus("pending");
-    } catch (err) {
-      alert("Failed to submit KYC. Try again.");
+async function handleKycSubmit(e) {
+  e.preventDefault();
+  if (!kycSelfie || !kycId || kycStatus === "pending" || kycStatus === "approved") return;
+
+  setKycError("");
+  setKycSubmitted(true);
+
+  try {
+    // Optimistically lock UI immediately
+    setKycStatus("pending");
+
+    const formData = new FormData();
+    formData.append("selfie", kycSelfie);
+    formData.append("id_card", kycId);
+
+    const token = localStorage.getItem("token");
+    await axios.post(`${MAIN_API_BASE}/kyc`, formData, {
+      headers: {
+        // IMPORTANT: do NOT set Content-Type manually for FormData
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: false,
+    });
+
+    // Clear local previews so the form can’t be re-submitted from cache
+    setKycSelfie(null);
+    setKycId(null);
+    setKycSelfiePreview(null);
+    setKycIdPreview(null);
+  } catch (err) {
+    // Don’t show a blocking alert; requests that reach the server can still succeed
+    console.error("KYC submit error:", err?.response?.status, err?.message);
+    // If it truly failed before reaching server, surface a small inline note.
+    // Keep 'pending' if the request likely reached server (CORS/read errors often do).
+    if (kycStatus !== "pending") {
+      setKycError("Upload failed. Please try again.");
+      setKycSubmitted(false);
     }
-    setKycSubmitted(false);
   }
+}
 
   async function handleAvatarChange(e) {
     const file = e.target.files[0];
@@ -529,7 +554,7 @@ if (loading || !user) {
                 <div className="flex-1">
                   <label className="mb-2 block font-semibold flex items-center gap-2">
                     <Icon name="user" className="w-5 h-5 text-theme-primary" />
-                    {t('profile_upload_selfie')}
+                    {t('Upload Selfie')}
                     <Tooltip text={t('profile_tooltip_selfie')} />
                   </label>
                   <div className="bg-white/60 border-2 border-dashed border-theme-primary/30 rounded-xl px-3 py-6 flex flex-col items-center justify-center transition hover:border-theme-primary">
@@ -549,7 +574,7 @@ if (loading || !user) {
                     />
                     <label htmlFor="selfie" className="cursor-pointer flex flex-col items-center">
                       <Icon name="upload-cloud" className="w-8 h-8 text-theme-primary mb-1" />
-                      <span className="text-sm text-theme-primary font-semibold">{t('profile_click_to_upload')}</span>
+                      <span className="text-sm text-theme-primary font-semibold">{t('ID')}</span>
                     </label>
                     {kycSelfiePreview && (
                       <img
@@ -566,7 +591,7 @@ if (loading || !user) {
 <div className="flex-1">
   <label className="mb-2 block font-semibold flex items-center gap-2">
     <Icon name="id-card" className="w-5 h-5 text-yellow-500" />
-    {t('profile_upload_id')}
+    {t('Upload ID')}
     <Tooltip text={t('profile_tooltip_id')} />
   </label>
   <div className="bg-white/60 border-2 border-dashed border-yellow-400/30 rounded-xl px-3 py-6 flex flex-col items-center justify-center transition hover:border-yellow-400">
@@ -586,7 +611,7 @@ if (loading || !user) {
     />
     <label htmlFor="id-card" className="cursor-pointer flex flex-col items-center">
       <Icon name="upload-cloud" className="w-8 h-8 text-yellow-500 mb-1" />
-      <span className="text-sm text-yellow-500 font-semibold">{t('profile_click_to_upload')}</span>
+      <span className="text-sm text-yellow-500 font-semibold">{t('Selfie')}</span>
     </label>
     {kycIdPreview && (
       <img
@@ -608,7 +633,7 @@ if (loading || !user) {
                  {kycStatus === "rejected" ? "Re-upload for review" : "Submit for automated review"}
                 </button>
               </div>
-              {kycSubmitted && (
+              {(kycStatus === "pending" && kycSubmitted) && (
                 <div className="mt-2 text-green-600 font-semibold text-center transition-opacity animate-fade-in">
                   {"Submitted. Our automated system is analyzing your images."}
                 </div>
