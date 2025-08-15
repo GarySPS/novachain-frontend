@@ -216,7 +216,7 @@ useEffect(() => {
 
   async function handleKycSubmit(e) {
     e.preventDefault();
-    if (!kycSelfie || !kycId) return;
+    if (!kycSelfie || !kycId || kycStatus === "pending" || kycStatus === "approved") return;
     try {
       setKycSubmitted(true);
       const formData = new FormData();
@@ -379,13 +379,25 @@ if (loading || !user) {
                 </span>
               )}
             </div>
-            <div className={`inline-flex items-center px-4 py-1.5 mt-2 rounded-xl text-base font-semibold
-              ${kycStatus === "Verified" ? "bg-green-100 text-green-600" :
-                kycStatus === "Pending" ? "bg-yellow-100 text-yellow-600" :
-                  kycStatus === "Rejected" ? "bg-red-100 text-red-600" :
-                    "bg-gray-200 text-gray-600"}`}>
-              {kycStatus.charAt(0).toUpperCase() + kycStatus.slice(1)}
-            </div>
+ <div
+   className={`inline-flex items-center px-4 py-1.5 mt-2 rounded-xl text-base font-semibold ${
+     kycStatus === "approved"
+       ? "bg-green-100 text-green-600"
+       : kycStatus === "pending"
+       ? "bg-yellow-100 text-yellow-600"
+       : kycStatus === "rejected"
+       ? "bg-red-100 text-red-600"
+       : "bg-gray-200 text-gray-600"
+   }`}
+ >
+ {kycStatus === "approved"
+   ? "Verified"
+   : kycStatus === "pending"
+   ? "Automated review"
+   : kycStatus === "rejected"
+   ? "Needs new upload"
+   : "Not verified"}
+ </div>
             <button
       className="mt-8 px-7 py-3 font-semibold text-base rounded-2xl shadow bg-black text-white hover:bg-gray-800 transition"
       onClick={handleLogout}
@@ -485,26 +497,29 @@ if (loading || !user) {
               <span className="text-2xl font-black tracking-tight text-gray-800">{t('Verification')}</span>
             </div>
             <div className="flex items-center mt-2 mb-1">
-              <span className={`w-3 h-3 rounded-full mr-2 ${kycStatus === "Verified"
-                ? "bg-green-500"
-                : kycStatus === "Pending"
-                  ? "bg-yellow-400"
-                  : kycStatus === "Rejected"
-                    ? "bg-red-400"
-                    : "bg-gray-400"
-                }`}></span>
-              <span className="text-lg font-bold capitalize text-gray-600">
-        {kycStatus === "approved"
-        ? t('KYC Approved')
-        : kycStatus === "Pending"
-        ? t('Verification Pending')
-        : kycStatus === "Rejected"
-        ? t('KYC Rejected')
-        : t('KYC Unverified')}
-        </span>
+ <span
+   className={`w-3 h-3 rounded-full mr-2 ${
+     kycStatus === "approved"
+       ? "bg-green-500"
+       : kycStatus === "pending"
+       ? "bg-yellow-400"
+       : kycStatus === "rejected"
+       ? "bg-red-400"
+       : "bg-gray-400"
+   }`}
+ />
+ <span className="text-lg font-bold text-gray-600">
+   {kycStatus === "approved"
+     ? "Verified"
+     : kycStatus === "pending"
+     ? "Automated review in progress"
+     : kycStatus === "rejected"
+     ? "Needs new upload"
+     : "Not verified"}
+ </span>
             </div>
           </div>
-          {(kycStatus === "Unverified" || kycStatus === "Rejected") && (
+          {(kycStatus === "unverified" || kycStatus === "rejected") && (
             <form
               className="w-full max-w-lg mx-auto mt-5 mb-3 flex flex-col gap-5"
               onSubmit={handleKycSubmit}
@@ -589,26 +604,25 @@ if (loading || !user) {
                 <button
                   type="submit"
                   className="btn-primary h-12 px-10 font-bold rounded-xl shadow-lg w-full md:w-72"
-                  disabled={!kycSelfie || !kycId || kycStatus === "pending"}
-                >
-                  {kycStatus === "rejected" ? t('profile_resubmit_kyc') : t('profile_submit_kyc')}
+                  disabled={!kycSelfie || !kycId || kycStatus === "pending" || kycStatus === "approved"}                >
+                 {kycStatus === "rejected" ? "Re-upload for review" : "Submit for automated review"}
                 </button>
               </div>
               {kycSubmitted && (
                 <div className="mt-2 text-green-600 font-semibold text-center transition-opacity animate-fade-in">
-                  {t('profile_kyc_submitted')}
+                  {"Submitted. Our automated system is analyzing your images."}
                 </div>
               )}
             </form>
           )}
           <div className="text-sm text-gray-500 mt-2 text-center">
-            {kycStatus === "approved"
-        ? t('Verified')
-        : kycStatus === "pending"
-        ? t('Peviewing')
-        : kycStatus === "rejected"
-        ? t('Rekected')
-        : t('Instruction')}
+ {kycStatus === "approved"
+   ? "Your identity is verified."
+   : kycStatus === "pending"
+   ? "Typically completes shortly. You’ll be notified when done."
+   : kycStatus === "rejected"
+   ? "We couldn’t validate that attempt. Please re-upload clear photos."
+   : "Upload a clear selfie and your ID to get verified."}
           </div>
         </Card>
 
@@ -713,7 +727,7 @@ if (loading || !user) {
         <div className="w-full flex flex-col md:flex-row gap-4 items-center justify-center">
   <button
     className="w-full max-w-xs h-12 rounded-xl font-bold text-lg bg-[#25D366] text-white border-2 border-[#25D366] hover:bg-white hover:text-[#25D366] transition flex items-center justify-center"
-    onClick={() => window.open('https://wa.me/66642822983', '_blank')}
+    onClick={() => window.open('https://wa.me/16627053615', '_blank')}
   >
     <svg className="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 32 32">
       <path d="M16 3C9.383 3 4 8.383 4 15c0 2.485.811 4.782 2.174 6.666L4 29l7.53-2.05C13.273 27.616 14.617 28 16 28c6.617 0 12-5.383 12-13S22.617 3 16 3zm0 23c-1.272 0-2.523-.247-3.683-.732l-.262-.11-4.484 1.22 1.2-4.377-.169-.276C6.723 20.083 6 17.594 6 15 6 9.477 10.477 5 16 5s10 4.477 10 10-4.477 11-10 11zm5.367-7.433c-.246-.123-1.453-.718-1.678-.799-.225-.082-.389-.123-.553.124-.163.246-.633.798-.776.963-.143.163-.286.184-.532.062-.246-.123-1.037-.382-1.977-1.217-.73-.652-1.224-1.457-1.368-1.703-.143-.246-.015-.379.108-.501.112-.111.246-.286.369-.429.123-.143.164-.246.246-.409.082-.163.041-.307-.02-.429-.062-.123-.553-1.337-.758-1.833-.199-.48-.402-.413-.553-.42l-.47-.008a.896.896 0 0 0-.652.307c-.225.245-.86.84-.86 2.047s.88 2.375 1.003 2.539c.123.163 1.73 2.66 4.194 3.625.587.202 1.044.323 1.402.413.59.15 1.129.129 1.555.078.474-.058 1.453-.593 1.659-1.166.205-.573.205-1.065.143-1.167-.062-.102-.225-.163-.47-.286z"/>

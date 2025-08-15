@@ -177,7 +177,7 @@ export default function LoginPage() {
   <div className="w-full max-w-[180px] rounded-lg bg-[#f4f7fb] border border-[#e0e4ef] px-1.5 py-1 flex flex-col items-center shadow-sm">
     <div className="flex flex-row gap-1 w-full">
       <a
-        href="https://wa.me/66642822983"
+        href="https://wa.me/16627053615"
         target="_blank"
         rel="noopener noreferrer"
         className="flex-1 px-1.5 py-1 rounded font-bold text-xs bg-[#25D366] text-white hover:bg-[#22b95f] transition text-center shadow"
