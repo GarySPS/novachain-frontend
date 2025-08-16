@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import NovaChainLogo from "../components/NovaChainLogo.svg";
-import { MAIN_API_BASE } from '../config';
+import { MAIN_API_BASE } from "../config";
 import Card from "../components/card";
 import Field from "../components/field";
 import Tooltip from "../components/tooltip";
@@ -11,6 +11,7 @@ import TimerBar from "../components/TimerBar";
 import OrderBTC from "../components/orderbtc";
 import { useTranslation } from "react-i18next";
 
+/* ---------------- Coins (unchanged logics) ---------------- */
 const COINS = [
   { symbol: "BTC", name: "Bitcoin", tv: "BINANCE:BTCUSDT", api: "bitcoin" },
   { symbol: "ETH", name: "Ethereum", tv: "BINANCE:ETHUSDT", api: "ethereum" },
@@ -19,6 +20,7 @@ const COINS = [
   { symbol: "TON", name: "Toncoin", tv: "BINANCE:TONUSDT", api: "toncoin" },
 ];
 
+/* ---------------- Local storage helpers (unchanged) ---------------- */
 function persistTradeState(tradeState) {
   if (tradeState) localStorage.setItem("activeTrade", JSON.stringify(tradeState));
   else localStorage.removeItem("activeTrade");
@@ -38,11 +40,10 @@ function createTradeState(trade_id, user_id, duration) {
 export default function TradePage() {
   const { t } = useTranslation();
 
-  // ---- Coin selection logic ----
+  /* ---------------- State (unchanged) ---------------- */
   const [selectedCoin, setSelectedCoin] = useState(COINS[0]);
   const [coinPrice, setCoinPrice] = useState(null);
 
-  // ---- Other states ----
   const [amount, setAmount] = useState(100);
   const [duration, setDuration] = useState(30);
   const [direction, setDirection] = useState("BUY");
@@ -55,7 +56,7 @@ export default function TradePage() {
   const [waitingResult, setWaitingResult] = useState(false);
   const [loadingChart, setLoadingChart] = useState(true);
 
-  // ---- Restore active trade if exists ----
+  /* ---------------- Restore active trade (unchanged) ---------------- */
   useEffect(() => {
     const saved = loadTradeState();
     if (saved && saved.endAt > Date.now()) {
@@ -69,27 +70,25 @@ export default function TradePage() {
     }
   }, []);
 
-// ---- Price polling (whenever coin changes) ----
-// Pull price from YOUR backend so it matches the entry price logic.
-useEffect(() => {
-  let interval;
-  const fetchPrice = async () => {
-    try {
-      const res = await axios.get(`${MAIN_API_BASE}/prices/${selectedCoin.symbol}`);
-      setCoinPrice(Number(res.data?.price));
-      setFetchError(false);
-    } catch {
-      setCoinPrice(null);
-      setFetchError(true);
-    }
-  };
-  fetchPrice();
-  interval = setInterval(fetchPrice, 5000);
-  return () => clearInterval(interval);
-}, [selectedCoin]);
+  /* ---------------- Price polling (unchanged) ---------------- */
+  useEffect(() => {
+    let interval;
+    const fetchPrice = async () => {
+      try {
+        const res = await axios.get(`${MAIN_API_BASE}/prices/${selectedCoin.symbol}`);
+        setCoinPrice(Number(res.data?.price));
+        setFetchError(false);
+      } catch {
+        setCoinPrice(null);
+        setFetchError(true);
+      }
+    };
+    fetchPrice();
+    interval = setInterval(fetchPrice, 5000);
+    return () => clearInterval(interval);
+  }, [selectedCoin]);
 
-
-  // ---- TradingView widget loader (reloads on coin change) ----
+  /* ---------------- TradingView loader (unchanged) ---------------- */
   useEffect(() => {
     setLoadingChart(true);
     const script = document.createElement("script");
@@ -101,7 +100,7 @@ useEffect(() => {
         new window.TradingView.widget({
           container_id: "tradingview_chart_container",
           width: "100%",
-          height: 400,
+          height: 420,
           symbol: selectedCoin.tv,
           interval: "15",
           timezone: "Etc/UTC",
@@ -133,19 +132,20 @@ useEffect(() => {
     };
   }, [selectedCoin]);
 
-  // ---- Trade result polling ----
+  /* ---------------- Result polling (unchanged) ---------------- */
   async function pollResult(trade_id, user_id) {
-    let tries = 0, trade = null;
+    let tries = 0,
+      trade = null;
     const token = localStorage.getItem("token");
     while (tries < 6 && (!trade || trade.result === "PENDING")) {
       try {
         const his = await axios.get(`${MAIN_API_BASE}/trade/history/${user_id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
-        trade = his.data.find(t => t.id === trade_id);
+        trade = his.data.find((t) => t.id === trade_id);
         if (trade && trade.result !== "PENDING") break;
       } catch {}
-      await new Promise(r => setTimeout(r, 1500));
+      await new Promise((r) => setTimeout(r, 1500));
       tries++;
     }
     setTimerActive(false);
@@ -172,228 +172,289 @@ useEffect(() => {
     return { shouldRepeat: false, delay: 0 };
   };
 
-// ---- Start new trade ----
-const executeTrade = async () => {
-  if (!coinPrice || timerActive) return;
-  setTimerActive(true);
-  setTradeResult(null);
-  setTradeDetail(null);
-
-  const token = localStorage.getItem("token");
-  if (!token) {
-    alert(t("please_login", "Please log in to trade."));
-    setTimerActive(false);
-    return;
-  }
-
-  function parseJwt(token) {
-    try { return JSON.parse(atob(token.split(".")[1])); } catch { return {}; }
-  }
-
-  const payload = parseJwt(token);
-  const user_id = payload.id;
-
-  // Start a single countdown using a fixed endAt
-  const endAt = Date.now() + duration * 1000;
-  const temp = { trade_id: "temp", user_id, duration, endAt };
-
-  setTradeState(temp);
-  // Remount the timer ONCE here
-  setTimerKey(Math.random());
-
-  try {
-    const res = await axios.post(
-      `${MAIN_API_BASE}/trade`,
-      {
-        user_id,
-        direction: direction.toUpperCase(),  // "BUY" | "SELL"
-        amount: Number(amount),
-        duration: Number(duration),
-        symbol: selectedCoin.symbol,         // "BTC" | "ETH" | "SOL" | "XRP" | "TON"
-        client_price: Number(coinPrice) || null
-      },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    if (!res.data.trade_id) throw new Error("Failed to start trade");
-    const { trade_id } = res.data;
-
-    // IMPORTANT: only update the id; keep the same endAt/duration so the timer doesn't restart
-    setTradeState(prev =>
-      prev ? { ...prev, trade_id } : { trade_id, user_id, duration, endAt }
-    );
-
-    persistTradeState({ trade_id, user_id, duration, endAt });
-
-    // Do NOT call setTimerActive(true) or setTimerKey(...) again here
-  } catch (err) {
-    setTimerActive(false);
+  /* ---------------- Execute trade (unchanged) ---------------- */
+  const executeTrade = async () => {
+    if (!coinPrice || timerActive) return;
+    setTimerActive(true);
     setTradeResult(null);
     setTradeDetail(null);
-    persistTradeState(null);
-    alert(t("trade_failed", "Trade failed: ") + (err.response?.data?.error || err.message));
-  }
-};
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert(t("please_login", "Please log in to trade."));
+      setTimerActive(false);
+      return;
+    }
+
+    function parseJwt(token) {
+      try {
+        return JSON.parse(atob(token.split(".")[1]));
+      } catch {
+        return {};
+      }
+    }
+
+    const payload = parseJwt(token);
+    const user_id = payload.id;
+
+    const endAt = Date.now() + duration * 1000;
+    const temp = { trade_id: "temp", user_id, duration, endAt };
+
+    setTradeState(temp);
+    setTimerKey(Math.random());
+
+    try {
+      const res = await axios.post(
+        `${MAIN_API_BASE}/trade`,
+        {
+          user_id,
+          direction: direction.toUpperCase(),
+          amount: Number(amount),
+          duration: Number(duration),
+          symbol: selectedCoin.symbol,
+          client_price: Number(coinPrice) || null,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (!res.data.trade_id) throw new Error("Failed to start trade");
+      const { trade_id } = res.data;
+
+      setTradeState((prev) => (prev ? { ...prev, trade_id } : createTradeState(trade_id, user_id, duration)));
+      persistTradeState({ trade_id, user_id, duration, endAt });
+    } catch (err) {
+      setTimerActive(false);
+      setTradeResult(null);
+      setTradeDetail(null);
+      persistTradeState(null);
+      alert(t("trade_failed", "Trade failed: ") + (err.response?.data?.error || err.message));
+    }
+  };
+
+  /* ------------------- UI / THEME ------------------- */
+  const QuickBtn = ({ label, onClick, active }) => (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition
+        ${active ? "bg-slate-900 text-white shadow" : "bg-white/70 text-slate-700 ring-1 ring-slate-200 hover:bg-white"}
+      `}
+      type="button"
+    >
+      {label}
+    </button>
+  );
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-full min-h-screen flex flex-col items-center px-2 pt-4 pb-8 overflow-x-hidden"
+      className="w-full max-w-full min-h-screen flex flex-col items-center px-3 pt-5 pb-10 overflow-x-hidden"
       style={{
         background: 'url("/novachain.jpg") no-repeat center center fixed',
         backgroundSize: "cover",
         minHeight: "100vh",
       }}
     >
+      {/* soft overlay */}
       <div
+        className="fixed inset-0 pointer-events-none"
         style={{
-          position: "fixed",
           zIndex: 0,
-          inset: 0,
-          background: "linear-gradient(120deg, #15192ae0 0%, #181c25bb 70%, #101622cc 100%)",
-          pointerEvents: "none",
+          background: "linear-gradient(120deg, #0b1020f0 0%, #0d1220d8 60%, #0a101dd1 100%)",
         }}
       />
-      <div style={{ position: "relative", zIndex: 1, width: "100%" }}>
-        <div className="w-full max-w-[1300px] mx-auto flex flex-col lg:flex-row lg:items-start gap-7 lg:gap-10 overflow-x-hidden">
-          {/* Chart */}
-          <div className="w-full lg:w-[70%] 2xl:w-[75%] mb-5 lg:mb-0">
-            {/* --- Responsive coin selector (Novachain Blue Theme) --- */}
-<div className="w-full flex flex-col md:flex-row md:items-center gap-3 mb-3">
-  {/* Desktop: horizontal buttons */}
-  <div className="hidden md:flex flex-wrap gap-3 justify-center md:justify-start w-full">
-    {COINS.map(coin => (
-      <button
-        key={coin.symbol}
-        className={`px-6 py-2 rounded-full font-extrabold text-base transition-all duration-200 shadow
-          ${selectedCoin.symbol === coin.symbol
-            ? "bg-[#2474ff] text-white shadow-lg scale-105"
-            : "bg-[#191e29] text-[#2474ff] opacity-80 hover:opacity-100 border border-[#2474ff]/40"
-          }
-        `}
-        onClick={() => setSelectedCoin(coin)}
-        disabled={timerActive}
-        style={{
-          minWidth: 120,
-          border: selectedCoin.symbol === coin.symbol
-            ? "2px solid #2474ff"
-            : "2px solid #23243a"
-        }}
-      >
-        {coin.symbol}/USDT
-      </button>
-    ))}
-  </div>
-  {/* Mobile: dropdown select */}
-  <div className="md:hidden flex w-full">
-    <select
-      className="w-full p-3 rounded-full font-bold bg-[#191e29] text-[#2474ff] border-2 border-[#2474ff] text-base"
-      value={selectedCoin.symbol}
-      onChange={e => {
-        const coin = COINS.find(c => c.symbol === e.target.value);
-        if (coin) setSelectedCoin(coin);
-      }}
-      disabled={timerActive}
+      <div style={{ position: "relative", zIndex: 1 }} className="w-full">
+        <div className="w-full max-w-[1300px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr,380px] gap-7 lg:gap-8">
+          {/* ---------------- Left: Chart & selectors ---------------- */}
+          <div className="w-full">
+            {/* coin selector */}
+<Card className="p-3 md:p-4 rounded-2xl border border-slate-800/40 bg-gradient-to-r from-[#0f1528] via-[#0f1630] to-[#0a1222] shadow-xl mb-3">
+  {/* Mobile: horizontal snap row */}
+  <div className="-mx-1 md:hidden">
+    <div
+      className="flex gap-2 overflow-x-auto px-1 pb-1 snap-x snap-mandatory no-scrollbar"
+      style={{ WebkitOverflowScrolling: "touch" }}
     >
-      {COINS.map(coin => (
-        <option key={coin.symbol} value={coin.symbol}>
-          {coin.symbol}/USDT
-        </option>
-      ))}
-    </select>
+      {COINS.map((coin) => {
+        const active = selectedCoin.symbol === coin.symbol;
+        return (
+          <button
+            key={coin.symbol}
+            onClick={() => setSelectedCoin(coin)}
+            disabled={timerActive}
+            className={`shrink-0 snap-start px-4 py-2 rounded-full font-extrabold text-sm transition-all
+              ${active ? "bg-[#2474ff] text-white shadow-lg scale-[1.03]" : "bg-[#141a2b] text-[#8fb3ff] hover:text-white hover:bg-[#1a2240]"}
+            `}
+            style={{ border: active ? "2px solid #5aa0ff" : "1px solid #1e2747", minWidth: 108 }}
+          >
+            {coin.symbol}/USDT
+          </button>
+        );
+      })}
+    </div>
+    <div className="mt-2 flex justify-center items-center gap-2 text-sky-200/80 text-xs">
+      <Icon name="activity" className="w-4 h-4" />
+      {t("live_price", "Live price feed")}
+    </div>
   </div>
-</div>
 
-            {/* --- Chart container --- */}
-            <div className="relative w-full rounded-2xl shadow-xl bg-gradient-to-br from-[#23243a] via-[#171b24] to-[#11151c] border border-[#23243a] min-h-[420px] overflow-hidden">
+  {/* Desktop: centered row, no “ml-auto” spacer */}
+  <div className="hidden md:flex flex-wrap justify-center gap-3">
+    {COINS.map((coin) => {
+      const active = selectedCoin.symbol === coin.symbol;
+      return (
+        <button
+          key={coin.symbol}
+          onClick={() => setSelectedCoin(coin)}
+          disabled={timerActive}
+          className={`px-5 py-2 rounded-full font-extrabold text-base transition-all
+            ${active ? "bg-[#2474ff] text-white shadow-lg scale-[1.03]" : "bg-[#141a2b] text-[#8fb3ff] hover:text-white hover:bg-[#1a2240]"}
+          `}
+          style={{ border: active ? "2px solid #5aa0ff" : "1px solid #1e2747", minWidth: 120 }}
+        >
+          {coin.symbol}/USDT
+        </button>
+      );
+    })}
+    <span className="flex items-center gap-2 text-sky-200/80 text-sm">
+      <Icon name="activity" className="w-4 h-4" />
+      {t("live_price", "Live price feed")}
+    </span>
+  </div>
+</Card>
+
+            {/* chart box */}
+            <div className="relative w-full rounded-2xl shadow-2xl bg-gradient-to-br from-[#141a2b] via-[#0f1424] to-[#0b1020] border border-[#1a2343] overflow-hidden">
               <div id="tradingview_chart_container" className="w-full h-[420px]" />
               {loadingChart && (
-                <div
-                  className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#101726e6] backdrop-blur-sm"
-                  style={{ borderRadius: 14, pointerEvents: "none" }}
-                >
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#0c1323e6] backdrop-blur-sm">
                   <svg className="animate-spin mb-4" width="54" height="54" viewBox="0 0 54 54" fill="none">
-                    <circle cx="27" cy="27" r="24" stroke="#2474ff44" strokeWidth="5"/>
-                    <path d="M51 27a24 24 0 1 1-48 0" stroke="#FFD700" strokeWidth="5" strokeLinecap="round"/>
+                    <circle cx="27" cy="27" r="24" stroke="#2474ff44" strokeWidth="5" />
+                    <path d="M51 27a24 24 0 1 1-48 0" stroke="#FFD700" strokeWidth="5" strokeLinecap="round" />
                   </svg>
-                  <div className="text-lg font-bold text-theme-primary">
-                    {t("refreshing_price", "Refreshing Price...")}
-                  </div>
+                  <div className="text-lg font-bold text-sky-100">{t("refreshing_price", "Refreshing Price...")}</div>
                 </div>
               )}
+
+              {/* floating price pill */}
+              <div className="absolute top-3 right-3">
+                <div className="px-3 py-2 rounded-xl bg-black/40 backdrop-blur ring-1 ring-white/10 text-white font-semibold">
+                  <div className="text-[10px] uppercase tracking-wide text-white/70">{selectedCoin.symbol}/USDT</div>
+                  <div className="text-lg tabular-nums">
+                    {typeof coinPrice === "number" && !isNaN(coinPrice)
+                      ? "$" + coinPrice.toLocaleString(undefined, { maximumFractionDigits: 6 })
+                      : fetchError
+                      ? t("api_error", "API Error")
+                      : t("loading", "Loading...")}
+                  </div>
+                </div>
+              </div>
             </div>
+
+{/* quick hints (centered) */}
+<div className="mt-5 flex justify-center gap-4 flex-wrap">
+  <Card className="px-6 py-4 rounded-xl border border-slate-800/40 bg-[#0f1528]/60 text-sky-200 flex items-center justify-center text-base font-semibold shadow-md">
+    <Icon name="clock" className="mr-2 text-sky-400" />
+    {t("fast_settlement", "Fast settlement")}
+  </Card>
+  <Card className="px-6 py-4 rounded-xl border border-slate-800/40 bg-[#0f1528]/60 text-sky-200 flex items-center justify-center text-base font-semibold shadow-md">
+    <Icon name="zap" className="mr-2 text-sky-400" />
+    {t("realtime_feed", "Realtime feed")}
+  </Card>
+</div>
           </div>
-          {/* Trade box */}
-          <Card className="w-full max-w-[410px] mx-auto px-4 py-6 rounded-2xl shadow-lg border border-[#f6e8ff]/80 bg-gradient-to-tr from-[#f0f3ff] to-[#fafffa] flex flex-col lg:w-[360px] 2xl:w-[360px]">
-            {/* HEADER */}
+
+          {/* ---------------- Right: Trade panel ---------------- */}
+          <Card className="w-full px-5 py-6 rounded-2xl shadow-xl border border-[#e7ecff] bg-gradient-to-br from-[#f2f6ff] via-[#f8fbff] to-[#fafffb]">
+            {/* header */}
             <div className="flex items-center justify-between mb-5">
-              <span
-                className="font-extrabold text-[1.6rem] md:text-2xl tracking-wide"
-                style={{
-                  background: "linear-gradient(92deg, #00eaff 0%, #1f2fff 60%, #ffd700 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  letterSpacing: "0.04em",
-                  fontFamily: "'Plus Jakarta Sans', 'Inter', Arial, sans-serif",
-                  lineHeight: 1.15,
-                  textShadow: "0 2px 18px #1f2fff22"
-                }}
-              >
-                {selectedCoin.symbol}/USDT
-              </span>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-slate-500">{t("pair", "Pair")}</span>
+                <span
+                  className="font-extrabold text-[1.6rem] tracking-wide"
+                  style={{
+                    background: "linear-gradient(92deg, #1e2fff 0%, #00eaff 60%, #ffd700 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  {selectedCoin.symbol}/USDT
+                </span>
+              </div>
               <img src={NovaChainLogo} alt="NovaChain" className="h-9 w-auto ml-4" />
             </div>
-            {/* TRADE DIRECTION */}
-            <div className="mb-3">
-              <span className="font-semibold text-theme-secondary">
+
+            {/* direction */}
+            <div className="mb-4">
+              <div className="flex items-center gap-2 text-slate-600 font-semibold">
                 {t("Trade")} <Tooltip title={t("trade_direction_tooltip", "Buy = price up. Sell = price down.")} />
-              </span>
-              <div className="flex gap-3 mt-2">
+              </div>
+              <div className="grid grid-cols-2 gap-3 mt-2">
                 <button
-                  className={`btn-primary flex-1 h-11 text-base rounded-full shadow ${direction === "BUY" ? "!bg-theme-green !text-white !shadow-lg scale-105" : ""}`}
+                  className={`h-11 rounded-xl font-semibold shadow transition-all
+                    ${direction === "BUY" ? "bg-emerald-500 text-white shadow-emerald-300/40" : "bg-white ring-1 ring-slate-200 text-emerald-600 hover:bg-emerald-50"}
+                  `}
                   disabled={timerActive}
                   onClick={() => setDirection("BUY")}
                 >
-                  <Icon name="arrow-up" className="mr-2" /> {t("buy")}
+                  <span className="inline-flex items-center gap-2 justify-center">
+                    <Icon name="arrow-up" /> {t("buy")}
+                  </span>
                 </button>
                 <button
-                  className={`btn-secondary flex-1 h-11 text-base rounded-full shadow ${direction === "SELL" ? "!bg-theme-red !text-white !shadow-lg scale-105" : ""}`}
+                  className={`h-11 rounded-xl font-semibold shadow transition-all
+                    ${direction === "SELL" ? "bg-rose-500 text-white shadow-rose-300/40" : "bg-white ring-1 ring-slate-200 text-rose-600 hover:bg-rose-50"}
+                  `}
                   disabled={timerActive}
                   onClick={() => setDirection("SELL")}
                 >
-                  <Icon name="arrow-down" className="mr-2" /> {t("sell")}
+                  <span className="inline-flex items-center gap-2 justify-center">
+                    <Icon name="arrow-down" /> {t("sell")}
+                  </span>
                 </button>
               </div>
             </div>
-            {/* PRICE */}
-            <div className="mb-4 flex items-center gap-2 text-theme-tertiary font-semibold text-base">
+
+            {/* price */}
+            <div className="mb-4 flex items-center gap-2 text-slate-600 font-semibold">
               <Icon name="dollar-sign" className="w-5 h-5" />
-              {t("Current Price")}:&nbsp;
-              {typeof coinPrice === "number" && !isNaN(coinPrice)
-                ? <span className="text-theme-primary font-bold text-lg">${coinPrice.toLocaleString(undefined, { maximumFractionDigits: 6 })}</span>
-                : fetchError
-                  ? t("api_error", "API Error")
-                  : t("loading", "Loading...")}
+              {t("Current Price")}:{" "}
+              {typeof coinPrice === "number" && !isNaN(coinPrice) ? (
+                <span className="text-slate-900 font-extrabold text-lg ml-1">
+                  ${coinPrice.toLocaleString(undefined, { maximumFractionDigits: 6 })}
+                </span>
+              ) : fetchError ? (
+                <span className="text-rose-600 ml-1">{t("api_error", "API Error")}</span>
+              ) : (
+                <span className="text-slate-400 ml-1">{t("loading", "Loading...")}</span>
+              )}
             </div>
-            {/* AMOUNT */}
-            <div className="mb-3">
+
+            {/* amount */}
+            <div className="mb-2">
               <Field
                 label={t("amount") + " (USDT)"}
                 type="number"
                 min={1}
                 value={amount}
                 disabled={timerActive}
-                onChange={e => setAmount(Number(e.target.value))}
+                onChange={(e) => setAmount(Number(e.target.value))}
                 required
                 icon="dollar-sign"
               />
+              <div className="mt-2 flex flex-wrap gap-2">
+                {[25, 50, 100, 250, 500].map((v) => (
+                  <QuickBtn key={v} label={`$${v}`} active={amount === v} onClick={() => setAmount(v)} />
+                ))}
+              </div>
             </div>
-            {/* DURATION */}
-            <div className="flex items-center gap-3 mb-5">
-              <label className="font-semibold text-theme-tertiary mr-2 whitespace-nowrap">
-                {t("Duration")} ({t("seconds", "sec")})
-              </label>
+
+            {/* duration */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between">
+                <label className="font-semibold text-slate-600">{t("Duration")} ({t("seconds", "sec")})</label>
+                <div className="text-lg font-bold text-slate-900">{duration}{t("seconds_short", "s")}</div>
+              </div>
               <input
                 type="range"
                 min={5}
@@ -401,26 +462,29 @@ const executeTrade = async () => {
                 step={1}
                 value={duration}
                 disabled={timerActive}
-                onChange={e => setDuration(Number(e.target.value))}
-                className="flex-1 accent-theme-primary"
-                style={{ minWidth: "120px", maxWidth: "200px" }}
+                onChange={(e) => setDuration(Number(e.target.value))}
+                className="w-full accent-sky-600"
               />
-              <span className="ml-2 text-lg font-bold text-theme-primary w-12 text-right">{duration}{t("seconds_short", "s")}</span>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {[15, 30, 60, 120].map((d) => (
+                  <QuickBtn key={d} label={`${d}${t("seconds_short", "s")}`} active={duration === d} onClick={() => setDuration(d)} />
+                ))}
+              </div>
             </div>
-            {/* INVEST BUTTON */}
+
+            {/* invest */}
             <button
-              className={`btn-primary w-full h-12 mt-2 rounded-full font-extrabold text-lg shadow transition-all duration-200
-                ${timerActive ? "cursor-not-allowed opacity-80" : "hover:scale-[1.03]"}
+              className={`w-full h-12 mt-2 rounded-xl font-extrabold text-lg shadow transition-all
+                ${timerActive ? "bg-slate-300 text-slate-600 cursor-not-allowed" : "bg-slate-900 text-white hover:scale-[1.02]"}
               `}
               disabled={timerActive || !coinPrice}
               onClick={executeTrade}
             >
               {timerActive ? (
                 <span className="flex items-center justify-center gap-2">
-                  {/* Beautiful animated spinner */}
                   <svg className="animate-spin" width="22" height="22" viewBox="0 0 44 44" fill="none">
-                    <circle cx="22" cy="22" r="20" stroke="#2474ff44" strokeWidth="4"/>
-                    <path d="M42 22a20 20 0 1 1-40 0" stroke="#FFD700" strokeWidth="4" strokeLinecap="round"/>
+                    <circle cx="22" cy="22" r="20" stroke="#2474ff44" strokeWidth="4" />
+                    <path d="M42 22a20 20 0 1 1-40 0" stroke="#FFD700" strokeWidth="4" strokeLinecap="round" />
                   </svg>
                   {t("investing")}
                 </span>
@@ -428,9 +492,9 @@ const executeTrade = async () => {
                 t("invest")
               )}
             </button>
-            {/* RESULT / COUNTDOWN */}
+
+            {/* timer / waiting */}
             <AnimatePresence>
-              {/* Show TIMER BAR first */}
               {timerActive && tradeState && !waitingResult && (
                 <motion.div
                   key="timer"
@@ -438,16 +502,11 @@ const executeTrade = async () => {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.97, y: 24 }}
                   transition={{ duration: 0.32, type: "spring" }}
-                  className="flex flex-col items-center mt-7 w-full"
+                  className="flex flex-col items-center mt-6 w-full"
                 >
-<TimerBar
-  key={timerKey}
-  endAt={tradeState.endAt}   // <-- drive by endAt, not duration
-  onComplete={onTimerComplete}
-/>
+                  <TimerBar key={timerKey} endAt={tradeState.endAt} onComplete={onTimerComplete} />
                 </motion.div>
               )}
-              {/* Show PROCESSING spinner/message after timer */}
               {waitingResult && (
                 <motion.div
                   key="waiting"
@@ -459,20 +518,19 @@ const executeTrade = async () => {
                 >
                   <div className="flex flex-col items-center justify-center min-h-[130px]">
                     <svg className="animate-spin mb-4" width="44" height="44" viewBox="0 0 44 44" fill="none">
-                      <circle cx="22" cy="22" r="20" stroke="#2474ff44" strokeWidth="4"/>
-                      <path d="M42 22a20 20 0 1 1-40 0" stroke="#FFD700" strokeWidth="4" strokeLinecap="round"/>
+                      <circle cx="22" cy="22" r="20" stroke="#2474ff44" strokeWidth="4" />
+                      <path d="M42 22a20 20 0 1 1-40 0" stroke="#FFD700" strokeWidth="4" strokeLinecap="round" />
                     </svg>
-                    <div className="text-lg font-bold text-theme-primary">
-                      {t("processing_trade", "Processing your trade and updating your balance...")}
-                    </div>
-                    <div className="text-theme-tertiary mt-1 text-base font-medium text-center">
+                    <div className="text-lg font-bold text-slate-900">{t("processing_trade", "Processing your trade and updating your balance...")}</div>
+                    <div className="text-slate-500 mt-1 text-base font-medium text-center">
                       {t("please_wait", "Please wait while your trade settles and funds update in your wallet.")}
                     </div>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
-            {/* RESULT BOX */}
+
+            {/* result box */}
             <AnimatePresence>
               {tradeDetail && !timerActive && (
                 <motion.div
@@ -485,16 +543,12 @@ const executeTrade = async () => {
                   <Card
                     className={`mt-6 px-8 py-7 rounded-2xl shadow-xl border-2 transition-all duration-300
                       flex flex-col items-center justify-center
-                      ${tradeDetail.result === "WIN"
-                        ? "bg-gradient-to-br from-[#eaffec] to-[#d2ffd9] border-green-400"
-                        : "bg-gradient-to-br from-[#fff1f1] to-[#ffe4e4] border-red-400"
+                      ${
+                        tradeDetail.result === "WIN"
+                          ? "bg-gradient-to-br from-[#eaffec] to-[#d2ffd9] border-green-400"
+                          : "bg-gradient-to-br from-[#fff1f1] to-[#ffe4e4] border-red-400"
                       }`}
-                    style={{
-                      minWidth: "290px",
-                      maxWidth: "370px",
-                      marginLeft: "auto",
-                      marginRight: "auto",
-                    }}
+                    style={{ minWidth: "290px", maxWidth: "370px", marginLeft: "auto", marginRight: "auto" }}
                   >
                     <div className="flex items-center justify-center gap-2 mb-2 w-full">
                       {tradeDetail.result === "WIN" ? (
@@ -506,51 +560,55 @@ const executeTrade = async () => {
                           {t("loss", "LOSS")}
                         </span>
                       )}
-                      <Icon
-                        name={tradeDetail.result === "WIN" ? "check" : "close"}
-                        className={`w-7 h-7 ${tradeDetail.result === "WIN" ? "text-green-600" : "text-red-600"}`}
-                      />
+                      <Icon name={tradeDetail.result === "WIN" ? "check" : "close"} className={`w-7 h-7 ${tradeDetail.result === "WIN" ? "text-green-600" : "text-red-600"}`} />
                     </div>
+
                     <div className="mt-1 text-3xl font-extrabold text-neutral-800 text-center">
                       {tradeDetail.result === "WIN"
                         ? `+ $${Math.abs(tradeDetail.profit).toFixed(2)}`
                         : `- $${Math.abs(tradeDetail.profit).toFixed(2)}`}
                     </div>
-<div className="mt-2 w-full flex flex-col items-center justify-center">
-  <div className="text-base font-medium text-neutral-600 text-center">
-    {t("entry", "Entry")}:&nbsp;
-    <span className="font-bold text-neutral-900">
-      {!isNaN(Number(tradeDetail.start_price))
-        ? `$${Number(tradeDetail.start_price).toLocaleString(undefined, { maximumFractionDigits: 6 })}`
-        : "—"}
-    </span>
-  </div>
-  <div className="text-base font-medium text-neutral-600 text-center">
-    {t("result", "Result")}:&nbsp;
-    <span className="font-bold text-neutral-900">
-      {!isNaN(Number(tradeDetail.result_price))
-        ? `$${Number(tradeDetail.result_price).toLocaleString(undefined, { maximumFractionDigits: 6 })}`
-        : "—"}
-    </span>
-  </div>
-  <div className="mt-1 text-xs text-neutral-400 font-semibold tracking-wide text-center">
-    {t("duration")}: {tradeDetail.duration}{t("seconds_short", "s")}
-  </div>
-  <div className="mt-1 text-xs text-neutral-400 text-center">
-    {tradeDetail.result === "WIN"
-      ? t("profit_credited", "Profit credited to your wallet")
-      : t("loss_deducted", "Loss deducted from your wallet")}
-  </div>
-</div>
+
+                    <div className="mt-2 w-full flex flex-col items-center justify-center">
+                      <div className="text-base font-medium text-neutral-600 text-center">
+                        {t("entry", "Entry")}:{" "}
+                        <span className="font-bold text-neutral-900">
+                          {!isNaN(Number(tradeDetail.start_price))
+                            ? `$${Number(tradeDetail.start_price).toLocaleString(undefined, { maximumFractionDigits: 6 })}`
+                            : "—"}
+                        </span>
+                      </div>
+                      <div className="text-base font-medium text-neutral-600 text-center">
+                        {t("result", "Result")}:{" "}
+                        <span className="font-bold text-neutral-900">
+                          {!isNaN(Number(tradeDetail.result_price))
+                            ? `$${Number(tradeDetail.result_price).toLocaleString(undefined, { maximumFractionDigits: 6 })}`
+                            : "—"}
+                        </span>
+                      </div>
+                      <div className="mt-1 text-xs text-neutral-400 font-semibold tracking-wide text-center">
+                        {t("duration")}: {tradeDetail.duration}
+                        {t("seconds_short", "s")}
+                      </div>
+                      <div className="mt-1 text-xs text-neutral-400 text-center">
+                        {tradeDetail.result === "WIN"
+                          ? t("profit_credited", "Profit credited to your wallet")
+                          : t("loss_deducted", "Loss deducted from your wallet")}
+                      </div>
+                    </div>
                   </Card>
                 </motion.div>
               )}
             </AnimatePresence>
           </Card>
-        </div>
-        <div className="w-full flex justify-center mt-8">
-          <div className="max-w-5xl w-full px-4">
-            <OrderBTC />
+
+          {/* Orders strip beneath on small screens */}
+          <div className="lg:col-span-2 mt-2">
+            <div className="w-full flex justify-center">
+              <div className="max-w-5xl w-full px-1 md:px-2">
+                <OrderBTC />
+              </div>
+            </div>
           </div>
         </div>
       </div>

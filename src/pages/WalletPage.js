@@ -16,7 +16,12 @@ const SUPABASE_URL = "https://zgnefojwdijycgcqngke.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnbmVmb2p3ZGlqeWNnY3FuZ2tlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNTc3MjcsImV4cCI6MjA2NTczMzcyN30.RWPMuioeBKt_enKio-Z-XIr6-bryh3AEGSxmyc7UW7k";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Upload file to Supabase and return the FLAT filename (not URL)
+/* ---------------- helpers (UI only) ---------------- */
+const coinSymbols = ["USDT", "BTC", "ETH", "SOL", "XRP", "TON"];
+const depositNetworks = { USDT: "TRC20", BTC: "BTC", ETH: "ERC20", SOL: "SOL", XRP: "XRP", TON: "TON" };
+const fmtUSD = (n) => "$" + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/* ---------------- uploads ---------------- */
 async function uploadDepositScreenshot(file, userId) {
   if (!file) return null;
   const filePath = `${userId}-${Date.now()}-${file.name}`;
@@ -27,8 +32,6 @@ async function uploadDepositScreenshot(file, userId) {
   if (error) throw error;
   return filePath;
 }
-
-// --- Helper to get signed URL from Supabase if needed ---
 async function getSignedUrl(path, bucket) {
   if (!path) return null;
   if (path.startsWith('http')) return path;
@@ -37,28 +40,24 @@ async function getSignedUrl(path, bucket) {
   return res.data.url;
 }
 
-const coinSymbols = ["USDT", "BTC", "ETH", "SOL", "XRP", "TON"];
-const depositNetworks = {
-  USDT: "TRC20", BTC: "BTC", ETH: "ERC20", SOL: "SOL", XRP: "XRP", TON: "TON",
-};
-
 export default function WalletPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
   const token = localStorage.getItem("token");
+
   const [userId, setUserId] = useState(null);
   const [prices, setPrices] = useState({});
   // preload last known prices so page never starts at $0
-useEffect(() => {
-  try {
-    const raw = localStorage.getItem("nc_prices");
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === "object") setPrices(parsed);
-    }
-  } catch {}
-}, []);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("nc_prices");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") setPrices(parsed);
+      }
+    } catch {}
+  }, []);
 
   const [balances, setBalances] = useState([]);
   const [depositHistory, setDepositHistory] = useState([]);
@@ -85,32 +84,24 @@ useEffect(() => {
   const [historyScreenshots, setHistoryScreenshots] = useState({});
   const [totalUsd, setTotalUsd] = useState(0);
 
-  // --- HISTORY LOGIC ---
+  /* ---------------- history merge (unchanged logic) ---------------- */
   const userDepositHistory = depositHistory.filter(d => userId && Number(d.user_id) === Number(userId));
   const userWithdrawHistory = withdrawHistory.filter(w => userId && Number(w.user_id) === Number(userId));
   const allHistory = [
     ...userDepositHistory.map(d => ({ ...d, type: "Deposit" })),
     ...userWithdrawHistory.map(w => ({ ...w, type: "Withdraw" })),
-  ].sort((a, b) =>
-    new Date(b.created_at || b.date) - new Date(a.created_at || a.date)
-  );
+  ].sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
 
-useEffect(() => {
-  if (!balances.length) {            // truly no assets
-    setTotalUsd(0);
-    return;
-  }
-  if (!Object.keys(prices).length) { // outage or first load
-    return;                          // keep previous total
-  }
-
-  let sum = 0;
-  balances.forEach(({ symbol, balance }) => {
-    const coinPrice = prices[symbol] || (symbol === "USDT" ? 1 : 0);
-    sum += Number(balance) * coinPrice;
-  });
-  setTotalUsd(sum);
-}, [balances, prices]);
+  useEffect(() => {
+    if (!balances.length) { setTotalUsd(0); return; }
+    if (!Object.keys(prices).length) { return; }
+    let sum = 0;
+    balances.forEach(({ symbol, balance }) => {
+      const coinPrice = prices[symbol] || (symbol === "USDT" ? 1 : 0);
+      sum += Number(balance) * coinPrice;
+    });
+    setTotalUsd(sum);
+  }, [balances, prices]);
 
   useEffect(() => {
     async function fetchHistoryScreenshots() {
@@ -131,6 +122,7 @@ useEffect(() => {
     fetchHistoryScreenshots();
   }, [JSON.stringify(allHistory)]);
 
+  /* ---------------- auth / redirects (unchanged) ---------------- */
   useEffect(() => {
     if (token) {
       try {
@@ -159,74 +151,60 @@ useEffect(() => {
     }
   }, [authChecked, isGuest, navigate]);
 
-// Live prices (list) with 10s refresh; never wipe prices on error
-useEffect(() => {
-  let stopped = false;
+  /* ---------------- live prices (unchanged) ---------------- */
+  useEffect(() => {
+    let stopped = false;
+    const load = async () => {
+      try {
+        const res = await axios.get(`${MAIN_API_BASE}/prices`);
+        if (stopped) return;
+        let map = res.data?.prices;
+        if (!map || !Object.keys(map).length) {
+          map = {};
+          (res.data?.data || []).forEach(c => {
+            if (c?.symbol) map[c.symbol] = c?.quote?.USD?.price;
+          });
+        }
+        if (map && Object.keys(map).length) {
+          setPrices(prev => {
+            const next = { ...prev, ...map };
+            try { localStorage.setItem("nc_prices", JSON.stringify(next)); } catch {}
+            return next;
+          });
+        }
+      } catch {}
+    };
+    load();
+    const id = setInterval(load, 10_000);
+    return () => { stopped = true; clearInterval(id); };
+  }, [MAIN_API_BASE]);
 
-  const load = async () => {
-    try {
-      const res = await axios.get(`${MAIN_API_BASE}/prices`);
-      if (stopped) return;
-
-      // prefer explicit prices map
-      let map = res.data?.prices;
-      if (!map || !Object.keys(map).length) {
-        map = {};
-        (res.data?.data || []).forEach(c => {
-          if (c?.symbol) map[c.symbol] = c?.quote?.USD?.price;
-        });
-      }
-
-      if (map && Object.keys(map).length) {
+  useEffect(() => {
+    let canceled = false;
+    const refreshPair = async () => {
+      try {
+        const [a, b] = await Promise.all([
+          axios.get(`${MAIN_API_BASE}/prices/${fromCoin}`),
+          axios.get(`${MAIN_API_BASE}/prices/${toCoin}`)
+        ]);
+        if (canceled) return;
+        const pa = Number(a.data?.price);
+        const pb = Number(b.data?.price);
         setPrices(prev => {
-          const next = { ...prev, ...map };
+          const next = { ...prev };
+          if (Number.isFinite(pa) && pa > 0) next[fromCoin] = pa;
+          if (Number.isFinite(pb) && pb > 0) next[toCoin] = pb;
           try { localStorage.setItem("nc_prices", JSON.stringify(next)); } catch {}
           return next;
         });
-      }
-      // if empty, keep previous prices (do nothing)
-    } catch {
-      // network error – keep previous prices; do nothing
-    }
-  };
+      } catch {}
+    };
+    refreshPair();
+    const id = setInterval(refreshPair, 10_000);
+    return () => { canceled = true; clearInterval(id); };
+  }, [fromCoin, toCoin, MAIN_API_BASE]);
 
-  load();                               // initial
-  const id = setInterval(load, 10_000); // refresh every 10s
-  return () => { stopped = true; clearInterval(id); };
-}, [MAIN_API_BASE]);
-
-// Extra-fresh quotes for the two coins being converted; keep last good values on error
-useEffect(() => {
-  let canceled = false;
-
-  const refreshPair = async () => {
-    try {
-      const [a, b] = await Promise.all([
-        axios.get(`${MAIN_API_BASE}/prices/${fromCoin}`),
-        axios.get(`${MAIN_API_BASE}/prices/${toCoin}`)
-      ]);
-      if (canceled) return;
-
-      const pa = Number(a.data?.price);
-      const pb = Number(b.data?.price);
-
-      setPrices(prev => {
-        const next = { ...prev };
-        if (Number.isFinite(pa) && pa > 0) next[fromCoin] = pa;
-        if (Number.isFinite(pb) && pb > 0) next[toCoin] = pb;
-        try { localStorage.setItem("nc_prices", JSON.stringify(next)); } catch {}
-        return next;
-      });
-    } catch {
-      // ignore; keep last known prices
-    }
-  };
-
-  refreshPair();
-  const id = setInterval(refreshPair, 10_000);
-  return () => { canceled = true; clearInterval(id); };
-}, [fromCoin, toCoin, MAIN_API_BASE]);
-
+  /* ---------------- wallet & histories (unchanged) ---------------- */
   useEffect(() => {
     axios.get(`${MAIN_API_BASE}/deposit-addresses`)
       .then(res => {
@@ -254,22 +232,17 @@ useEffect(() => {
   useEffect(() => {
     if (!token || !userId) return;
     fetchBalances();
-    axios.get(`${MAIN_API_BASE}/deposits`, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(res => setDepositHistory(res.data)).catch(() => setDepositHistory([]));
-    axios.get(`${MAIN_API_BASE}/withdrawals`, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(res => setWithdrawHistory(res.data)).catch(() => setWithdrawHistory([]));
+    axios.get(`${MAIN_API_BASE}/deposits`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => setDepositHistory(res.data)).catch(() => setDepositHistory([]));
+    axios.get(`${MAIN_API_BASE}/withdrawals`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => setWithdrawHistory(res.data)).catch(() => setWithdrawHistory([]));
   }, [token, userId]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const action = params.get("action");
     const coin = params.get("coin");
-    if (action === "deposit" && coin) {
-      setSelectedDepositCoin(coin);
-      openModal("deposit", coin);
-    }
+    if (action === "deposit" && coin) { setSelectedDepositCoin(coin); openModal("deposit", coin); }
     if (action === "withdraw" && coin) openModal("withdraw", coin);
     if (action === "convert") {
       const el = document.getElementById("convert-section");
@@ -278,25 +251,13 @@ useEffect(() => {
   }, [location]);
 
   useEffect(() => {
-    if (toast) {
-      const t = setTimeout(() => setToast(""), 1200);
-      return () => clearTimeout(t);
-    }
+    if (toast) { const t = setTimeout(() => setToast(""), 1200); return () => clearTimeout(t); }
   }, [toast]);
 
   useEffect(() => {
-    if (!amount || isNaN(amount)) {
-      setResult("");
-      return;
-    }
-    if (fromCoin === toCoin) {
-      setResult("");
-      return;
-    }
-    if (!prices[fromCoin] || !prices[toCoin]) {
-      setResult("");
-      return;
-    }
+    if (!amount || isNaN(amount)) { setResult(""); return; }
+    if (fromCoin === toCoin) { setResult(""); return; }
+    if (!prices[fromCoin] || !prices[toCoin]) { setResult(""); return; }
     const usdValue = parseFloat(amount) * prices[fromCoin];
     const receive = usdValue / prices[toCoin];
     setResult(receive.toFixed(toCoin === "BTC" ? 6 : toCoin === "ETH" ? 4 : 3));
@@ -304,9 +265,8 @@ useEffect(() => {
 
   function fetchBalances() {
     if (!token || !userId) return;
-    axios.get(`${MAIN_API_BASE}/balance`, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(res => setBalances(res.data.assets || []))
+    axios.get(`${MAIN_API_BASE}/balance`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => setBalances(res.data.assets || []))
       .catch(() => setBalances([]));
   }
 
@@ -326,23 +286,16 @@ useEffect(() => {
         amount: depositAmount,
         address: walletAddresses[selectedDepositCoin],
         screenshot: screenshotUrl,
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      }, { headers: { Authorization: `Bearer ${token}` } });
 
       setToast(t("deposit_submitted"));
       setDepositAmount("");
       setDepositScreenshot(null);
       setFileLocked(false);
 
-      setTimeout(() => {
-        setToast("");
-        closeModal();
-      }, 1600);
-
-      axios.get(`${MAIN_API_BASE}/deposits`, {
-        headers: { Authorization: `Bearer ${token}` }
-      }).then(res => setDepositHistory(res.data));
+      setTimeout(() => { setToast(""); closeModal(); }, 1600);
+      axios.get(`${MAIN_API_BASE}/deposits`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => setDepositHistory(res.data));
     } catch (err) {
       setToast(t("deposit_failed"));
       console.error(err);
@@ -354,16 +307,12 @@ useEffect(() => {
     setWithdrawMsg(t("submitting_withdraw"));
     try {
       const res = await axios.post(`${MAIN_API_BASE}/withdraw`, {
-        user_id: userId,
-        coin: selectedWithdrawCoin,
-        amount: withdrawForm.amount,
-        address: withdrawForm.address,
+        user_id: userId, coin: selectedWithdrawCoin, amount: withdrawForm.amount, address: withdrawForm.address,
       }, { headers: { Authorization: `Bearer ${token}` } });
       if (res.data && res.data.success) {
         setWithdrawMsg(t("withdraw_submitted"));
-        axios.get(`${MAIN_API_BASE}/withdrawals`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }).then(res => setWithdrawHistory(res.data));
+        axios.get(`${MAIN_API_BASE}/withdrawals`, { headers: { Authorization: `Bearer ${token}` } })
+          .then(res => setWithdrawHistory(res.data));
         fetchBalances();
       } else {
         setWithdrawMsg(t("withdraw_failed"));
@@ -372,34 +321,21 @@ useEffect(() => {
       setWithdrawMsg(err.response?.data?.error || t("withdraw_failed"));
       console.error(err);
     }
-    setTimeout(() => {
-      setWithdrawMsg("");
-      setWithdrawForm({ address: "", amount: "" });
-      closeModal();
-    }, 1500);
+    setTimeout(() => { setWithdrawMsg(""); setWithdrawForm({ address: "", amount: "" }); closeModal(); }, 1500);
   };
 
-  const swap = () => {
-    setFromCoin(toCoin);
-    setToCoin(fromCoin);
-    setAmount("");
-    setResult("");
-  };
+  const swap = () => { setFromCoin(toCoin); setToCoin(fromCoin); setAmount(""); setResult(""); };
 
   const handleConvert = async e => {
     e.preventDefault();
     if (!amount || isNaN(amount) || parseFloat(amount) <= 0 || fromCoin === toCoin) return;
     try {
       const res = await axios.post(`${MAIN_API_BASE}/convert`, {
-        from_coin: fromCoin,
-        to_coin: toCoin,
-        amount: parseFloat(amount)
+        from_coin: fromCoin, to_coin: toCoin, amount: parseFloat(amount)
       }, { headers: { Authorization: `Bearer ${token}` } });
-
       if (res.data && res.data.success) {
         setSuccessMsg(t("Convert Successful", {
-          amount: amount,
-          fromCoin,
+          amount: amount, fromCoin,
           received: Number(res.data.received).toLocaleString(undefined, { maximumFractionDigits: 6 }),
           toCoin,
         }));
@@ -411,275 +347,304 @@ useEffect(() => {
       setSuccessMsg(err.response?.data?.error || t("convert_failed"));
     }
     setTimeout(() => setSuccessMsg(""), 1800);
-    setAmount("");
-    setResult("");
+    setAmount(""); setResult("");
   };
 
   // --- MAIN RENDER ---
-
   if (!authChecked) return null;
   if (isGuest) return null;
 
   return (
-    <div className="min-h-screen py-10 px-2 flex flex-col items-center" style={{ background: "none" }}>
-      <div className="w-full max-w-6xl flex flex-col md:flex-row gap-8">
+    <div
+      className="min-h-screen w-full flex flex-col items-center px-3 pt-6 pb-14"
+      style={{
+        background: 'url("/novachain.jpg") no-repeat center center fixed',
+        backgroundSize: "cover",
+      }}
+    >
+      {/* overlay */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          zIndex: 0,
+          background: "linear-gradient(120deg, #0b1020f0 0%, #0d1220d8 60%, #0a101dd1 100%)",
+        }}
+      />
+      <div style={{ position: "relative", zIndex: 1 }} className="w-full max-w-7xl">
+        {/* ===== Top row: balance + assets ===== */}
+        <div className="w-full grid grid-cols-1 lg:grid-cols-[380px,1fr] gap-6 md:gap-8 items-stretch">
 
-        {/* -- Total Balance Card -- */}
-        <Card
-          className="flex flex-col items-center justify-center rounded-3xl shadow-lg border mx-auto w-full max-w-md min-h-[170px] my-5 bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] border-[#f6e8ff]/80"
-          style={{
-            boxShadow: "0 4px 28px 0 #10101013, 0 2px 8px 0 #ffd70038",
-            border: "1.5px solid #eee7",
-          }}
-        >
-          <div className="flex flex-col items-center justify-center w-full py-7">
-            <div className="flex items-center gap-3 mb-2">
-              <Icon name="wallet" className="w-8 h-8 text-theme-yellow drop-shadow" />
-              <span className="font-extrabold text-2xl tracking-wide text-theme-primary">{t('total_balance')}</span>
+{/* Total Balance (mobile-fixed) */}
+<Card className="rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden h-full">
+  <div
+    className="
+      w-full h-full min-h-[120px]
+      bg-gradient-to-br from-indigo-50 via-sky-50 to-emerald-50
+      flex flex-col justify-center
+      px-4 py-5 sm:px-6 sm:py-8
+    "
+  >
+    <div className="text-center text-slate-500 text-xs sm:text-sm font-semibold">
+      {t("total_balance")}
+    </div>
+
+    <div
+      className="
+        mt-1 text-center leading-tight tracking-tight text-slate-900
+        text-[1.75rem] sm:text-4xl md:text-5xl font-extrabold
+        break-words
+      "
+    >
+      {fmtUSD(totalUsd)}
+    </div>
+  </div>
+</Card>
+
+          {/* Assets table */}
+          <Card className="rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden">
+            <div className="px-5 pt-5">
+              <div className="text-slate-700 font-semibold">{t("my_assets")}</div>
             </div>
-            <div className="font-extrabold text-5xl text-theme-primary text-center tracking-tight drop-shadow-lg">
-  {`$${totalUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-</div>
-            <div className="text-theme-tertiary mt-1 text-base font-semibold tracking-wide">{t('usd')}</div>
+            <div className="w-full overflow-x-auto">
+              <table className="w-full text-sm md:text-base">
+                <thead className="bg-white sticky top-0 z-10">
+                  <tr className="text-left text-slate-600 border-y border-slate-100">
+                    <th className="py-3.5 px-4">{t("type")}</th>
+                    <th className="py-3.5 px-4 text-right">{t("amount")}</th>
+                    <th className="py-3.5 px-4 text-right">{t("usd_value", "USD Value")}</th>
+                    <th className="py-3.5 px-4 text-right">{t("Transfer")}</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white">
+                  {balances.map(({ symbol, icon, balance }) => (
+                    <tr
+                      key={symbol}
+                      className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
+                      style={{ height: 64 }}
+                    >
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <Icon name={symbol?.toLowerCase() || "coin"} className="w-6 h-6" />
+                          <span className="font-semibold text-slate-900">{symbol}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-right tabular-nums font-medium text-slate-800">
+                        {Number(balance).toLocaleString(undefined, {
+                          minimumFractionDigits: symbol === "BTC" ? 6 : 2,
+                          maximumFractionDigits: symbol === "BTC" ? 8 : 6,
+                        })}
+                      </td>
+                      <td className="py-3 px-4 text-right tabular-nums font-semibold text-slate-900">
+                        {(() => {
+                          const p = prices[symbol] ?? (symbol === "USDT" ? 1 : undefined);
+                          return p !== undefined ? fmtUSD(Number(balance) * p) : "--";
+                        })()}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="inline-flex items-center gap-2">
+                          <button
+                            className="h-10 px-4 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:scale-[1.02] transition"
+                            onClick={() => { setSelectedDepositCoin(symbol); openModal("deposit", symbol); }}
+                          >
+                            <span className="inline-flex items-center gap-1"><Icon name="download" />{t("deposit")}</span>
+                          </button>
+                          <button
+                            className="h-10 px-4 rounded-xl bg-white ring-1 ring-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+                            onClick={() => openModal("withdraw", symbol)}
+                          >
+                            <span className="inline-flex items-center gap-1"><Icon name="upload" />{t("withdraw")}</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+
+        {/* ===== Convert section ===== */}
+        <Card id="convert-section" className="mt-8 rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden">
+          <div className="bg-gradient-to-r from-fuchsia-50 via-sky-50 to-emerald-50 px-5 py-5 md:px-6 md:py-6">
+            <div className="flex items-center gap-2 text-slate-800 text-xl md:text-2xl font-extrabold">
+              <Icon name="swap" className="w-7 h-7" /> {t("convert_crypto")}
+            </div>
+          </div>
+          <div className="px-6 py-6">
+            <form onSubmit={handleConvert} className="flex flex-col gap-5">
+              <div className="flex flex-col md:flex-row gap-3">
+                <div className="flex-1">
+                  <label className="text-slate-600 font-medium mb-2 block">{t("from")}</label>
+                  <select
+                    value={fromCoin}
+                    onChange={e => {
+                      setFromCoin(e.target.value);
+                      if (e.target.value === "USDT") setToCoin("BTC"); else setToCoin("USDT");
+                    }}
+                    className="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-sky-200 outline-none"
+                  >
+                    {coinSymbols.map(c => (<option key={c} value={c}>{c}</option>))}
+                  </select>
+                </div>
+
+                <button type="button" onClick={swap} className="self-end md:self-auto h-12 mt-2 md:mt-7 rounded-xl bg-slate-900 text-white px-4 hover:scale-[1.02] transition">
+                  <Icon name="swap" />
+                </button>
+
+                <div className="flex-1">
+                  <label className="text-slate-600 font-medium mb-2 block">{t("to")}</label>
+                  <select
+                    value={toCoin}
+                    onChange={e => setToCoin(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-sky-200 outline-none"
+                  >
+                    {fromCoin === "USDT"
+                      ? coinSymbols.filter(c => c !== "USDT").map(c => <option key={c} value={c}>{c}</option>)
+                      : <option value="USDT">USDT</option>}
+                  </select>
+                </div>
+              </div>
+
+              <Field
+                label={t("amount_with_coin", { coin: fromCoin })}
+                type="number"
+                min={0}
+                step="any"
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+                placeholder={t("enter_amount_with_coin", { coin: fromCoin })}
+                icon="dollar-sign"
+              />
+
+              <div className="rounded-xl bg-slate-50 ring-1 ring-slate-200 px-4 py-3 text-slate-700 font-medium">
+                {t("you_will_receive")}:&nbsp;
+                <span className="font-extrabold text-slate-900">
+                  {result ? `${result} ${toCoin}` : "--"}
+                </span>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full h-12 rounded-xl bg-slate-900 text-white text-lg font-extrabold hover:scale-[1.02] transition"
+                disabled={!amount || isNaN(amount) || fromCoin === toCoin || parseFloat(amount) <= 0}
+              >
+                {t("convert")}
+              </button>
+
+              {successMsg && (
+                <div className="mt-2 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 rounded-lg px-4 py-3 text-center text-base font-semibold">
+                  {successMsg}
+                </div>
+              )}
+            </form>
           </div>
         </Card>
 
-        {/* -- Assets Table -- */}
-        <Card className="flex-[2] rounded-3xl shadow-lg px-7 py-6 overflow-x-auto mb-8 border bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] border-[#f6e8ff]/80">
-          <div className="font-bold text-lg text-theme-secondary mb-3">{t('my_assets')}</div>
-          <table className="w-full table-auto text-base md:text-lg">
-            <thead>
-              <tr className="text-left text-theme-tertiary border-b border-theme-stroke">
-                <th className="py-3 px-2">{t('type')}</th>
-                <th className="py-3 px-2">{t('amount')}</th>
-                <th className="py-3 px-2">{t('coin')}</th>
-                <th className="py-3 px-2">{t('Transfer')}</th>
-               </tr>
-            </thead>
-              <tbody>
-  {balances.map(({ symbol, icon, balance }) => (
-    <tr
-      key={symbol}
-      className="border-b border-theme-stroke last:border-0 hover:bg-theme-on-surface-2/80 transition"
-    >
-      {/* Asset Name */}
-      <td className="py-4 px-2">
-        <div className="flex items-center gap-2">
-          <Icon name={symbol?.toLowerCase() || "coin"} className="w-7 h-7" />
-          <span className="font-extrabold text-xl md:text-2xl text-theme-primary">
-            {symbol}
-          </span>
-        </div>
-      </td>
-      {/* Amount */}
-      <td className="py-4 px-2">
-        <span className="font-mono text-theme-green text-lg md:text-xl font-bold tracking-wide">
-          {Number(balance).toLocaleString(undefined, { minimumFractionDigits: symbol === "BTC" ? 6 : 2 })}
-        </span>
-      </td>
-{/* USD Value */}
-<td className="py-4 px-2">
-  {(() => {
-    const p = prices[symbol] ?? (symbol === "USDT" ? 1 : undefined);
-    return (
-      <span className="font-extrabold text-theme-primary text-lg md:text-xl">
-        {p !== undefined
-          ? "$" + (Number(balance) * p).toLocaleString(undefined, { maximumFractionDigits: 2 })
-          : "--"}
-      </span>
-    );
-  })()}
-</td>
-      {/* Buttons */}
-      <td className="py-4 px-2">
-        <div className="flex flex-col md:flex-row gap-2 md:gap-3">
-          <button
-            className="btn-primary px-4 py-2 rounded-xl font-bold wallet-btn w-full md:w-auto"
-            onClick={() => {
-              setSelectedDepositCoin(symbol);
-              openModal("deposit", symbol);
-            }}
-          >
-            <Icon name="download" className="mr-1" /> {t('deposit')}
-          </button>
-          <button
-            className="btn-secondary px-4 py-2 rounded-xl font-bold wallet-btn w-full md:w-auto"
-            onClick={() => openModal("withdraw", symbol)}
-          >
-            <Icon name="upload" className="mr-1" /> {t('withdraw')}
-          </button>
-        </div>
-      </td>
-    </tr>
-  ))}
-</tbody>
-          </table>
+        {/* ===== History ===== */}
+        <Card className="mt-8 rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden">
+          <div className="px-5 py-4 md:px-6 md:py-5 bg-white/80">
+            <div className="flex items-center gap-2 text-slate-800 text-xl font-extrabold">
+              <Icon name="clock" className="w-6 h-6" /> {t("deposit_withdraw_history")}
+            </div>
+          </div>
+          <div className="w-full overflow-x-auto">
+            <table className="w-full text-sm md:text-base">
+              <thead className="bg-white sticky top-0 z-10">
+                <tr className="text-left text-slate-600 border-y border-slate-100">
+                  <th className="py-3.5 px-4">{t("type")}</th>
+                  <th className="py-3.5 px-4 text-right">{t("amount")}</th>
+                  <th className="py-3.5 px-4">{t("coin")}</th>
+                  <th className="py-3.5 px-4">{t("date")}</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white">
+                {(Array.isArray(allHistory) ? allHistory : []).map((row, idx) => (
+                  <tr
+                    key={row.type === "Deposit" ? `deposit-${row.id || idx}` : row.type === "Withdraw" ? `withdraw-${row.id || idx}` : idx}
+                    className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
+                    style={{ height: 60 }}
+                  >
+                    <td className="py-3 px-4">
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ring-1 ${
+                        row.type === "Deposit"
+                          ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+                          : "bg-amber-50 text-amber-700 ring-amber-200"
+                      }`}>
+                        <Icon name={row.type === "Deposit" ? "download" : "upload"} className="w-4 h-4" />
+                        {t(row.type.toLowerCase())}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right tabular-nums font-medium">
+                      {row.amount}
+                    </td>
+                    <td className="py-3 px-4 font-semibold text-slate-900">
+                      <span className="inline-flex items-center gap-2">
+                        <Icon name={row.coin?.toLowerCase() || "coin"} className="w-5 h-5" />
+                        {row.coin}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-slate-700">
+                      {row.created_at ? new Date(row.created_at).toLocaleString() : (row.date || "--")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
       </div>
 
-      {/* -- Convert Section -- */}
-      <Card id="convert-section" className="max-w-3xl w-full rounded-3xl shadow-lg px-7 py-8 mb-8 border bg-gradient-to-tr from-[#f9e6ff] to-[#e6f8ff] border-[#e8f6ff]/80">
-        <div className="flex items-center gap-3 mb-5 text-theme-primary text-2xl font-bold">
-          <Icon name="swap" className="w-8 h-8" /> {t('convert_crypto')}
-        </div>
-        <form onSubmit={handleConvert} className="flex flex-col gap-5">
-          <div className="flex gap-3">
-            <div className="flex-1">
-              <label className="text-theme-tertiary font-medium mb-1 block">{t('from')}</label>
-              <select
-                value={fromCoin}
-                onChange={e => {
-                  setFromCoin(e.target.value);
-                  if (e.target.value === "USDT") setToCoin("BTC");
-                  else setToCoin("USDT");
-                }}
-                className="w-full px-3 py-3 rounded-xl bg-theme-on-surface-2 text-theme-primary border border-theme-stroke text-lg"
-              >
-                {coinSymbols.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-            <button
-              type="button"
-              onClick={swap}
-              className="btn-secondary h-14 mt-6 rounded-xl"
-            >
-              <Icon name="swap" />
-            </button>
-            <div className="flex-1">
-              <label className="text-theme-tertiary font-medium mb-1 block">{t('to')}</label>
-              <select
-                value={toCoin}
-                onChange={e => setToCoin(e.target.value)}
-                className="w-full px-3 py-3 rounded-xl bg-theme-on-surface-2 text-theme-primary border border-theme-stroke text-lg"
-              >
-                {fromCoin === "USDT"
-                  ? coinSymbols.filter(c => c !== "USDT").map(c =>
-                      <option key={c} value={c}>{c}</option>
-                    )
-                  : <option value="USDT">USDT</option>
-                }
-              </select>
-            </div>
-          </div>
-          <Field
-            label={t('amount_with_coin', { coin: fromCoin })}
-            type="number"
-            min={0}
-            step="any"
-            value={amount}
-            onChange={e => setAmount(e.target.value)}
-            placeholder={t('enter_amount_with_coin', { coin: fromCoin })}
-            icon="dollar-sign"
-          />
-          <div className="mb-1 text-theme-tertiary text-lg">
-            {t('you_will_receive')}: <span className="text-theme-primary font-semibold">{result ? `${result} ${toCoin}` : "--"}</span>
-          </div>
-          <button
-            type="submit"
-            className="btn-primary w-full h-14 rounded-xl text-xl font-bold"
-            disabled={!amount || isNaN(amount) || fromCoin === toCoin || parseFloat(amount) <= 0}
-          >
-            {t('convert')}
-          </button>
-          {successMsg && <div className="mt-2 bg-theme-green-100 text-theme-green rounded-lg px-4 py-3 text-center text-lg">{successMsg}</div>}
-        </form>
-      </Card>
-
-      {/* -- MODAL: DEPOSIT -- */}
+      {/* ===== Modals ===== */}
       <Modal visible={modal.open && modal.type === "deposit"} onClose={closeModal}>
         <form onSubmit={handleDepositSubmit} className="space-y-5 p-2">
-          <div className="text-2xl font-bold mb-3 flex items-center gap-2 text-theme-primary">
-            <Icon name="download" className="w-7 h-7" /> {t('deposit')}
+          <div className="text-2xl font-bold mb-3 flex items-center gap-2 text-slate-900">
+            <Icon name="download" className="w-7 h-7" /> {t("deposit")}
           </div>
+
           <select
-            className="w-full px-3 py-3 rounded-xl bg-theme-on-surface-2 text-theme-primary border border-theme-stroke text-lg"
+            className="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-sky-200 outline-none"
             value={selectedDepositCoin}
             onChange={e => setSelectedDepositCoin(e.target.value)}
           >
             {coinSymbols.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          
+
           <div className="flex flex-col items-center justify-center">
-            <div
-              className="relative w-full max-w-[140px] aspect-square mb-3"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                overflow: "hidden",
-                borderRadius: "12px",
-                border: "1.5px solid #ddd",
-                background: "#fff",
-              }}
-            >
+            <div className="relative w-full max-w-[160px] aspect-square mb-3 rounded-xl bg-white ring-1 ring-slate-200 flex items-center justify-center overflow-hidden">
               {walletQRCodes[selectedDepositCoin] ? (
                 <img
-                  src={
-                    walletQRCodes[selectedDepositCoin].startsWith("/uploads")
-                      ? `${ADMIN_API_BASE}${walletQRCodes[selectedDepositCoin]}`
-                      : walletQRCodes[selectedDepositCoin]
-                  }
-                  alt={t('deposit_qr')}
-                  className="max-w-full max-h-full object-contain p-1"
-                  style={{ display: "block" }}
-                  onError={(e) => {
-                    e.target.style.display = "none";
-                    const fallback = e.target.nextSibling;
-                    if (fallback) fallback.style.display = "block";
-                  }}
+                  src={walletQRCodes[selectedDepositCoin].startsWith("/uploads")
+                    ? `${ADMIN_API_BASE}${walletQRCodes[selectedDepositCoin]}`
+                    : walletQRCodes[selectedDepositCoin]}
+                  alt={t("deposit_qr")}
+                  className="max-w-full max-h-full object-contain p-2"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
                 />
               ) : null}
-              <div
-                style={{
-                  display: walletQRCodes[selectedDepositCoin] ? "none" : "block",
-                  width: "100%",
-                  height: "100%",
-                  position: "absolute",
-                  inset: 0,
-                  padding: "8px",
-                }}
-              >
-                <QRCodeCanvas
-                  value={walletAddresses[selectedDepositCoin] || ""}
-                  size={120}
-                  bgColor="#ffffff"
-                  fgColor="#000000"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                  }}
-                />
-              </div>
+              {!walletQRCodes[selectedDepositCoin] && (
+                <QRCodeCanvas value={walletAddresses[selectedDepositCoin] || ""} size={140} bgColor="#ffffff" fgColor="#000000" />
+              )}
             </div>
           </div>
 
-          <span className="text-theme-tertiary font-medium text-lg">
-            {t('network')}: {depositNetworks[selectedDepositCoin]}
-          </span>
-          <div className="flex items-center gap-1 w-full justify-center">
-  <span
-    className="font-mono bg-theme-on-surface-2 px-2 py-1 rounded whitespace-nowrap text-base"
-    style={{ maxWidth: "230px", overflowX: "auto" }}
-  >
-    {walletAddresses[selectedDepositCoin]}
-  </span>
-  <button
-    type="button"
-    className="btn-secondary px-3 py-1 rounded-xl ml-2"
-    style={{ flexShrink: 0 }}
-    onClick={() => {
-      navigator.clipboard.writeText(walletAddresses[selectedDepositCoin]);
-      setToast(t("copied"));
-    }}
-  >
-    <Icon name="copy" className="mr-1" />{t('copy')}
-  </button>
-</div>
+          <div className="text-slate-600 font-medium">{t("network")}: <span className="font-semibold text-slate-900">{depositNetworks[selectedDepositCoin]}</span></div>
+
+          <div className="flex items-center gap-2 justify-center">
+            <span className="font-mono bg-slate-50 ring-1 ring-slate-200 px-2 py-1 rounded text-sm max-w-[260px] overflow-x-auto">
+              {walletAddresses[selectedDepositCoin]}
+            </span>
+            <button
+              type="button"
+              className="h-9 px-3 rounded-lg bg-slate-900 text-white text-sm font-semibold"
+              onClick={() => { navigator.clipboard.writeText(walletAddresses[selectedDepositCoin]); setToast(t("copied")); }}
+            >
+              <span className="inline-flex items-center gap-1"><Icon name="copy" />{t("copy")}</span>
+            </button>
+          </div>
 
           <Field
-            label={t('deposit_amount_with_coin', { coin: selectedDepositCoin })}
+            label={t("deposit_amount_with_coin", { coin: selectedDepositCoin })}
             type="number"
             min={0}
             step="any"
@@ -688,154 +653,92 @@ useEffect(() => {
             required
             icon="dollar-sign"
           />
-          <div className="w-full">
-            <label className="block text-theme-tertiary font-medium mb-1">
-              {t('upload_screenshot')}
-            </label>
+
+          <div>
+            <label className="block text-slate-600 font-medium mb-1">{t("upload_screenshot")}</label>
             <div className="relative">
               <input
                 type="file"
                 accept="image/*"
                 ref={fileInputRef}
-                onChange={e => {
-                  setDepositScreenshot(e.target.files[0]);
-                  setFileLocked(true);
-                }}
+                onChange={e => { setDepositScreenshot(e.target.files[0]); setFileLocked(true); }}
                 required
                 className="absolute inset-0 opacity-0 z-50 cursor-pointer"
                 disabled={fileLocked}
               />
-              <div className={`truncate w-full text-sm text-white font-semibold text-center px-4 py-2 rounded-full ${
-                fileLocked ? "bg-gray-500 cursor-not-allowed" : "bg-theme-primary hover:bg-theme-primary/90 cursor-pointer"
-              }`}>
-                {fileLocked ? t('screenshot_uploaded') : t('choose_file')}
+              <div className={`truncate w-full text-sm text-white font-semibold text-center px-4 py-2 rounded-xl ${fileLocked ? "bg-slate-400 cursor-not-allowed" : "bg-slate-900 hover:opacity-95 cursor-pointer"}`}>
+                {fileLocked ? t("screenshot_uploaded") : t("choose_file")}
               </div>
             </div>
           </div>
-          <div className="text-caption-1 text-theme-tertiary bg-theme-on-surface-2 rounded px-3 py-2">
-            {t('for_your_safety_submit_screenshot')}
-            <span className="block text-theme-yellow">
-              {t('proof_ensures_support')}
-            </span>
+
+          <div className="text-sm text-slate-600 bg-slate-50 ring-1 ring-slate-200 rounded px-3 py-2">
+            {t("for_your_safety_submit_screenshot")}
+            <span className="block text-amber-600">{t("proof_ensures_support")}</span>
           </div>
-          <button type="submit" className="btn-primary w-full h-14 rounded-xl font-bold text-lg">
-            {t('submit')}
+
+          <button type="submit" className="w-full h-12 rounded-xl bg-slate-900 text-white text-lg font-extrabold hover:scale-[1.02] transition">
+            {t("submit")}
           </button>
         </form>
       </Modal>
 
-      {/* -- MODAL: WITHDRAW -- */}
       <Modal visible={modal.open && modal.type === "withdraw"} onClose={closeModal}>
         <form onSubmit={handleWithdraw} className="space-y-5 p-2">
-          <div className="text-2xl font-bold mb-3 flex items-center gap-2 text-theme-primary">
-            <Icon name="upload" className="w-7 h-7" /> {t('withdraw')}
+          <div className="text-2xl font-bold mb-3 flex items-center gap-2 text-slate-900">
+            <Icon name="upload" className="w-7 h-7" /> {t("withdraw")}
           </div>
           <select
-            className="w-full px-3 py-3 rounded-xl bg-theme-on-surface-2 text-theme-primary border border-theme-stroke text-lg"
+            className="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-sky-200 outline-none"
             value={selectedWithdrawCoin}
             onChange={e => setSelectedWithdrawCoin(e.target.value)}
           >
             {coinSymbols.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          <span className="text-theme-tertiary font-medium text-lg">
-            {t('network')}: {depositNetworks[selectedWithdrawCoin]}
-          </span>
+
+          <div className="text-slate-600 font-medium">{t("network")}: <span className="font-semibold text-slate-900">{depositNetworks[selectedWithdrawCoin]}</span></div>
+
           <Field
-            label={t('withdraw_to_address')}
+            label={t("withdraw_to_address")}
             type="text"
             required
-            placeholder={t('paste_recipient_address', { coin: selectedWithdrawCoin })}
+            placeholder={t("paste_recipient_address", { coin: selectedWithdrawCoin })}
             value={withdrawForm.address}
             onChange={e => setWithdrawForm(f => ({ ...f, address: e.target.value }))}
             icon="send"
           />
           <Field
-            label={t('amount_with_coin', { coin: selectedWithdrawCoin })}
+            label={t("amount_with_coin", { coin: selectedWithdrawCoin })}
             type="number"
             min={0.0001}
             step="any"
             required
-            placeholder={t('enter_amount_with_coin', { coin: selectedWithdrawCoin })}
+            placeholder={t("enter_amount_with_coin", { coin: selectedWithdrawCoin })}
             value={withdrawForm.amount}
             onChange={e => setWithdrawForm(f => ({ ...f, amount: e.target.value }))}
             icon="dollar-sign"
           />
-          <div className="text-caption-1 text-theme-yellow bg-theme-on-surface-2 rounded px-3 py-2">
-            {t('double_check_withdraw')}
-          </div>
-          <button
-            type="submit"
-            className="btn-primary w-full h-14 rounded-xl font-bold text-lg"
-          >
-            {t('submit_withdraw')}
+
+          <div className="text-sm text-amber-700 bg-amber-50 ring-1 ring-amber-200 rounded px-3 py-2">{t("double_check_withdraw")}</div>
+
+          <button type="submit" className="w-full h-12 rounded-xl bg-slate-900 text-white text-lg font-extrabold hover:scale-[1.02] transition">
+            {t("submit_withdraw")}
           </button>
-          {withdrawMsg && <div className="mt-2 bg-theme-green-100 text-theme-green rounded-lg px-4 py-2 text-center text-lg">{withdrawMsg}</div>}
+
+          {withdrawMsg && (
+            <div className="mt-2 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 rounded-lg px-4 py-2 text-center text-base font-semibold">
+              {withdrawMsg}
+            </div>
+          )}
         </form>
       </Modal>
 
-      {/* -- TOAST -- */}
+      {/* Toast */}
       {toast && (
-        <div
-          className="fixed top-10 left-1/2 -translate-x-1/2 z-[9999] bg-theme-primary text-theme-n-8 px-6 py-3 rounded-full shadow text-lg font-bold animate-pulse select-none pointer-events-none"
-          style={{ userSelect: 'none' }}
-        >
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[9999] bg-slate-900 text-white px-5 py-2.5 rounded-full shadow text-sm font-semibold">
           {toast}
         </div>
       )}
-
-      {/* -- HISTORY TABLE -- */}
-      <Card className="max-w-3xl w-full rounded-3xl shadow-lg px-7 py-6 mb-10 border bg-gradient-to-tr from-[#fff9e6] to-[#f1f8ff] border-[#f6e8ff]/80">
-        <div className="flex items-center gap-2 mb-3 text-theme-primary text-2xl font-bold">
-          <Icon name="clock" className="w-7 h-7" /> {t('deposit_withdraw_history')}
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full table-auto text-base md:text-lg">
-            <thead>
-              <tr className="text-left text-theme-tertiary border-b border-theme-stroke">
-                <th className="py-3 px-2">{t('type')}</th>
-                <th className="py-3 px-2">{t('amount')}</th>
-                <th className="py-3 px-2">{t('coin')}</th>
-                <th className="py-3 px-2">{t('date')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(Array.isArray(allHistory) ? allHistory : []).map((row, idx) => (
-                <tr
-                  key={
-                    row.type === "Deposit"
-                      ? `deposit-${row.id || idx}`
-                      : row.type === "Withdraw"
-                        ? `withdraw-${row.id || idx}`
-                        : idx
-                  }
-                  className="border-b border-theme-stroke last:border-0 hover:bg-theme-on-surface-2 transition"
-                >
-                  <td className="py-3 px-2 text-lg font-bold">
-                    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full shadow 
-                      ${row.type === "Deposit" ? "bg-theme-green/20 text-theme-green" : "bg-theme-yellow/20 text-theme-yellow"}`}>
-                      <Icon name={row.type === "Deposit" ? "download" : "upload"} className="w-4 h-4" />
-                      {t(row.type.toLowerCase())}
-                    </span>
-                  </td>
-                  <td className="py-3 px-2 text-lg font-mono">
-                    {row.amount}
-                  </td>
-                  <td className="py-3 px-2 text-lg font-bold">
-                    <Icon name={row.coin?.toLowerCase() || "coin"} className="w-5 h-5 mr-1" />
-                    {row.coin}
-                  </td>
-                  <td className="py-3 px-2 text-lg">
-                    {row.created_at
-                      ? new Date(row.created_at).toLocaleString()
-                      : (row.date || "--")}
-                  </td>
-                 
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
     </div>
   );
 }
