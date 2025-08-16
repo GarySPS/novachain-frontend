@@ -7,14 +7,17 @@ export default function AssetsDonut({ assets = [], prices = {} }) {
   if (!assets.length || !Object.keys(prices).length) return null;
 
   // Compute USD value per coin
-  const data = assets.map(a => ({
-    name: a.symbol,
-    value: Number(a.balance) * (prices[a.symbol] || (a.symbol === "USDT" ? 1 : 0)),
-  })).filter(d => d.value > 0);
+  const data = assets
+    .map(a => ({
+      name: a.symbol,
+      value: Number(a.balance) * (prices[a.symbol] || (a.symbol === "USDT" ? 1 : 0)),
+    }))
+    .filter(d => d.value > 0);
+
   const total = data.reduce((a, b) => a + b.value, 0);
 
   return (
-    <div className="w-full h-56 bg-theme-on-surface-2 rounded-xl shadow p-4 flex flex-col items-center justify-center">
+    <div className="w-full h-56 rounded-xl p-4 flex flex-col items-center justify-center bg-transparent">
       {/* Donut chart only, no header, no legend, no labels */}
       <ResponsiveContainer width="100%" height="80%">
         <PieChart>
@@ -35,11 +38,11 @@ export default function AssetsDonut({ assets = [], prices = {} }) {
           </Pie>
         </PieChart>
       </ResponsiveContainer>
-      <div className="text-theme-secondary font-semibold text-center mt-2">
-        Total: <span className="font-bold text-theme-primary">
-          ${total.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-        </span>
-      </div>
+<div className="text-white/80 font-semibold text-center mt-2">
+  Total: <span className="font-bold text-white">
+    ${total.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+  </span>
+</div>
     </div>
   );
 }

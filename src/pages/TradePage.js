@@ -267,8 +267,33 @@ export default function TradePage() {
         <div className="w-full max-w-[1300px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr,380px] gap-7 lg:gap-8">
           {/* ---------------- Left: Chart & selectors ---------------- */}
           <div className="w-full">
-            {/* coin selector */}
-<Card className="p-3 md:p-4 rounded-2xl border border-slate-800/40 bg-gradient-to-r from-[#0f1528] via-[#0f1630] to-[#0a1222] shadow-xl mb-3">
+
+{/* coin selector — no background card, just buttons */}
+<div className="mb-3">
+  {/* Desktop: centered row */}
+  <div className="hidden md:flex items-center justify-center gap-3 min-h-[44px] leading-none">
+    {COINS.map((coin) => {
+      const active = selectedCoin.symbol === coin.symbol;
+      return (
+        <button
+          key={coin.symbol}
+          onClick={() => setSelectedCoin(coin)}
+          disabled={timerActive}
+          className={`px-5 py-2 rounded-full font-extrabold text-base transition-all
+            ${active ? "bg-[#2474ff] text-white shadow-lg scale-[1.03]" : "bg-[#141a2b] text-[#8fb3ff] hover:text-white hover:bg-[#1a2240]"}
+          `}
+          style={{ border: active ? "2px solid #5aa0ff" : "1px solid #1e2747", minWidth: 120 }}
+        >
+          {coin.symbol}/USDT
+        </button>
+      );
+    })}
+    <span className="flex items-center gap-2 text-sky-200/80 text-sm leading-none">
+      <Icon name="activity" className="w-4 h-4" />
+      {t("live_price", "Live price feed")}
+    </span>
+  </div>
+
   {/* Mobile: horizontal snap row */}
   <div className="-mx-1 md:hidden">
     <div
@@ -292,36 +317,12 @@ export default function TradePage() {
         );
       })}
     </div>
-    <div className="mt-2 flex justify-center items-center gap-2 text-sky-200/80 text-xs">
+    <div className="mt-1 flex justify-center items-center gap-2 text-sky-200/80 text-xs leading-none">
       <Icon name="activity" className="w-4 h-4" />
       {t("live_price", "Live price feed")}
     </div>
   </div>
-
-  {/* Desktop: centered row, no “ml-auto” spacer */}
-  <div className="hidden md:flex flex-wrap justify-center gap-3">
-    {COINS.map((coin) => {
-      const active = selectedCoin.symbol === coin.symbol;
-      return (
-        <button
-          key={coin.symbol}
-          onClick={() => setSelectedCoin(coin)}
-          disabled={timerActive}
-          className={`px-5 py-2 rounded-full font-extrabold text-base transition-all
-            ${active ? "bg-[#2474ff] text-white shadow-lg scale-[1.03]" : "bg-[#141a2b] text-[#8fb3ff] hover:text-white hover:bg-[#1a2240]"}
-          `}
-          style={{ border: active ? "2px solid #5aa0ff" : "1px solid #1e2747", minWidth: 120 }}
-        >
-          {coin.symbol}/USDT
-        </button>
-      );
-    })}
-    <span className="flex items-center gap-2 text-sky-200/80 text-sm">
-      <Icon name="activity" className="w-4 h-4" />
-      {t("live_price", "Live price feed")}
-    </span>
-  </div>
-</Card>
+</div>
 
             {/* chart box */}
             <div className="relative w-full rounded-2xl shadow-2xl bg-gradient-to-br from-[#141a2b] via-[#0f1424] to-[#0b1020] border border-[#1a2343] overflow-hidden">
@@ -336,19 +337,21 @@ export default function TradePage() {
                 </div>
               )}
 
-              {/* floating price pill */}
-              <div className="absolute top-3 right-3">
-                <div className="px-3 py-2 rounded-xl bg-black/40 backdrop-blur ring-1 ring-white/10 text-white font-semibold">
-                  <div className="text-[10px] uppercase tracking-wide text-white/70">{selectedCoin.symbol}/USDT</div>
-                  <div className="text-lg tabular-nums">
-                    {typeof coinPrice === "number" && !isNaN(coinPrice)
-                      ? "$" + coinPrice.toLocaleString(undefined, { maximumFractionDigits: 6 })
-                      : fetchError
-                      ? t("api_error", "API Error")
-                      : t("loading", "Loading...")}
-                  </div>
-                </div>
-              </div>
+{/* floating price pill – compact version */}
+<div className="absolute right-[88px] top-[46px] md:right-3 md:top-3 z-10">
+  <div className="px-2 py-1 rounded-lg bg-black/50 backdrop-blur-sm ring-1 ring-white/10 text-white font-medium shadow-sm">
+    <div className="text-[9px] uppercase tracking-wide text-white/60 leading-none">
+      {selectedCoin.symbol}/USDT
+    </div>
+    <div className="text-sm tabular-nums font-bold leading-tight">
+      {typeof coinPrice === "number" && !isNaN(coinPrice)
+        ? "$" + coinPrice.toLocaleString(undefined, { maximumFractionDigits: 3 })
+        : fetchError
+        ? t("api_error", "API Error")
+        : t("loading", "Loading...")}
+    </div>
+  </div>
+</div>
             </div>
 
 {/* quick hints (centered) */}

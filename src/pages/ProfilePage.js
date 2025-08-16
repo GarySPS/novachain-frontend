@@ -395,7 +395,7 @@ export default function ProfilePage() {
             <div className="mb-3 text-white/80 font-bold">{t('profile_assets')}</div>
             <div className="flex flex-col sm:flex-row items-center gap-6">
               <div className="flex-1 min-w-[220px]">
-                <AssetsDonut assets={assets} prices={prices} />
+                <AssetsDonut assets={assets} prices={prices} plain />
               </div>
               <div className="flex-1 w-full max-w-sm">
                 {assets.filter(a => a.balance > 0).map((a, i) => {

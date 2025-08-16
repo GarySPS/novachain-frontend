@@ -191,7 +191,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <div className="text-slate-500 text-sm">
-                  Global Market Cap (top 100 shown)
+                  Global Market Cap 
                 </div>
                 <div className="text-2xl md:text-3xl font-semibold tracking-tight">
                   {formatBigNum(totalMcap)}
@@ -199,7 +199,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <div className="text-slate-500 text-sm">
-                  24h Volume (top 100 shown)
+                  24h Volume 
                 </div>
                 <div className="text-2xl md:text-3xl font-semibold tracking-tight">
                   {formatBigNum(totalVol)}
@@ -233,6 +233,15 @@ export default function Dashboard() {
           {/* ---- Table ---- */}
           <div className="w-full overflow-x-auto">
             <table className="w-full text-sm md:text-base">
+  <colgroup>
+    <col className="w-24" />   {/* # + logo */}
+    <col />                    {/* Name (flex) */}
+    <col className="w-28" />   {/* Symbol */}
+    <col className="w-40" />   {/* Price */}
+    <col className="w-28" />   {/* 24h */}
+    <col className="w-44" />   {/* 24h Volume */}
+    <col className="w-44" />   {/* Market Cap */}
+  </colgroup>
               <thead className="bg-white sticky top-0 z-10">
                 <tr className="text-left text-slate-600 border-y border-slate-100">
                   <th className="py-3.5 px-3 text-center">#</th>
@@ -266,21 +275,21 @@ export default function Dashboard() {
                           style={{ height: 64 }}
                         >
                           {/* Rank / Logo */}
-                          <td className="py-3 px-3 text-center">
-                            <div className="inline-flex items-center gap-2">
-                              <span className="text-slate-400 text-xs font-medium w-6 text-right">
-                                {idx + 1}
-                              </span>
-                              <img
-                                src={`https://assets.coincap.io/assets/icons/${coin.symbol?.toLowerCase()}@2x.png`}
-                                onError={(e) => {
-                                  e.currentTarget.style.display = "none";
-                                }}
-                                alt={coin.symbol}
-                                className="w-8 h-8 rounded-full shadow-sm"
-                              />
-                            </div>
-                          </td>
+<td className="py-3 px-3">
+  <div className="flex items-center">
+    <span className="text-slate-400 text-xs font-medium w-8 tabular-nums text-right mr-2">
+      {String(idx + 1).padStart(2, "0")}
+    </span>
+    <div className="w-8 h-8 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center">
+      <img
+        src={`https://assets.coincap.io/assets/icons/${coin.symbol?.toLowerCase()}@2x.png`}
+        onError={(e) => { e.currentTarget.style.opacity = "0"; }}
+        alt={coin.symbol}
+        className="w-8 h-8 object-contain"
+      />
+    </div>
+  </div>
+</td>
 
                           {/* Name */}
                           <td className="py-3 px-3">
@@ -295,11 +304,11 @@ export default function Dashboard() {
                           </td>
 
                           {/* Symbol */}
-                          <td className="py-3 px-3">
-                            <span className="font-mono text-slate-700 bg-slate-50 ring-1 ring-slate-200 px-2 py-1 rounded-md">
-                              {coin.symbol}
-                            </span>
-                          </td>
+<td className="py-3 px-3">
+  <span className="font-mono text-slate-700 bg-slate-50 ring-1 ring-slate-200 px-2 py-1 rounded-md inline-block w-20 text-center">
+    {coin.symbol}
+  </span>
+</td>
 
                           {/* Price */}
                           <td className="py-3 px-3 text-right font-semibold tabular-nums">
