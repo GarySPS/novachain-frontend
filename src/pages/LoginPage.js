@@ -1,19 +1,20 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { MAIN_API_BASE } from '../config';
-import Card from "../components/card";
+import { MAIN_API_BASE } from "../config";
 import NovaChainLogo from "../components/NovaChainLogo.svg";
 import DatabaseErrorCard from "../components/DatabaseErrorCard";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPwd, setShowPwd] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+
     try {
       const res = await fetch(`${MAIN_API_BASE}/auth/login`, {
         method: "POST",
@@ -30,204 +31,163 @@ export default function LoginPage() {
         setError(data.error || "Login failed");
         return;
       }
+
       if (data.token) localStorage.setItem("token", data.token);
       if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
-      navigate('/wallet');
-    } catch (err) {
+      navigate("/wallet");
+    } catch {
       setError("Platform is under scheduled maintenance. Please try again soon.");
     }
   };
 
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center relative px-2 py-4"
+      className="min-h-screen w-full relative flex items-center justify-center px-4 py-10 md:py-14"
       style={{
         backgroundImage: 'url("/novachain.jpg")',
         backgroundSize: "cover",
         backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
       }}
     >
-      <div className="absolute inset-0 bg-[#181c2cbb] backdrop-blur-[2px]" style={{ zIndex: 1 }} />
-      <div className="relative z-10 w-full flex flex-col items-center">
-        <Card
-          className="rounded-2xl shadow-2xl border-0 bg-white/90 mx-auto"
-          style={{
-            width: "100%",
-            maxWidth: "420px",
-            minWidth: 0,
-            padding: "2.3rem 2rem 1.8rem 2rem",
-            margin: "0 auto",
-            boxSizing: "border-box",
-          }}
-        >
-          <div className="flex items-center justify-center w-full mb-6 mt-[-10px]">
+      {/* overlay */}
+      <div className="absolute inset-0 bg-[#0c1022e6] backdrop-blur-[2px]" />
+
+      <div className="relative z-10 w-full">
+        <div className="mx-auto w-full max-w-[480px] rounded-3xl bg-white/90 backdrop-blur shadow-2xl border border-white/40 px-6 py-8 md:px-10 md:py-10">
+          {/* logo */}
+          <div className="flex justify-center">
             <img
               src={NovaChainLogo}
               alt="NovaChain Logo"
-              style={{
-                width: "93%",
-                maxWidth: 210,
-                minWidth: 120,
-                height: "auto",
-                objectFit: "contain"
-              }}
-              className="block select-none pointer-events-none"
+              className="w-40 md:w-48 select-none pointer-events-none"
               draggable={false}
             />
           </div>
-          <form onSubmit={handleLogin} className="flex flex-col gap-5 items-center w-full">
-            <div className="w-full flex flex-col items-center">
-              <label
-                htmlFor="email"
-                className="block text-lg font-bold text-[#232836] mb-1 text-left w-full"
-                style={{ letterSpacing: 0.2 }}
-              >
-                Username/Email
+
+          <form onSubmit={handleLogin} className="mt-6 space-y-5">
+            {/* Email/Username */}
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm md:text-base font-semibold text-[#232836]">
+                Username or Email
               </label>
               <input
                 id="email"
                 type="text"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="Enter your username"
-                className="w-full h-12 rounded-xl px-4 bg-[#eaf1fb] text-base font-medium border border-[#c9e3fc] focus:border-[#1f2fff] focus:ring-2 focus:ring-[#00eaff33] outline-none transition"
-                autoFocus
-                style={{
-                  maxWidth: 320,
-                  fontSize: "1.06rem"
-                }}
+                autoComplete="username"
+                placeholder="yourname or you@email.com"
+                className="w-full h-12 rounded-xl px-4 bg-[#eef4ff] text-[#0f1224] placeholder-[#6b7280] border border-[#d7e3ff] focus:outline-none focus:ring-4 focus:ring-[#00eaff22] focus:border-[#00eaff] transition"
               />
             </div>
-            <div className="w-full flex flex-col items-center">
-              <label
-                htmlFor="password"
-                className="block text-lg font-bold text-[#232836] mb-1 text-left w-full"
-                style={{ letterSpacing: 0.2 }}
-              >
+
+            {/* Password */}
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm md:text-base font-semibold text-[#232836]">
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                placeholder="Enter your password"
-                className="w-full h-12 rounded-xl px-4 bg-[#eaf1fb] text-base font-medium border border-[#c9e3fc] focus:border-[#1f2fff] focus:ring-2 focus:ring-[#ffd70022] outline-none transition"
-                style={{
-                  maxWidth: 320,
-                  fontSize: "1.06rem"
-                }}
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPwd ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                  placeholder="Enter your password"
+                  className="w-full h-12 rounded-xl px-4 pr-12 bg-[#eef4ff] text-[#0f1224] placeholder-[#6b7280] border border-[#d7e3ff] focus:outline-none focus:ring-4 focus:ring-[#ffd70022] focus:border-[#ffd700] transition"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPwd((s) => !s)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-semibold text-[#232836] bg-white/70 border border-gray-200 hover:bg-white shadow-sm"
+                >
+                  {showPwd ? "Hide" : "Show"}
+                </button>
+              </div>
+              <div className="flex justify-end">
+                <Link
+                  to="/forgot"
+                  className="text-xs md:text-sm font-semibold text-[#1f2fff] hover:text-[#00eaff] hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
             </div>
-            {error && (
-              (error.toLowerCase().includes("maintain") || error.toLowerCase().includes("database")) ? (
+
+            {/* Errors */}
+            {error &&
+              (error.toLowerCase().includes("maintain") || error.toLowerCase().includes("database") ? (
                 <DatabaseErrorCard />
               ) : (
-                <div className="bg-red-50 border border-red-200 text-red-500 rounded-md px-3 py-2 text-center text-base w-full max-w-[320px]">
+                <div className="w-full rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm md:text-base text-red-600">
                   {error}
                 </div>
-              )
-            )}
+              ))}
+
+            {/* Submit */}
             <button
-              className="h-12 rounded-xl font-extrabold text-lg tracking-wide shadow-md transition-all block mx-auto"
               type="submit"
+              className="w-full h-12 md:h-12 rounded-xl font-extrabold text-base md:text-lg tracking-wide shadow-lg border-0 outline-none transition active:scale-[.99]"
               style={{
-                width: "100%",
-                maxWidth: 320,
-                minWidth: 120,
-                background: "linear-gradient(90deg,#00eaff 0%,#1f2fff 53%,#ffd700 100%)",
-                color: "#232836",
-                letterSpacing: 1.2,
-                boxShadow: "0 2px 16px #1f2fff14, 0 1.5px 0 #ffd70044",
-                border: "none",
-                outline: "none",
-                fontSize: "1.17rem"
+                background:
+                  "linear-gradient(90deg,#00eaff 0%,#1f2fff 55%,#ffd700 100%)",
+                color: "#141726",
+                letterSpacing: "0.02em",
+                boxShadow: "0 10px 24px rgba(31,47,255,0.12)",
               }}
-              onMouseDown={e => { e.target.style.filter = "brightness(0.93)"; }}
-              onMouseUp={e => { e.target.style.filter = ""; }}
-              onMouseLeave={e => { e.target.style.filter = ""; }}
             >
               Login
             </button>
           </form>
-          <div className="flex flex-col gap-2 mt-7 items-center w-full">
-            <Link
-              to="/forgot"
-              className="block mx-auto py-2 w-full max-w-[220px] rounded-xl font-semibold text-base text-[#00b7e6] bg-[#e8fafd] hover:bg-[#00b7e6] hover:text-white shadow-sm transition-all duration-150 text-center"
-              style={{
-                fontSize: "1rem"
-              }}
-            >
-              Forgot password?
-            </Link>
-            <Link
-              to="/signup"
-              className="block mx-auto py-2 w-full max-w-[220px] rounded-xl font-semibold text-base text-[#ffd700] bg-[#fffbe9] hover:bg-[#ffd700] hover:text-[#232836] shadow-sm transition-all duration-150 text-center"
-              style={{
-                fontSize: "1rem"
-              }}
-            >
-              Sign up
-            </Link>
+
+          {/* Divider */}
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-[#dbe3ff] to-transparent" />
           </div>
-<div className="mt-7 w-full flex justify-center">
-  <div className="w-full max-w-[180px] rounded-lg bg-[#f4f7fb] border border-[#e0e4ef] px-1.5 py-1 flex flex-col items-center shadow-sm">
-    <div className="flex flex-row gap-1 w-full">
-      <a
-        href="https://wa.me/16627053615"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex-1 px-1.5 py-1 rounded font-bold text-xs bg-[#25D366] text-white hover:bg-[#22b95f] transition text-center shadow"
-        style={{ minWidth: 0, letterSpacing: 0.2 }}
-      >
-        WhatsApp
-      </a>
-      <a
-        href="https://t.me/novachainsingapore"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex-1 px-1.5 py-1 rounded font-bold text-xs bg-[#229ED9] text-white hover:bg-[#178fca] transition text-center shadow"
-        style={{ minWidth: 0, letterSpacing: 0.2 }}
-      >
-        Telegram
-      </a>
-    </div>
-    <div className="text-[11px] text-gray-400 text-center mt-1">
-      Support: WhatsApp or Telegram
-    </div>
-  </div>
+
+          {/* Support + Sign up */}
+          <div className="grid grid-cols-2 gap-2">
+            <a
+              href="https://wa.me/16627053615"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-xl px-3 py-2 text-center text-sm md:text-base font-bold text-white bg-[#25D366] hover:bg-[#22b95f] transition shadow"
+            >
+              WhatsApp
+            </a>
+            <a
+              href="https://t.me/novachainsingapore"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-xl px-3 py-2 text-center text-sm md:text-base font-bold text-white bg-[#229ED9] hover:bg-[#178fca] transition shadow"
+            >
+              Telegram
+            </a>
+          </div>
+
+<div className="mt-5 flex justify-center">
+  <Link
+    to="/signup"
+    className="text-sm md:text-base font-bold text-[#1f2fff] hover:text-[#00eaff] hover:underline"
+  >
+    New here? Create an account
+  </Link>
 </div>
-        </Card>
+
+        </div>
       </div>
-      {/* Logo Glow Animation */}
+
+      {/* Subtle logo glow */}
       <style>
         {`
-        @media (max-width: 480px) {
-          .responsive-card {
-            max-width: 340px !important;
-            padding-left: 1.1rem !important;
-            padding-right: 1.1rem !important;
+          @keyframes logoGlow {
+            0% { filter: drop-shadow(0 0 12px rgba(0,234,255,.55)); }
+            50% { filter: drop-shadow(0 0 36px rgba(0,234,255,.35)); }
+            100% { filter: drop-shadow(0 0 12px rgba(0,234,255,.55)); }
           }
-          .responsive-input {
-            max-width: 210px !important;
-            font-size: 0.98rem !important;
-          }
-          .responsive-button {
-            max-width: 210px !important;
-            font-size: 1rem !important;
-          }
-        }
-        @keyframes logoGlow {
-          0% { filter: drop-shadow(0 0 16px #00eaff99); }
-          48% { filter: drop-shadow(0 0 52px #00eaff66); }
-          100% { filter: drop-shadow(0 0 16px #00eaff99); }
-        }
-        img[alt="NovaChain Logo"] {
-          animation: logoGlow 2.8s ease-in-out infinite alternate;
-        }
+          img[alt="NovaChain Logo"] { animation: logoGlow 3s ease-in-out infinite; }
         `}
       </style>
     </div>

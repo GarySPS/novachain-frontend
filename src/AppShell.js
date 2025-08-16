@@ -24,7 +24,9 @@ function isDarkMode() {
 function AppShell() {
   const { t } = useTranslation();
   const location = useLocation();
-  const hideHeader = ["/login", "/signup", "/verify-otp"].includes(location.pathname);
+  const hideHeader = ["/login", "/signup", "/verify-otp", "/forgot"].some((p) =>
+  location.pathname.startsWith(p)
+);
 
   const [showIOSModal, setShowIOSModal] = useState(false);
 

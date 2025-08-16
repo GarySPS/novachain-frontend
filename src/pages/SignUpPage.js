@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { MAIN_API_BASE } from '../config';
-import Card from "../components/card";
+import { MAIN_API_BASE } from "../config";
 import NovaChainLogo from "../components/NovaChainLogo.svg";
 
 export default function SignUpPage() {
@@ -31,7 +30,7 @@ export default function SignUpPage() {
 
       if (res.status === 409 && data.unverified) {
         setSuccess("You have already registered but not verified. Please check your email for the OTP code.");
-        setTimeout(() => navigate("/verify-otp", { state: { email } }), 1400);
+        setTimeout(() => navigate("/verify-otp", { state: { email } }), 1200);
         return;
       }
       if (!res.ok) {
@@ -39,196 +38,176 @@ export default function SignUpPage() {
         return;
       }
       setSuccess("OTP code sent to your email. Please verify to complete sign up.");
-      setTimeout(() => navigate("/verify-otp", { state: { email } }), 1400);
-    } catch (err) {
+      setTimeout(() => navigate("/verify-otp", { state: { email } }), 1200);
+    } catch {
       setError("Signup failed. Please try again.");
     }
   };
 
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center relative px-2 py-4"
+      className="min-h-screen w-full relative flex items-center justify-center px-4 py-10 md:py-14"
       style={{
         backgroundImage: 'url("/novachain.jpg")',
         backgroundSize: "cover",
         backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
       }}
     >
-      <div className="absolute inset-0 bg-[#181c2cbb] backdrop-blur-[2px]" style={{ zIndex: 1 }} />
-      <div className="relative z-10 w-full flex flex-col items-center">
-        <Card
-          className="rounded-2xl shadow-2xl border-0 bg-white/90 mx-auto"
-          style={{
-            width: "100%",
-            maxWidth: "420px",
-            minWidth: 0,
-            padding: "2.3rem 2rem 1.8rem 2rem",
-            margin: "0 auto",
-            boxSizing: "border-box",
-          }}
-        >
-          <div className="flex items-center justify-center w-full mb-6 mt-[-10px]">
+      <div className="absolute inset-0 bg-[#0c1022e6] backdrop-blur-[2px]" />
+
+      <div className="relative z-10 w-full">
+        <div className="mx-auto w-full max-w-[480px] rounded-3xl bg-white/90 backdrop-blur shadow-2xl border border-white/40 px-6 py-8 md:px-10 md:py-10">
+          {/* Logo */}
+          <div className="flex justify-center">
             <img
               src={NovaChainLogo}
               alt="NovaChain Logo"
-              className="block select-none pointer-events-none"
-              style={{
-                width: "93%",
-                maxWidth: 210,
-                minWidth: 120,
-                height: "auto",
-                objectFit: "contain"
-              }}
+              className="w-40 md:w-48 select-none pointer-events-none"
               draggable={false}
             />
           </div>
-          <h2 className="text-2xl font-extrabold mb-7 text-center tracking-tight text-[#232836]">
+
+          {/* Title */}
+          <h2 className="mt-5 text-center text-2xl md:text-3xl font-extrabold tracking-tight text-[#232836]">
             Create Account
           </h2>
-          <form onSubmit={handleSignUp} className="flex flex-col gap-5 items-center w-full">
-            <div className="w-full flex flex-col items-center">
-              <label htmlFor="username" className="block text-lg font-bold text-[#232836] mb-1 w-full text-left">Username</label>
+
+          {/* Form */}
+          <form onSubmit={handleSignUp} className="mt-6 space-y-4 md:space-y-5">
+            {/* Username */}
+            <div className="space-y-2">
+              <label htmlFor="username" className="block text-sm md:text-base font-semibold text-[#232836]">
+                Username
+              </label>
               <input
                 id="username"
                 type="text"
                 value={username}
-                onChange={e => setUsername(e.target.value)}
+                onChange={(e) => setUsername(e.target.value)}
                 required
+                autoComplete="username"
                 placeholder="Create your username"
-                className="w-full h-12 rounded-xl px-4 bg-[#eaf1fb] text-base font-medium border border-[#c9e3fc] focus:border-[#00eaff] focus:ring-2 focus:ring-[#1f2fff22] outline-none transition"
-                style={{
-                  maxWidth: 320,
-                  fontSize: "1.06rem"
-                }}
+                className="w-full h-12 rounded-xl px-4 bg-[#eef4ff] text-[#0f1224] placeholder-[#6b7280] border border-[#d7e3ff] focus:outline-none focus:ring-4 focus:ring-[#1f2fff1f] focus:border-[#1f2fff] transition"
               />
             </div>
-            <div className="w-full flex flex-col items-center">
-              <label htmlFor="email" className="block text-lg font-bold text-[#232836] mb-1 w-full text-left">Email</label>
+
+            {/* Email */}
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm md:text-base font-semibold text-[#232836]">
+                Email
+              </label>
               <input
                 id="email"
                 type="email"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
                 placeholder="Enter your email"
-                className="w-full h-12 rounded-xl px-4 bg-[#eaf1fb] text-base font-medium border border-[#c9e3fc] focus:border-[#00eaff] focus:ring-2 focus:ring-[#00eaff22] outline-none transition"
-                style={{
-                  maxWidth: 320,
-                  fontSize: "1.06rem"
-                }}
+                className="w-full h-12 rounded-xl px-4 bg-[#eef4ff] text-[#0f1224] placeholder-[#6b7280] border border-[#d7e3ff] focus:outline-none focus:ring-4 focus:ring-[#00eaff22] focus:border-[#00eaff] transition"
               />
             </div>
-            <div className="w-full flex flex-col items-center">
-              <label htmlFor="password" className="block text-lg font-bold text-[#232836] mb-1 w-full text-left">Password</label>
+
+            {/* Password */}
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm md:text-base font-semibold text-[#232836]">
+                Password
+              </label>
               <input
                 id="password"
                 type="password"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="new-password"
                 placeholder="Create a password"
-                className="w-full h-12 rounded-xl px-4 bg-[#eaf1fb] text-base font-medium border border-[#c9e3fc] focus:border-[#ffd700] focus:ring-2 focus:ring-[#ffd70044] outline-none transition"
-                style={{
-                  maxWidth: 320,
-                  fontSize: "1.06rem"
-                }}
+                className="w-full h-12 rounded-xl px-4 bg-[#eef4ff] text-[#0f1224] placeholder-[#6b7280] border border-[#d7e3ff] focus:outline-none focus:ring-4 focus:ring-[#ffd70022] focus:border-[#ffd700] transition"
               />
             </div>
-            <div className="w-full flex flex-col items-center">
-              <label htmlFor="confirmPassword" className="block text-lg font-bold text-[#232836] mb-1 w-full text-left">Confirm Password</label>
+
+            {/* Confirm Password */}
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="block text-sm md:text-base font-semibold text-[#232836]">
+                Confirm Password
+              </label>
               <input
                 id="confirmPassword"
                 type="password"
                 value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                autoComplete="new-password"
                 placeholder="Re-enter your password"
-                className="w-full h-12 rounded-xl px-4 bg-[#eaf1fb] text-base font-medium border border-[#c9e3fc] focus:border-[#ffd700] focus:ring-2 focus:ring-[#ffd70044] outline-none transition"
-                style={{
-                  maxWidth: 320,
-                  fontSize: "1.06rem"
-                }}
+                className="w-full h-12 rounded-xl px-4 bg-[#eef4ff] text-[#0f1224] placeholder-[#6b7280] border border-[#d7e3ff] focus:outline-none focus:ring-4 focus:ring-[#ffd70022] focus:border-[#ffd700] transition"
               />
             </div>
+
+            {/* Alerts */}
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-500 rounded-md px-3 py-2 text-center text-base w-full max-w-[320px]">
+              <div className="w-full rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm md:text-base text-red-600">
                 {error}
               </div>
             )}
             {success && (
-              <div className="bg-green-50 border border-green-200 text-green-700 rounded-md px-3 py-2 text-center text-base w-full max-w-[320px]">
+              <div className="w-full rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm md:text-base text-emerald-700">
                 {success}
               </div>
             )}
+
+            {/* Submit */}
             <button
-              className="h-12 rounded-xl font-extrabold text-lg tracking-wide shadow-md transition-all block mx-auto"
               type="submit"
+              className="mt-1 w-full h-12 md:h-12 rounded-xl font-extrabold text-base md:text-lg tracking-wide shadow-lg border-0 outline-none transition active:scale-[.99]"
               style={{
-                width: "100%",
-                maxWidth: 320,
-                minWidth: 120,
-                background: "linear-gradient(90deg,#00eaff 0%,#1f2fff 53%,#ffd700 100%)",
-                color: "#232836",
-                letterSpacing: 1.2,
-                boxShadow: "0 2px 16px #1f2fff14, 0 1.5px 0 #ffd70044",
-                border: "none",
-                outline: "none",
-                fontSize: "1.17rem"
+                background:
+                  "linear-gradient(90deg,#00eaff 0%,#1f2fff 55%,#ffd700 100%)",
+                color: "#141726",
+                letterSpacing: "0.02em",
+                boxShadow: "0 10px 24px rgba(31,47,255,0.12)",
               }}
-              onMouseDown={e => { e.target.style.filter = "brightness(0.93)"; }}
-              onMouseUp={e => { e.target.style.filter = ""; }}
-              onMouseLeave={e => { e.target.style.filter = ""; }}
             >
               Register
             </button>
           </form>
-          <div className="mt-9 mb-1 text-xs text-gray-500 text-center font-semibold">
-            By signing up, you agree to the&nbsp;
-            <a className="text-[#00eaff] hover:underline transition" href="/" target="_blank" rel="noopener noreferrer">
+
+          {/* Terms */}
+          <p className="mt-7 text-center text-[11px] md:text-xs text-gray-600 font-medium leading-relaxed">
+            By signing up, you agree to the{" "}
+            <a className="text-[#00eaff] hover:underline" href="/" target="_blank" rel="noreferrer">
               Terms of Use
             </a>
-            ,&nbsp;
-            <a className="text-[#00eaff] hover:underline transition" href="/" target="_blank" rel="noopener noreferrer">
+            ,{" "}
+            <a className="text-[#00eaff] hover:underline" href="/" target="_blank" rel="noreferrer">
               Privacy Notice
-            </a>
-            , and&nbsp;
-            <a className="text-[#00eaff] hover:underline transition" href="/" target="_blank" rel="noopener noreferrer">
+            </a>{" "}
+            and{" "}
+            <a className="text-[#00eaff] hover:underline" href="/" target="_blank" rel="noreferrer">
               Cookie Notice
             </a>
             .
+          </p>
+
+          {/* Login Link */}
+          <div className="mt-4 flex justify-center">
+            <Link
+              to="/login"
+              className="text-sm md:text-base font-bold text-[#1f2fff] hover:text-[#00eaff] hover:underline"
+            >
+              Already have an account? Login
+            </Link>
           </div>
-          <div className="flex justify-center items-center mt-3 text-base text-[#1f2fff] font-bold">
-            <Link to="/login" className="hover:underline hover:text-[#00eaff] transition">Already have an account? Login</Link>
-          </div>
-        </Card>
+        </div>
       </div>
-      {/* Logo Glow Animation */}
+
+      {/* Subtle logo glow */}
       <style>
         {`
-        @media (max-width: 480px) {
-          .responsive-card {
-            max-width: 340px !important;
-            padding-left: 1.1rem !important;
-            padding-right: 1.1rem !important;
+          @keyframes logoGlow {
+            0% { filter: drop-shadow(0 0 12px rgba(0,234,255,.55)); }
+            50% { filter: drop-shadow(0 0 36px rgba(0,234,255,.35)); }
+            100% { filter: drop-shadow(0 0 12px rgba(0,234,255,.55)); }
           }
-          .responsive-input {
-            max-width: 210px !important;
-            font-size: 0.98rem !important;
-          }
-          .responsive-button {
-            max-width: 210px !important;
-            font-size: 1rem !important;
-          }
-        }
-        @keyframes logoGlow {
-          0% { filter: drop-shadow(0 0 16px #00eaff99); }
-          48% { filter: drop-shadow(0 0 52px #00eaff66); }
-          100% { filter: drop-shadow(0 0 16px #00eaff99); }
-        }
-        img[alt="NovaChain Logo"] {
-          animation: logoGlow 2.8s ease-in-out infinite alternate;
-        }
+          img[alt="NovaChain Logo"] { animation: logoGlow 3s ease-in-out infinite; }
         `}
       </style>
     </div>
