@@ -374,28 +374,23 @@ export default function WalletPage() {
         {/* ===== Top row: balance + assets ===== */}
         <div className="w-full grid grid-cols-1 lg:grid-cols-[380px,1fr] gap-6 md:gap-8 items-stretch">
 
-{/* Total Balance (mobile-fixed) */}
+{/* Total Balance */}
 <Card className="rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden h-full">
-  <div
-    className="
-      w-full h-full min-h-[120px]
-      bg-gradient-to-br from-indigo-50 via-sky-50 to-emerald-50
-      flex flex-col justify-center
-      px-4 py-5 sm:px-6 sm:py-8
-    "
-  >
-    <div className="text-center text-slate-500 text-xs sm:text-sm font-semibold">
-      {t("total_balance")}
-    </div>
-
-    <div
-      className="
-        mt-1 text-center leading-tight tracking-tight text-slate-900
-        text-[1.75rem] sm:text-4xl md:text-5xl font-extrabold
-        break-words
-      "
-    >
-      {fmtUSD(totalUsd)}
+  {/* fill the whole card and center content both axes */}
+  <div className="w-full h-full min-h-[160px] bg-gradient-to-br from-indigo-50 via-sky-50 to-emerald-50 flex items-center justify-center px-4 sm:px-6">
+    <div className="flex flex-col items-center">
+      <div className="text-center text-slate-500 text-xs sm:text-sm font-semibold">
+        {t("total_balance")}
+      </div>
+      <div
+        className="
+          mt-1 text-center leading-tight tracking-tight text-slate-900 font-extrabold tabular-nums
+          whitespace-nowrap
+          text-[clamp(1.75rem,3vw+1rem,3.25rem)]
+        "
+      >
+        {fmtUSD(totalUsd)}
+      </div>
     </div>
   </div>
 </Card>
