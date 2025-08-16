@@ -186,7 +186,7 @@ export default function VerifyOTPPage() {
 
   const onAgree = () => {
     localStorage.setItem("novachain_terms_accepted", "1");
-    navigate("/dashboard"); // go to Dashboard, not Login
+    navigate("/"); // send to site root so URL is https://www.novachain.pro/
   };
 
   return (
