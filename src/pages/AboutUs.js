@@ -2,25 +2,11 @@ import React from "react";
 import NovaChainLogo from "../components/NovaChainLogo.svg";
 import { useTranslation } from "react-i18next";
 
+
 const team = [
-  {
-    name: "Ethan David",
-    titleKey: "team_ceo",
-    img: "/assets/avatar3.png",
-    descKey: "team_ceo_desc"
-  },
-  {
-    name: "Sophia Coppola",
-    titleKey: "team_cto",
-    img: "/assets/avatar2.png",
-    descKey: "team_cto_desc"
-  },
-  {
-    name: "Victor Wan",
-    titleKey: "team_compliance",
-    img: "/assets/avatar4.png",
-    descKey: "team_compliance_desc"
-  }
+  { name: "Ethan David", titleKey: "team_ceo", img: "/assets/avatar3.png", descKey: "team_ceo_desc" },
+  { name: "Sophia Coppola", titleKey: "team_cto", img: "/assets/avatar2.png", descKey: "team_cto_desc" },
+  { name: "Victor Wan", titleKey: "team_compliance", img: "/assets/avatar4.png", descKey: "team_compliance_desc" }
 ];
 
 const certs = [
@@ -42,7 +28,6 @@ export default function AboutUs() {
         minHeight: "100vh"
       }}
     >
-      {/* Overlay for readability */}
       <div
         style={{
           position: "fixed",
@@ -52,10 +37,8 @@ export default function AboutUs() {
           pointerEvents: "none",
         }}
       />
-      {/* Content */}
       <div style={{ position: "relative", zIndex: 1, width: "100%" }}>
         <div className="w-full max-w-3xl text-white px-4 pt-10 pb-24 mx-auto">
-          {/* Hero */}
           <div className="flex items-center gap-4 mb-8">
             <img src={NovaChainLogo} alt="NovaChain Logo" className="h-12 drop-shadow-xl" />
           </div>
@@ -77,7 +60,6 @@ export default function AboutUs() {
             {t('about_why_desc')}
           </div>
 
-          {/* Mission */}
           <div className="my-10 p-6 bg-[#182137]/80 rounded-2xl shadow-md border border-[#1a2d48]">
             <h2 className="font-extrabold text-transparent text-4xl bg-clip-text bg-gradient-to-r from-yellow-400 via-blue-500 to-teal-400 mb-4">
               {t('about_mission')}
@@ -90,14 +72,12 @@ export default function AboutUs() {
             </p>
           </div>
 
-          {/* Company Overview */}
           <div className="my-10">
             <h3 className="text-3xl font-extrabold mb-4 text-teal-300">{t('about_company_overview')}</h3>
             <p className="text-lg text-gray-200 mb-3 font-semibold">{t('about_leading_force')}</p>
             <p className="text-gray-300 text-base leading-relaxed max-w-2xl">{t('about_founded')}</p>
           </div>
 
-          {/* Core Values */}
           <div className="my-10">
             <h3 className="text-xl font-semibold mb-3 text-blue-400">{t('about_core_values')}</h3>
             <div className="grid grid-cols-2 gap-6">
@@ -120,17 +100,12 @@ export default function AboutUs() {
             </div>
           </div>
 
-          {/* Team */}
           <div className="my-10">
             <h3 className="text-xl font-semibold mb-6 text-gold-400">{t('about_team')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {team.map(member => (
                 <div key={member.name} className="bg-[#181f2e]/80 p-5 rounded-2xl shadow-lg flex flex-col items-center">
-                  <img
-                    src={member.img}
-                    alt={member.name}
-                    className="w-32 h-32 rounded-full mb-3 border-4 border-teal-400 shadow"
-                  />
+                  <img src={member.img} alt={member.name} className="w-32 h-32 rounded-full mb-3 border-4 border-teal-400 shadow" />
                   <div className="text-lg font-bold">{member.name}</div>
                   <div className="text-sm text-blue-300 mb-2">{t(member.titleKey)}</div>
                   <p className="text-sm text-gray-400 text-center">{t(member.descKey)}</p>
@@ -139,7 +114,6 @@ export default function AboutUs() {
             </div>
           </div>
 
-          {/* Certifications */}
           <div className="my-16">
             <h3 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-amber-300 via-80% to-yellow-500 drop-shadow-[0_2px_6px_rgba(255,215,0,0.25)] text-center tracking-wider mb-10">
               {t('about_certifications')}
@@ -159,7 +133,6 @@ export default function AboutUs() {
             </p>
           </div>
 
-          {/* Contact */}
           <div className="my-10 p-5 bg-[#151c2e]/80 rounded-xl border border-[#24314a] shadow">
             <h3 className="text-xl font-semibold mb-2 text-teal-300">{t('about_headquarters')}</h3>
             <div className="mb-2">
@@ -170,15 +143,19 @@ export default function AboutUs() {
               +65 1665 7939
             </div>
             <div>
-              {t('about_support')}: <a href="mailto:support@novachain.pro" className="text-blue-400 underline">support@novachain.pro</a>
+              {t('about_support')}:{" "}
+              <a href="https://wa.me/16627053615" className="text-blue-400 underline" target="_blank" rel="noreferrer">
+                WhatsApp +1 662 705 3615
+              </a>
             </div>
           </div>
 
           {/* Footer Links */}
-          <div className="flex gap-6 mt-12 justify-center text-sm text-gray-400">
-            <span className="underline opacity-60 cursor-not-allowed select-none">{t('about_terms')}</span>
-            <span className="underline opacity-60 cursor-not-allowed select-none">{t('about_privacy')}</span>
-            <span className="underline opacity-60 cursor-not-allowed select-none">{t('about_support')}</span>
+          <div className="flex gap-6 mt-12 justify-center text-sm text-gray-300">
+            <a href="/terms" className="underline">Terms &amp; Conditions</a>
+            <a href="https://wa.me/16627053615" target="_blank" rel="noreferrer" className="underline">
+              Support
+            </a>
           </div>
         </div>
       </div>

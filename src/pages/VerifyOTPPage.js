@@ -1,9 +1,101 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { MAIN_API_BASE } from '../config';
+import { MAIN_API_BASE } from "../config";
 import Card from "../components/card";
 import NovaChainLogo from "../components/NovaChainLogo.svg";
 import ReactCodesInput from "react-codes-input";
+
+/* ---------- Inline Terms modal ---------- */
+function TermsModal({ open, onAgree }) {
+  if (!open) return null;
+  return (
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      aria-modal="true"
+      role="dialog"
+    >
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
+      <div className="relative z-10 w-[92%] max-w-2xl bg-[#0f1422] text-gray-200 border border-[#24314a] rounded-2xl shadow-2xl">
+        <div className="px-6 py-5 border-b border-[#24314a]">
+          <h2 className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-blue-500 to-teal-400">
+            Terms &amp; Conditions
+          </h2>
+          <p className="text-xs text-gray-400 mt-1">Last updated: 16 Aug 2025</p>
+        </div>
+
+        <div className="max-h-[60vh] overflow-y-auto px-6 py-5 space-y-4 text-sm leading-6">
+          <p>
+            By tapping <b>Agree</b>, you confirm that you have read and accept
+            NovaChain’s Terms &amp; Conditions governing BTC/USD and BTC/USDT
+            binary options trading.
+          </p>
+
+          <ul className="list-disc pl-5 space-y-2">
+            <li>
+              <b>Eligibility:</b> You are 18+ and access the Services only where
+              permitted by law.
+            </li>
+            <li>
+              <b>Risk:</b> Binary options are high risk and can result in the{" "}
+              <u>loss of your entire stake</u>. No profits are guaranteed.
+            </li>
+            <li>
+              <b>No advice:</b> Prices, charts and content are informational and
+              not financial advice.
+            </li>
+            <li>
+              <b>KYC &amp; Compliance:</b> You may be required to verify your
+              identity. We may suspend accounts for suspected fraud or breach.
+            </li>
+            <li>
+              <b>Trading Rules:</b> Once confirmed, contracts can’t be cancelled
+              except for manifest error. Payouts depend on settlement price at
+              expiry from our price feeds.
+            </li>
+            <li>
+              <b>Fees &amp; Limits:</b> Displayed in app and subject to change.
+            </li>
+            <li>
+              <b>Liability:</b> NovaChain isn’t liable for indirect or
+              consequential losses. Your use is at your own risk.
+            </li>
+            <li>
+              <b>Governing Law:</b> Singapore law; courts of Singapore have
+              jurisdiction unless mandatory law states otherwise.
+            </li>
+          </ul>
+
+          <p className="text-xs text-gray-400">
+            The full version is available any time at{" "}
+            <a href="/terms" className="underline text-blue-300">
+              Terms &amp; Conditions
+            </a>
+            .
+          </p>
+        </div>
+
+        <div className="px-6 py-5 border-t border-[#24314a] flex flex-col sm:flex-row gap-3 justify-end">
+          <button
+            onClick={onAgree}
+            className="h-11 px-6 rounded-xl font-extrabold tracking-wide shadow-md transition-all"
+            style={{
+              background:
+                "linear-gradient(90deg,#00eaff 0%,#1f2fff 53%,#ffd700 100%)",
+              color: "#232836",
+              letterSpacing: 1.2,
+              boxShadow: "0 2px 16px #1f2fff14, 0 1.5px 0 #ffd70044",
+              border: "none",
+              outline: "none",
+              fontSize: "1.05rem",
+            }}
+          >
+            Agree &amp; Continue
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function VerifyOTPPage() {
   const [email, setEmail] = useState("");
@@ -13,6 +105,7 @@ export default function VerifyOTPPage() {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendSuccess, setResendSuccess] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
+  const [showTerms, setShowTerms] = useState(false);
   const pinWrapperRef = useRef(null);
 
   const navigate = useNavigate();
@@ -58,7 +151,10 @@ export default function VerifyOTPPage() {
         return;
       }
       setSuccess(data.message || "Email verified!");
-      setTimeout(() => navigate("/login"), 1400);
+      // Instead of navigating to login, open Terms modal immediately
+      setShowTerms(true);
+      // Persist a flag for realism (so we don’t re-ask next time)
+      localStorage.setItem("novachain_email_verified", "1");
     } catch (err) {
       setError("Verification failed. Try again.");
       setOtp("");
@@ -88,6 +184,11 @@ export default function VerifyOTPPage() {
     setResendLoading(false);
   };
 
+  const onAgree = () => {
+    localStorage.setItem("novachain_terms_accepted", "1");
+    navigate("/dashboard"); // go to Dashboard, not Login
+  };
+
   return (
     <div
       className="min-h-screen w-full flex items-center justify-center relative px-2 py-4"
@@ -98,7 +199,10 @@ export default function VerifyOTPPage() {
         backgroundRepeat: "no-repeat",
       }}
     >
-      <div className="absolute inset-0 bg-[#181c2cbb] backdrop-blur-[2px]" style={{ zIndex: 1 }} />
+      <div
+        className="absolute inset-0 bg-[#181c2cbb] backdrop-blur-[2px]"
+        style={{ zIndex: 1 }}
+      />
       <div className="relative z-10 w-full flex flex-col items-center">
         <Card
           className="rounded-2xl shadow-2xl border-0 bg-white/90 mx-auto"
@@ -121,15 +225,21 @@ export default function VerifyOTPPage() {
                 maxWidth: 190,
                 minWidth: 110,
                 height: "auto",
-                objectFit: "contain"
+                objectFit: "contain",
               }}
               draggable={false}
             />
           </div>
-          <div className="mb-1 text-2xl font-extrabold text-center text-[#232836]" style={{ letterSpacing: 1.1 }}>
+          <div
+            className="mb-1 text-2xl font-extrabold text-center text-[#232836]"
+            style={{ letterSpacing: 1.1 }}
+          >
             Check your email to verify
           </div>
-          <p className="text-base text-[#1f2fff] text-center mb-6 font-medium tracking-wide" style={{ opacity: 0.74 }}>
+          <p
+            className="text-base text-[#1f2fff] text-center mb-6 font-medium tracking-wide"
+            style={{ opacity: 0.74 }}
+          >
             Enter the 6-digit code sent to your email below.
           </p>
           <form onSubmit={handleVerify}>
@@ -138,10 +248,16 @@ export default function VerifyOTPPage() {
               type="email"
               placeholder="Email"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               required
               disabled={!!email}
-              style={{ maxWidth: 290, fontSize: "1.06rem", marginLeft: "auto", marginRight: "auto", display: "block" }}
+              style={{
+                maxWidth: 290,
+                fontSize: "1.06rem",
+                marginLeft: "auto",
+                marginRight: "auto",
+                display: "block",
+              }}
             />
 
             <div className="flex justify-center mb-3">
@@ -166,7 +282,6 @@ export default function VerifyOTPPage() {
               />
             </div>
 
-            {/* Error and Success Messages */}
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-500 rounded-md px-3 py-2 text-center text-base w-full max-w-[290px] mx-auto mb-2">
                 {error}
@@ -190,23 +305,30 @@ export default function VerifyOTPPage() {
                 width: "100%",
                 maxWidth: 290,
                 minWidth: 110,
-                background: "linear-gradient(90deg,#00eaff 0%,#1f2fff 53%,#ffd700 100%)",
+                background:
+                  "linear-gradient(90deg,#00eaff 0%,#1f2fff 53%,#ffd700 100%)",
                 color: "#232836",
                 letterSpacing: 1.2,
                 boxShadow: "0 2px 16px #1f2fff14, 0 1.5px 0 #ffd70044",
                 border: "none",
                 outline: "none",
-                fontSize: "1.1rem"
+                fontSize: "1.1rem",
               }}
               disabled={otp.length < 6 || !email}
-              onMouseDown={e => { e.target.style.filter = "brightness(0.93)"; }}
-              onMouseUp={e => { e.target.style.filter = ""; }}
-              onMouseLeave={e => { e.target.style.filter = ""; }}
+              onMouseDown={(e) => {
+                e.target.style.filter = "brightness(0.93)";
+              }}
+              onMouseUp={(e) => {
+                e.target.style.filter = "";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.filter = "";
+              }}
             >
               Verify
             </button>
           </form>
-          {/* RESEND OTP BUTTON */}
+
           <div className="flex justify-center items-center mt-4 mb-2 text-base text-[#1f2fff] font-bold">
             <button
               type="button"
@@ -219,7 +341,7 @@ export default function VerifyOTPPage() {
                 background: "none",
                 border: "none",
                 color: "#1f2fff",
-                cursor: resendLoading || resendTimer > 0 ? "default" : "pointer"
+                cursor: resendLoading || resendTimer > 0 ? "default" : "pointer",
               }}
             >
               {resendTimer > 0
@@ -229,39 +351,30 @@ export default function VerifyOTPPage() {
                 : "Resend OTP"}
             </button>
           </div>
+
           <div className="flex justify-center items-center mt-7 text-base text-[#1f2fff] font-bold">
-            <Link to="/login" className="hover:underline hover:text-[#00eaff] transition">Back to login</Link>
+            <Link to="/login" className="hover:underline hover:text-[#00eaff] transition">
+              Back to login
+            </Link>
           </div>
         </Card>
       </div>
-      {/* Logo Glow Animation */}
+
+      {/* Glow + responsive tweaks */}
       <style>
         {`
         @media (max-width: 480px) {
-          .responsive-card {
-            max-width: 340px !important;
-            padding-left: 1.1rem !important;
-            padding-right: 1.1rem !important;
-          }
-          .responsive-input {
-            max-width: 200px !important;
-            font-size: 0.98rem !important;
-          }
-          .responsive-button {
-            max-width: 200px !important;
-            font-size: 1rem !important;
-          }
+          .responsive-card { max-width: 340px !important; padding-left: 1.1rem !important; padding-right: 1.1rem !important; }
+          .responsive-input { max-width: 200px !important; font-size: 0.98rem !important; }
+          .responsive-button { max-width: 200px !important; font-size: 1rem !important; }
         }
-        @keyframes logoGlow {
-          0% { filter: drop-shadow(0 0 16px #00eaff99); }
-          48% { filter: drop-shadow(0 0 52px #00eaff66); }
-          100% { filter: drop-shadow(0 0 16px #00eaff99); }
-        }
-        img[alt="NovaChain Logo"] {
-          animation: logoGlow 2.8s ease-in-out infinite alternate;
-        }
+        @keyframes logoGlow { 0% { filter: drop-shadow(0 0 16px #00eaff99); } 48% { filter: drop-shadow(0 0 52px #00eaff66); } 100% { filter: drop-shadow(0 0 16px #00eaff99); } }
+        img[alt="NovaChain Logo"] { animation: logoGlow 2.8s ease-in-out infinite alternate; }
         `}
       </style>
+
+      {/* Terms modal */}
+      <TermsModal open={showTerms} onAgree={onAgree} />
     </div>
   );
 }

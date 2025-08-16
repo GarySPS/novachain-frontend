@@ -14,6 +14,7 @@ import NavBar from './components/navbar';
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import NewsPage from "./components/Newspage";
 import GuidePage from './pages/GuidePage'; 
+import TermsAndConditions from "./pages/TermsAndConditions";
 import './i18n';
 
 function isDarkMode() {
@@ -118,6 +119,7 @@ function AppShell() {
             <Route path="/forgot" element={<ForgotPasswordPage />} />
             <Route path="/news" element={<NewsPage />} />
             <Route path="/guide" element={<GuidePage />} />
+            <Route path="/terms" element={<TermsAndConditions />} />
           </Routes>
         </main>
       </div>
