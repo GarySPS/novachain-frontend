@@ -5,7 +5,7 @@ import Card from "../components/card";
 import NovaChainLogo from "../components/NovaChainLogo.svg";
 import ReactCodesInput from "react-codes-input";
 
-/* ---------- Inline Terms modal ---------- */
+/* ---------- Inline Terms modal (updated) ---------- */
 function TermsModal({ open, onAgree }) {
   if (!open) return null;
   return (
@@ -20,53 +20,69 @@ function TermsModal({ open, onAgree }) {
           <h2 className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-blue-500 to-teal-400">
             Terms &amp; Conditions
           </h2>
-          <p className="text-xs text-gray-400 mt-1">Last updated: 16 Aug 2025</p>
+          <p className="text-xs text-gray-400 mt-1">Last updated: 18 Aug 2025</p>
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto px-6 py-5 space-y-4 text-sm leading-6">
           <p>
-            By tapping <b>Agree</b>, you confirm that you have read and accept
-            NovaChain’s Terms &amp; Conditions governing BTC/USD and BTC/USDT
-            binary options trading.
+            By tapping <b>Agree</b>, you confirm that you have read and accept NovaChain’s
+            Terms &amp; Conditions. Key points:
           </p>
 
-          <ul className="list-disc pl-5 space-y-2">
+          <ol className="list-decimal pl-5 space-y-3">
             <li>
-              <b>Eligibility:</b> You are 18+ and access the Services only where
-              permitted by law.
+              <b>Terms &amp; Conditions</b> — New user startup requires <b>100 USDT</b>.
             </li>
+
             <li>
-              <b>Risk:</b> Binary options are high risk and can result in the{" "}
-              <u>loss of your entire stake</u>. No profits are guaranteed.
+              <b>Account Security</b>
+              <ul className="list-disc pl-5 mt-1 space-y-1">
+                <li>Do not disclose your password; platform is not responsible for losses caused by disclosure.</li>
+                <li>Avoid using birthday, ID number, or phone number as withdrawal/login passwords.</li>
+                <li>If you forget your password(s), contact online support to reset.</li>
+                <li>Confidentiality agreement applies between user and company.</li>
+              </ul>
             </li>
+
             <li>
-              <b>No advice:</b> Prices, charts and content are informational and
-              not financial advice.
+              <b>Funds</b>
+              <ul className="list-disc pl-5 mt-1 space-y-1">
+                <li>All funds are processed by the system (no manual operations) to avoid losses.</li>
+                <li>Accidental loss due to <b>NovaChain’s own mistake</b>: the platform takes full responsibility.</li>
+              </ul>
             </li>
+
             <li>
-              <b>KYC &amp; Compliance:</b> You may be required to verify your
-              identity. We may suspend accounts for suspected fraud or breach.
+              <b>Deposit</b>
+              <ul className="list-disc pl-5 mt-1 space-y-1">
+                <li>Top-up amount is chosen by the user.</li>
+                <li>Get and confirm the deposit address from your own trading account before depositing.</li>
+                <li>Platform is not responsible for losses caused by an incorrect wallet address entered by the user.</li>
+              </ul>
             </li>
+
             <li>
-              <b>Trading Rules:</b> Once confirmed, contracts can’t be cancelled
-              except for manifest error. Payouts depend on settlement price at
-              expiry from our price feeds.
+              <b>Withdrawal</b>
+              <ul className="list-disc pl-5 mt-1 space-y-1">
+                <li>First withdrawal for new users: <b>$100</b>.</li>
+                <li>As you trade more and become an old user: daily limit <b>$2,000</b>.</li>
+                <li>Withdrawals &gt; <b>$10,000</b> require opening a large-channel account for fund safety.</li>
+              </ul>
             </li>
+
             <li>
-              <b>Fees &amp; Limits:</b> Displayed in app and subject to change.
+              <b>Hours of Operation</b>
+              <ul className="list-disc pl-5 mt-1 space-y-1">
+                <li>Platform opening hours: <b>27/4</b>.</li>
+                <li>Online customer service: <b>10:00–22:00</b>.</li>
+                <li>Withdrawal time: <b>09:00–22:00</b> (UTC-4).</li>
+                <li>Final interpretation right belongs to <b>Novachain LTD</b>.</li>
+              </ul>
             </li>
-            <li>
-              <b>Liability:</b> NovaChain isn’t liable for indirect or
-              consequential losses. Your use is at your own risk.
-            </li>
-            <li>
-              <b>Governing Law:</b> Singapore law; courts of Singapore have
-              jurisdiction unless mandatory law states otherwise.
-            </li>
-          </ul>
+          </ol>
 
           <p className="text-xs text-gray-400">
-            The full version is available any time at{" "}
+            Read the full version any time at{" "}
             <a href="/terms" className="underline text-blue-300">
               Terms &amp; Conditions
             </a>
@@ -116,13 +132,6 @@ export default function VerifyOTPPage() {
   }, [location]);
 
   useEffect(() => {
-    if (otp.length === 6) {
-      handleVerify();
-    }
-    // eslint-disable-next-line
-  }, [otp]);
-
-  useEffect(() => {
     if (resendTimer > 0) {
       const t = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
       return () => clearTimeout(t);
@@ -153,8 +162,6 @@ export default function VerifyOTPPage() {
       setSuccess(data.message || "Email verified!");
       // Instead of navigating to login, open Terms modal immediately
       setShowTerms(true);
-      // Persist a flag for realism (so we don’t re-ask next time)
-      localStorage.setItem("novachain_email_verified", "1");
     } catch (err) {
       setError("Verification failed. Try again.");
       setOtp("");
@@ -184,10 +191,9 @@ export default function VerifyOTPPage() {
     setResendLoading(false);
   };
 
-  const onAgree = () => {
-    localStorage.setItem("novachain_terms_accepted", "1");
-    navigate("/"); // send to site root so URL is https://www.novachain.pro/
-  };
+ const onAgree = () => {
+   navigate("/", { replace: true }); // go home; nothing stored
+ };
 
   return (
     <div
