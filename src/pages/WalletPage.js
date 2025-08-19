@@ -395,22 +395,14 @@ const handleWithdraw = async (e) => {
 
 {/* Total Balance */}
 <Card className="rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden h-full">
-  {/* fill whole card and center content on both axes */}
-  <div
-    className="w-full h-full min-h-[160px] bg-gradient-to-br from-indigo-50 via-sky-50 to-emerald-50
-               grid place-items-center px-4 sm:px-6"
-  >
+  <div className="w-full h-full min-h-[180px] md:min-h-[220px] grid place-items-center px-4 sm:px-6
+                  bg-gradient-to-br from-indigo-50 via-sky-50 to-emerald-50">
     <div className="flex flex-col items-center gap-1">
       <div className="text-center text-slate-500 text-xs sm:text-sm font-semibold">
         {t("total_balance")}
       </div>
-      <div
-        className="
-          text-center leading-tight tracking-tight text-slate-900 font-extrabold tabular-nums
-          whitespace-nowrap w-full
-          text-[clamp(1.75rem,3vw+1rem,3.25rem)]
-        "
-      >
+      <div className="text-center leading-tight tracking-tight text-slate-900 font-extrabold
+                      tabular-nums whitespace-nowrap text-[clamp(1.75rem,3vw+1rem,3.25rem)]">
         {fmtUSD(totalUsd)}
       </div>
     </div>
