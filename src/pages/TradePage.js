@@ -56,6 +56,15 @@ export default function TradePage() {
   const [waitingResult, setWaitingResult] = useState(false);
   const [loadingChart, setLoadingChart] = useState(true);
 
+  // --- pretty toast ---
+const [toast, setToast] = useState(null); // { text, type, id }
+const showToast = (text, type = "error") => {
+  const id = Math.random();
+  setToast({ text, type, id });
+  setTimeout(() => setToast((t) => (t && t.id === id ? null : t)), 2000);
+};
+
+
   /* ---------------- Restore active trade (unchanged) ---------------- */
   useEffect(() => {
     const saved = loadTradeState();
@@ -157,7 +166,7 @@ export default function TradePage() {
     } else {
       setTradeResult(null);
       setTradeDetail(null);
-      alert(t("trade_result_not_ready", "Trade result not ready, please check history!"));
+      showToast(t("trade_result_not_ready", "Trade result not ready, please check history!"), "info");
     }
   }
 
@@ -181,7 +190,7 @@ export default function TradePage() {
 
     const token = localStorage.getItem("token");
     if (!token) {
-      alert(t("please_login", "Please log in to trade."));
+      showToast(t("please_login", "Please log in to trade."), "warning");
       setTimerActive(false);
       return;
     }
@@ -227,7 +236,7 @@ export default function TradePage() {
       setTradeResult(null);
       setTradeDetail(null);
       persistTradeState(null);
-      alert(t("trade_failed", "Trade failed: ") + (err.response?.data?.error || err.message));
+      showToast(`${t("trade_failed", "Trade failed")}: ${err.response?.data?.error || err.message}`, "error");
     }
   };
 
@@ -496,42 +505,64 @@ export default function TradePage() {
               )}
             </button>
 
-            {/* timer / waiting */}
-            <AnimatePresence>
-              {timerActive && tradeState && !waitingResult && (
-                <motion.div
-                  key="timer"
-                  initial={{ opacity: 0, scale: 0.97, y: 24 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.97, y: 24 }}
-                  transition={{ duration: 0.32, type: "spring" }}
-                  className="flex flex-col items-center mt-6 w-full"
-                >
-                  <TimerBar key={timerKey} endAt={tradeState.endAt} onComplete={onTimerComplete} />
-                </motion.div>
-              )}
-              {waitingResult && (
-                <motion.div
-                  key="waiting"
-                  initial={{ opacity: 0, scale: 0.97, y: 24 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.97, y: 24 }}
-                  transition={{ duration: 0.32, type: "spring" }}
-                  className="flex flex-col items-center mt-7 w-full"
-                >
-                  <div className="flex flex-col items-center justify-center min-h-[130px]">
-                    <svg className="animate-spin mb-4" width="44" height="44" viewBox="0 0 44 44" fill="none">
-                      <circle cx="22" cy="22" r="20" stroke="#2474ff44" strokeWidth="4" />
-                      <path d="M42 22a20 20 0 1 1-40 0" stroke="#FFD700" strokeWidth="4" strokeLinecap="round" />
-                    </svg>
-                    <div className="text-lg font-bold text-slate-900">{t("processing_trade", "Processing your trade and updating your balance...")}</div>
-                    <div className="text-slate-500 mt-1 text-base font-medium text-center">
-                      {t("please_wait", "Please wait while your trade settles and funds update in your wallet.")}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+{/* timer / waiting */}
+<AnimatePresence>
+  {timerActive && tradeState && !waitingResult && (
+    <motion.div
+      key="timer"
+      initial={{ opacity: 0, scale: 0.97, y: 24 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.97, y: 24 }}
+      transition={{ duration: 0.32, type: "spring" }}
+      className="flex flex-col items-center mt-6 w-full"
+    >
+      <TimerBar key={timerKey} endAt={tradeState.endAt} onComplete={onTimerComplete} />
+    </motion.div>
+  )}
+  {waitingResult && (
+    <motion.div
+      key="waiting"
+      initial={{ opacity: 0, scale: 0.97, y: 24 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.97, y: 24 }}
+      transition={{ duration: 0.32, type: "spring" }}
+      className="flex flex-col items-center mt-7 w-full"
+    >
+      <div className="flex flex-col items-center justify-center min-h-[130px]">
+        <svg className="animate-spin mb-4" width="44" height="44" viewBox="0 0 44 44" fill="none">
+          <circle cx="22" cy="22" r="20" stroke="#2474ff44" strokeWidth="4" />
+          <path d="M42 22a20 20 0 1 1-40 0" stroke="#FFD700" strokeWidth="4" strokeLinecap="round" />
+        </svg>
+        <div className="text-lg font-bold text-slate-900">{t("processing_trade", "Processing your trade and updating your balance...")}</div>
+        <div className="text-slate-500 mt-1 text-base font-medium text-center">
+          {t("please_wait", "Please wait while your trade settles and funds update in your wallet.")}
+        </div>
+      </div>
+    </motion.div>
+  )}
+</AnimatePresence>
+
+{/* toast – always global */}
+<AnimatePresence>
+  {toast && (
+    <motion.div
+      key={toast.id}
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 40 }}
+      transition={{ duration: 0.25 }}
+      className="fixed bottom-[calc(env(safe-area-inset-bottom)+20px)] left-1/2 -translate-x-1/2 z-[9999]"
+      role="status" aria-live="polite"
+    >
+      <div className={`flex items-center gap-2 px-4 py-3 rounded-2xl shadow-2xl ring-1 ring-white/15 text-white backdrop-blur
+        ${toast.type === "error" ? "bg-rose-600/90" : toast.type === "warning" ? "bg-amber-600/90" : "bg-slate-900/90"}`}>
+        <Icon name={toast.type === "error" ? "close" : toast.type === "warning" ? "clock" : "activity"} className="w-5 h-5" />
+        <span className="text-sm font-semibold">{toast.text}</span>
+      </div>
+    </motion.div>
+  )}
+</AnimatePresence>
+
 
             {/* result box */}
             <AnimatePresence>

@@ -273,56 +273,60 @@ export default function WalletPage() {
   const openModal = (type, coin) => setModal({ open: true, type, coin });
   const closeModal = () => setModal({ open: false, type: "", coin: "" });
 
-  const handleDepositSubmit = async (e) => {
-    e.preventDefault();
-    setToast(t("submitting_deposit"));
-    try {
-      let screenshotUrl = null;
-      if (depositScreenshot) {
-        screenshotUrl = await uploadDepositScreenshot(depositScreenshot, userId);
-      }
-      await axios.post(`${MAIN_API_BASE}/deposit`, {
-        coin: selectedDepositCoin,
-        amount: depositAmount,
-        address: walletAddresses[selectedDepositCoin],
-        screenshot: screenshotUrl,
-      }, { headers: { Authorization: `Bearer ${token}` } });
-
-      setToast(t("deposit_submitted"));
-      setDepositAmount("");
-      setDepositScreenshot(null);
-      setFileLocked(false);
-
-      setTimeout(() => { setToast(""); closeModal(); }, 1600);
-      axios.get(`${MAIN_API_BASE}/deposits`, { headers: { Authorization: `Bearer ${token}` } })
-        .then(res => setDepositHistory(res.data));
-    } catch (err) {
-      setToast(t("deposit_failed"));
-      console.error(err);
+const handleDepositSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    let screenshotUrl = null;
+    if (depositScreenshot) {
+      screenshotUrl = await uploadDepositScreenshot(depositScreenshot, userId);
     }
-  };
+    await axios.post(`${MAIN_API_BASE}/deposit`, {
+      coin: selectedDepositCoin,
+      amount: depositAmount,
+      address: walletAddresses[selectedDepositCoin],
+      screenshot: screenshotUrl,
+    }, { headers: { Authorization: `Bearer ${token}` } });
 
-  const handleWithdraw = async (e) => {
-    e.preventDefault();
-    setWithdrawMsg(t("submitting_withdraw"));
-    try {
-      const res = await axios.post(`${MAIN_API_BASE}/withdraw`, {
-        user_id: userId, coin: selectedWithdrawCoin, amount: withdrawForm.amount, address: withdrawForm.address,
-      }, { headers: { Authorization: `Bearer ${token}` } });
-      if (res.data && res.data.success) {
-        setWithdrawMsg(t("withdraw_submitted"));
-        axios.get(`${MAIN_API_BASE}/withdrawals`, { headers: { Authorization: `Bearer ${token}` } })
-          .then(res => setWithdrawHistory(res.data));
-        fetchBalances();
-      } else {
-        setWithdrawMsg(t("withdraw_failed"));
-      }
-    } catch (err) {
-      setWithdrawMsg(err.response?.data?.error || t("withdraw_failed"));
-      console.error(err);
+    setToast("Deposit Submitted");
+    setDepositAmount("");
+    setDepositScreenshot(null);
+    setFileLocked(false);
+
+    setTimeout(() => { setToast(""); closeModal(); }, 1600);
+    axios.get(`${MAIN_API_BASE}/deposits`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => setDepositHistory(res.data));
+  } catch (err) {
+    setToast(t("deposit_failed"));
+    console.error(err);
+  }
+};
+
+
+ const handleWithdraw = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await axios.post(`${MAIN_API_BASE}/withdraw`, {
+      user_id: userId,
+      coin: selectedWithdrawCoin,
+      amount: withdrawForm.amount,
+      address: withdrawForm.address,
+    }, { headers: { Authorization: `Bearer ${token}` } });
+
+    if (res.data && res.data.success) {
+      setToast("Withdraw Submitted");
+      axios.get(`${MAIN_API_BASE}/withdrawals`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => setWithdrawHistory(res.data));
+      fetchBalances();
+    } else {
+      setToast(t("withdraw_failed"));
     }
-    setTimeout(() => { setWithdrawMsg(""); setWithdrawForm({ address: "", amount: "" }); closeModal(); }, 1500);
-  };
+  } catch (err) {
+    setToast(err.response?.data?.error || t("withdraw_failed"));
+    console.error(err);
+  }
+  setTimeout(() => { setWithdrawForm({ address: "", amount: "" }); closeModal(); setToast(""); }, 1600);
+};
+
 
   const swap = () => { setFromCoin(toCoin); setToCoin(fromCoin); setAmount(""); setResult(""); };
 
@@ -729,11 +733,16 @@ export default function WalletPage() {
       </Modal>
 
       {/* Toast */}
-      {toast && (
-        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[9999] bg-slate-900 text-white px-5 py-2.5 rounded-full shadow text-sm font-semibold">
-          {toast}
-        </div>
-      )}
+{toast && (
+  <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+24px)] left-1/2 -translate-x-1/2 z-[9999]">
+    <div className="flex items-center gap-2 px-4 py-3 rounded-2xl shadow-2xl
+                    bg-slate-900/90 backdrop-blur text-white font-semibold
+                    ring-1 ring-white/15">
+      <Icon name="check" className="w-5 h-5" />
+      <span>{toast}</span>
     </div>
+  </div>
+)}
+  </div>
   );
 }
