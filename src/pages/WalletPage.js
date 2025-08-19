@@ -391,18 +391,24 @@ const handleWithdraw = async (e) => {
       />
       <div style={{ position: "relative", zIndex: 1 }} className="w-full max-w-7xl">
         {/* ===== Top row: balance + assets ===== */}
-        <div className="w-full grid grid-cols-1 lg:grid-cols-[380px,1fr] gap-6 md:gap-8 items-stretch">
+<div className="w-full grid grid-cols-1 lg:grid-cols-[minmax(320px,380px),1fr] gap-6 md:gap-8 items-stretch">
 
-{/* Total Balance */}
 <Card className="rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden h-full">
-  <div className="w-full h-full min-h-[180px] md:min-h-[220px] grid place-items-center px-4 sm:px-6
-                  bg-gradient-to-br from-indigo-50 via-sky-50 to-emerald-50">
-    <div className="flex flex-col items-center gap-1">
+  <div className="w-full h-full min-h-[180px] md:min-h-[220px] flex items-center justify-center
+                  px-4 sm:px-6 bg-gradient-to-br from-indigo-50 via-sky-50 to-emerald-50">
+    <div className="flex flex-col items-center gap-1 w-full">
       <div className="text-center text-slate-500 text-xs sm:text-sm font-semibold">
         {t("total_balance")}
       </div>
-      <div className="text-center leading-tight tracking-tight text-slate-900 font-extrabold
-                      tabular-nums whitespace-nowrap text-[clamp(1.75rem,3vw+1rem,3.25rem)]">
+
+      {/* key: clamp + break-all + leading + full width */}
+      <div
+        className="
+          w-full max-w-full px-1 text-center font-extrabold text-slate-900 tabular-nums
+          leading-[1.1] tracking-tight break-all
+          text-[clamp(1.5rem,5.2vw,2.75rem)]
+        "
+      >
         {fmtUSD(totalUsd)}
       </div>
     </div>
