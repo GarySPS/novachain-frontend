@@ -591,35 +591,42 @@ useEffect(() => {
               </select>
             </div>
 
-            {/* Install Buttons */}
-            <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Android */}
-onClick={async () => {
-  if (isInstalled) {
-    alert('App is already installed.');
-    return;
-  }
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
-    setDeferredPrompt(null);
-    if (choice?.outcome !== 'accepted') {
-      alert('Installation was dismissed. You can also use the browser menu → "Add to Home screen".');
-    }
-  } else {
-    alert('To install: Open this site in Chrome/Brave/Opera on Android, then use the menu → "Add to Home screen".');
-  }
-}}
+{/* Install Buttons */}
+<div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+  {/* Android */}
+  <button
+    className="h-12 rounded-xl font-bold bg-white ring-1 ring-slate-200 text-slate-800 hover:bg-slate-50 transition"
+    onClick={async () => {
+      if (isInstalled) {
+        alert('App is already installed.');
+        return;
+      }
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        // clear so Chrome can re-fire later if needed
+        setDeferredPrompt(null);
+        if (choice?.outcome !== 'accepted') {
+          alert('Installation was dismissed. You can also use the browser menu → "Add to Home screen".');
+        }
+      } else {
+        alert('To install: open this site in Chrome/Brave/Opera on Android, then use the menu → "Add to Home screen".');
+      }
+    }}
+  >
+    <Icon name="download" className="mr-2" /> Android Install
+  </button>
 
-              {/* iOS */}
-              <button
-                className="h-12 rounded-xl font-bold bg-white ring-1 ring-slate-200 text-slate-800 hover:bg-slate-50 transition disabled:opacity-50"
-                onClick={() => navigate('/guide')}
-                disabled={!isIOSSafari()}
-              >
-                <Icon name="download" className="mr-2" /> iOS Install
-              </button>
-            </div>
+  {/* iOS */}
+  <button
+    className="h-12 rounded-xl font-bold bg-white ring-1 ring-slate-200 text-slate-800 hover:bg-slate-50 transition disabled:opacity-50"
+    onClick={() => navigate('/guide')}
+    disabled={!isIOSSafari()}
+  >
+    <Icon name="download" className="mr-2" /> iOS Install
+  </button>
+</div>
+
           </Card>
         </div>
 
