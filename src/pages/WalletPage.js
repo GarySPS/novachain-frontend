@@ -83,6 +83,12 @@ export default function WalletPage() {
   const [isGuest, setIsGuest] = useState(false);
   const [historyScreenshots, setHistoryScreenshots] = useState({});
   const [totalUsd, setTotalUsd] = useState(0);
+  // lock + inline toasts
+const [depositBusy, setDepositBusy] = useState(false);
+const [withdrawBusy, setWithdrawBusy] = useState(false);
+const [depositToast, setDepositToast] = useState("");
+const [withdrawToast, setWithdrawToast] = useState("");
+
 
   /* ---------------- history merge (unchanged logic) ---------------- */
   const userDepositHistory = depositHistory.filter(d => userId && Number(d.user_id) === Number(userId));
@@ -275,6 +281,8 @@ export default function WalletPage() {
 
 const handleDepositSubmit = async (e) => {
   e.preventDefault();
+  if (depositBusy) return;
+  setDepositBusy(true);
   try {
     let screenshotUrl = null;
     if (depositScreenshot) {
@@ -287,23 +295,29 @@ const handleDepositSubmit = async (e) => {
       screenshot: screenshotUrl,
     }, { headers: { Authorization: `Bearer ${token}` } });
 
-    setToast("Deposit Submitted");
+    setDepositToast(t("Deposit Submitted") || "Deposit Submitted");
     setDepositAmount("");
     setDepositScreenshot(null);
     setFileLocked(false);
 
-    setTimeout(() => { setToast(""); closeModal(); }, 1600);
+    // refresh list
     axios.get(`${MAIN_API_BASE}/deposits`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => setDepositHistory(res.data));
+
+    // close after short delay
+    setTimeout(() => { setDepositToast(""); closeModal(); }, 1400);
   } catch (err) {
-    setToast(t("deposit_failed"));
+    setDepositToast(t("deposit_failed"));
     console.error(err);
+    setTimeout(() => setDepositToast(""), 1400);
+  } finally {
+    setDepositBusy(false);
   }
 };
-
-
- const handleWithdraw = async (e) => {
+const handleWithdraw = async (e) => {
   e.preventDefault();
+  if (withdrawBusy) return;
+  setWithdrawBusy(true);
   try {
     const res = await axios.post(`${MAIN_API_BASE}/withdraw`, {
       user_id: userId,
@@ -313,20 +327,21 @@ const handleDepositSubmit = async (e) => {
     }, { headers: { Authorization: `Bearer ${token}` } });
 
     if (res.data && res.data.success) {
-      setToast("Withdraw Submitted");
+      setWithdrawToast(t("Withdraw Submitted") || "Withdraw Submitted");
       axios.get(`${MAIN_API_BASE}/withdrawals`, { headers: { Authorization: `Bearer ${token}` } })
-        .then(res => setWithdrawHistory(res.data));
+        .then(r => setWithdrawHistory(r.data));
       fetchBalances();
     } else {
-      setToast(t("withdraw_failed"));
+      setWithdrawToast(t("withdraw_failed"));
     }
   } catch (err) {
-    setToast(err.response?.data?.error || t("withdraw_failed"));
+    setWithdrawToast(err.response?.data?.error || t("withdraw_failed"));
     console.error(err);
+  } finally {
+    setTimeout(() => { setWithdrawForm({ address: "", amount: "" }); setWithdrawToast(""); closeModal(); }, 1400);
+    setWithdrawBusy(false);
   }
-  setTimeout(() => { setWithdrawForm({ address: "", amount: "" }); closeModal(); setToast(""); }, 1600);
 };
-
 
   const swap = () => { setFromCoin(toCoin); setToCoin(fromCoin); setAmount(""); setResult(""); };
 
@@ -380,16 +395,19 @@ const handleDepositSubmit = async (e) => {
 
 {/* Total Balance */}
 <Card className="rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden h-full">
-  {/* fill the whole card and center content both axes */}
-  <div className="w-full h-full min-h-[160px] bg-gradient-to-br from-indigo-50 via-sky-50 to-emerald-50 flex items-center justify-center px-4 sm:px-6">
-    <div className="flex flex-col items-center">
+  {/* fill whole card and center content on both axes */}
+  <div
+    className="w-full h-full min-h-[160px] bg-gradient-to-br from-indigo-50 via-sky-50 to-emerald-50
+               grid place-items-center px-4 sm:px-6"
+  >
+    <div className="flex flex-col items-center gap-1">
       <div className="text-center text-slate-500 text-xs sm:text-sm font-semibold">
         {t("total_balance")}
       </div>
       <div
         className="
-          mt-1 text-center leading-tight tracking-tight text-slate-900 font-extrabold tabular-nums
-          whitespace-nowrap
+          text-center leading-tight tracking-tight text-slate-900 font-extrabold tabular-nums
+          whitespace-nowrap w-full
           text-[clamp(1.75rem,3vw+1rem,3.25rem)]
         "
       >
@@ -636,7 +654,7 @@ const handleDepositSubmit = async (e) => {
             <button
               type="button"
               className="h-9 px-3 rounded-lg bg-slate-900 text-white text-sm font-semibold"
-              onClick={() => { navigator.clipboard.writeText(walletAddresses[selectedDepositCoin]); setToast(t("copied")); }}
+              onClick={() => { navigator.clipboard.writeText(walletAddresses[selectedDepositCoin]); setDepositToast(t("copied")); }}
             >
               <span className="inline-flex items-center gap-1"><Icon name="copy" />{t("copy")}</span>
             </button>
@@ -676,9 +694,26 @@ const handleDepositSubmit = async (e) => {
             <span className="block text-amber-600">{t("proof_ensures_support")}</span>
           </div>
 
-          <button type="submit" className="w-full h-12 rounded-xl bg-slate-900 text-white text-lg font-extrabold hover:scale-[1.02] transition">
-            {t("submit")}
-          </button>
+<div className="relative">
+  <button
+    type="submit"
+    disabled={depositBusy || !depositAmount || !depositScreenshot}
+    className={`w-full h-12 rounded-xl text-white text-lg font-extrabold transition
+      ${depositBusy ? "bg-slate-500 cursor-not-allowed" : "bg-slate-900 hover:scale-[1.02]"}`}
+  >
+    {depositBusy ? (t("submitting") || "Submitting...") : t("submit")}
+  </button>
+
+  {depositToast && (
+    <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-[70]">
+      <div className="flex items-center gap-2 px-4 py-2 rounded-2xl shadow-2xl
+                      bg-slate-900/95 backdrop-blur text-white font-semibold ring-1 ring-white/15">
+        <Icon name="check" className="w-5 h-5" />
+        <span>{depositToast}</span>
+      </div>
+    </div>
+  )}
+</div>
         </form>
       </Modal>
 
@@ -720,9 +755,26 @@ const handleDepositSubmit = async (e) => {
 
           <div className="text-sm text-amber-700 bg-amber-50 ring-1 ring-amber-200 rounded px-3 py-2">{t("double_check_withdraw")}</div>
 
-          <button type="submit" className="w-full h-12 rounded-xl bg-slate-900 text-white text-lg font-extrabold hover:scale-[1.02] transition">
-            {t("submit_withdraw")}
-          </button>
+<div className="relative">
+  <button
+    type="submit"
+    disabled={withdrawBusy || !withdrawForm.address || !withdrawForm.amount}
+    className={`w-full h-12 rounded-xl text-white text-lg font-extrabold transition
+      ${withdrawBusy ? "bg-slate-500 cursor-not-allowed" : "bg-slate-900 hover:scale-[1.02]"}`}
+  >
+    {withdrawBusy ? (t("submitting") || "Submitting...") : t("submit_withdraw")}
+  </button>
+
+  {withdrawToast && (
+    <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-[70]">
+      <div className="flex items-center gap-2 px-4 py-2 rounded-2xl shadow-2xl
+                      bg-slate-900/95 backdrop-blur text-white font-semibold ring-1 ring-white/15">
+        <Icon name="check" className="w-5 h-5" />
+        <span>{withdrawToast}</span>
+      </div>
+    </div>
+  )}
+</div>
 
           {withdrawMsg && (
             <div className="mt-2 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 rounded-lg px-4 py-2 text-center text-base font-semibold">
@@ -732,17 +784,6 @@ const handleDepositSubmit = async (e) => {
         </form>
       </Modal>
 
-      {/* Toast */}
-{toast && (
-  <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+24px)] left-1/2 -translate-x-1/2 z-[9999]">
-    <div className="flex items-center gap-2 px-4 py-3 rounded-2xl shadow-2xl
-                    bg-slate-900/90 backdrop-blur text-white font-semibold
-                    ring-1 ring-white/15">
-      <Icon name="check" className="w-5 h-5" />
-      <span>{toast}</span>
-    </div>
-  </div>
-)}
   </div>
   );
 }
