@@ -1,5 +1,3 @@
-// REPLACE THE WHOLE FILE WITH THIS
-
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -63,7 +61,9 @@ export default function ProfilePage() {
   const [balanceHistory, setBalanceHistory] = useState([]);
   const [authChecked, setAuthChecked] = useState(false);
 
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
+const [deferredPrompt, setDeferredPrompt] = useState(null);
+const [isInstalled, setIsInstalled] = useState(false);
+
 
   /* -------- preload prices from localStorage (unchanged) -------- */
   useEffect(() => {
@@ -76,12 +76,36 @@ export default function ProfilePage() {
     } catch {}
   }, []);
 
-  /* -------- PWA prompt -------- */
-  useEffect(() => {
-    const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+/* -------- PWA prompt -------- */
+useEffect(() => {
+  // detect already-installed (standalone) modes
+  const checkInstalled = () => {
+    const standalone = window.matchMedia?.('(display-mode: standalone)')?.matches
+      || window.navigator.standalone === true; // iOS Safari
+    setIsInstalled(Boolean(standalone));
+  };
+  checkInstalled();
+
+  const onBIP = (e) => {
+    e.preventDefault();
+    setDeferredPrompt(e);
+  };
+  const onInstalled = () => {
+    setIsInstalled(true);
+    setDeferredPrompt(null);
+  };
+
+  window.addEventListener('beforeinstallprompt', onBIP);
+  window.addEventListener('appinstalled', onInstalled);
+  window.matchMedia?.('(display-mode: standalone)')?.addEventListener?.('change', checkInstalled);
+
+  return () => {
+    window.removeEventListener('beforeinstallprompt', onBIP);
+    window.removeEventListener('appinstalled', onInstalled);
+    window.matchMedia?.('(display-mode: standalone)')?.removeEventListener?.('change', checkInstalled);
+  };
+}, []);
+
 
   /* -------- reset submit banner when not pending -------- */
   useEffect(() => {
@@ -570,22 +594,22 @@ export default function ProfilePage() {
             {/* Install Buttons */}
             <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Android */}
-              <button
-                className="h-12 rounded-xl font-bold bg-white ring-1 ring-slate-200 text-slate-800 hover:bg-slate-50 transition"
-                onClick={async () => {
-                  if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    const choice = await deferredPrompt.userChoice;
-                    if (choice?.outcome === 'accepted') {
-                      // consumed
-                    }
-                  } else {
-                    alert('To install: Open this site on Android → menu / address bar → "Add to Home screen". Try Chrome, Samsung Internet, Brave, or Opera.');
-                  }
-                }}
-              >
-                <Icon name="download" className="mr-2" /> Android Install
-              </button>
+onClick={async () => {
+  if (isInstalled) {
+    alert('App is already installed.');
+    return;
+  }
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    setDeferredPrompt(null);
+    if (choice?.outcome !== 'accepted') {
+      alert('Installation was dismissed. You can also use the browser menu → "Add to Home screen".');
+    }
+  } else {
+    alert('To install: Open this site in Chrome/Brave/Opera on Android, then use the menu → "Add to Home screen".');
+  }
+}}
 
               {/* iOS */}
               <button
