@@ -132,7 +132,7 @@ export default function TermsAndConditions() {
             <ul className="space-y-1">
               <li>
                 <span className="font-semibold">(1)</span>&nbsp; Platform opening
-                hours: <span className="font-semibold">27/4</span>
+                hours: <span className="font-semibold">24/7</span>
               </li>
               <li>
                 <span className="font-semibold">(2)</span>&nbsp; Online customer
