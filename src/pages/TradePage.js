@@ -255,15 +255,10 @@ const showToast = (text, type = "error") => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-full min-h-screen flex flex-col items-center px-3 pt-5 pb-10 overflow-x-hidden"
-      style={{
-        background: 'url("/novachain.jpg") no-repeat center center fixed',
-        backgroundSize: "cover",
-        minHeight: "100vh",
-      }}
-    >
+    initial={{ opacity: 0, y: 30 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="w-full max-w-full px-3 pt-5 overflow-x-hidden"
+  >
       {/* soft overlay */}
       <div
         className="fixed inset-0 pointer-events-none"

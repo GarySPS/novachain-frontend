@@ -211,3 +211,13 @@ body {
 @keyframes spin-slow { 100% { transform: rotate(360deg); } }
 .animate-spin-slow { animation: spin-slow 3s linear infinite; }
 .animate-fadein { animation: fadein 0.8s ease; }
+/* Standard full-height setup */
+html, body, #root {
+  height: 100%;
+}
+
+/* Your existing body rule */
+body {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  color: var(--primary);
+}

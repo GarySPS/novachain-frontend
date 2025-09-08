@@ -183,7 +183,7 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center px-3 pt-3 pb-6">
+    <div className="w-full flex flex-col items-center px-3 pt-3 pb-6">
       <div className="w-full max-w-7xl mx-auto space-y-4">
         {/* ---- Top Stats ---- */}
         <Card className="p-0 overflow-hidden rounded-2xl shadow-lg border border-slate-100">
