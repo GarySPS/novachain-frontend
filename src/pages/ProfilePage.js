@@ -392,16 +392,22 @@ useEffect(() => {
             </div>
 
             <div className="mt-8 grid grid-cols-1 gap-3">
-              <button className="h-12 rounded-xl font-bold bg-slate-900 text-white hover:scale-[1.02] transition"
-                onClick={() => navigate(`/wallet?action=deposit&coin=USDT`)}>
-                <Icon name="wallet" className="mr-2" /> {t('profile_deposit')}
+              <button 
+                className="h-12 rounded-xl font-bold bg-slate-900 text-white hover:scale-[1.02] transition flex items-center justify-center"
+                onClick={() => navigate(`/wallet?action=deposit&coin=USDT`)}
+              >
+                {t('profile_deposit')}
               </button>
-              <button className="h-12 rounded-xl font-bold bg-white ring-1 ring-slate-200 text-slate-800 hover:bg-slate-50 transition"
-                onClick={() => navigate(`/wallet?action=withdraw&coin=BTC`)}>
+              <button 
+                className="h-12 rounded-xl font-bold bg-white ring-1 ring-slate-200 text-slate-800 hover:bg-slate-50 transition flex items-center justify-center"
+                onClick={() => navigate(`/wallet?action=withdraw&coin=BTC`)}
+              >
                 <Icon name="arrow-up-right" className="mr-2" /> {t('profile_withdraw')}
               </button>
-              <button className="h-12 rounded-xl font-bold bg-slate-900 text-white hover:scale-[1.02] transition"
-                onClick={() => navigate(`/wallet?action=convert`)}>
+              <button 
+                className="h-12 rounded-xl font-bold bg-slate-900 text-white hover:scale-[1.02] transition flex items-center justify-center"
+                onClick={() => navigate(`/wallet?action=convert`)}
+              >
                 <Icon name="swap" className="mr-2" /> {t('profile_convert')}
               </button>
             </div>
@@ -575,6 +581,21 @@ useEffect(() => {
                 onClick={() => setShowEditPic(true)}
               >
                 <Icon name="edit" className="mb-1 w-6 h-6" /> {t('profile_change_profile')}
+              </button>
+
+              {/* New Buttons Added Below */}
+              <button
+                className="h-16 px-4 rounded-xl font-bold bg-white ring-1 ring-slate-200 text-slate-800 hover:bg-slate-50 transition flex flex-col items-center justify-center"
+                onClick={() => navigate('/news')}
+              >
+                <Icon name="newspaper" className="mb-1 w-6 h-6" /> {t('news')}
+              </button>
+              
+              <button
+                className="h-16 px-4 rounded-xl font-bold bg-white ring-1 ring-slate-200 text-slate-800 hover:bg-slate-50 transition flex flex-col items-center justify-center"
+                onClick={() => navigate('/about')}
+              >
+                <Icon name="info" className="mb-1 w-6 h-6" /> {t('about_us')}
               </button>
             </div>
 

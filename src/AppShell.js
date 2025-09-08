@@ -11,6 +11,7 @@ import SignUpPage from "./pages/SignUpPage";
 import VerifyOTPPage from "./pages/VerifyOTPPage";
 import AboutUs from "./pages/AboutUs";
 import NavBar from './components/navbar';
+import BottomNavBar from './components/BottomNavBar';
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import NewsPage from "./components/Newspage";
 import GuidePage from './pages/GuidePage'; 
@@ -44,7 +45,7 @@ function AppShell() {
   };
 
   return (
-    <div className="min-h-screen w-full relative">
+    <div className="min-h-screen w-full relative pb-16 md:pb-0">
       {/* Fixed BG: gradient + image, always covers, no flash */}
       <div
         style={{
@@ -122,11 +123,12 @@ function AppShell() {
             <Route path="/news" element={<NewsPage />} />
             <Route path="/guide" element={<GuidePage />} />
             <Route path="/terms" element={<TermsAndConditions />} />
-          </Routes>
-        </main>
-      </div>
-    </div>
-  );
+</Routes>
+      </main>
+    </div>
+    {!hideHeader && <BottomNavBar />}
+  </div>
+  );
 }
 
 export default AppShell;

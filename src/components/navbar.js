@@ -1,26 +1,26 @@
-// src/components/NavBar.js
+// src/components/navbar.js (FINAL VERSION)
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ReactComponent as NovaChainLogo } from './NovaChainLogo.svg';
-import { useTranslation } from "react-i18next"; // <-- ADD THIS
+import { useTranslation } from "react-i18next";
 
-// Use translation keys for nav items
 const navItems = [
   { label: "dashboard", to: "/" },
   { label: "trade", to: "/trade" },
   { label: "history", to: "/trade-history" },
   { label: "wallet", to: "/wallet" },
   { label: "profile", to: "/profile" },
-  { label: "news", to: "/news" },      
+  { label: "news", to: "/news" },
   { label: "about_us", to: "/about" },
 ];
 
 export default function NavBar() {
   const location = useLocation();
-  const { t } = useTranslation(); // <-- ADD THIS
+  const { t } = useTranslation();
 
   return (
+    // This header is now ALWAYS visible
     <header
       className="sticky top-0 z-30 border-b border-theme-stroke shadow-md w-full"
       style={{
@@ -28,13 +28,13 @@ export default function NavBar() {
         backdropFilter: "blur(8px)"
       }}
     >
-      <div className="w-full flex items-center justify-between h-16 px-2 md:max-w-7xl md:mx-auto md:px-4">
-        {/* Logo */}
+      <div className="w-full flex items-center justify-between h-16 px-4 md:max-w-7xl md:mx-auto md:px-4">
         <Link to="/" className="flex items-center gap-4">
-          <NovaChainLogo className="h-12 md:h-10 w-auto drop-shadow-lg" />
+          <NovaChainLogo className="h-10 w-auto drop-shadow-lg" />
         </Link>
-        {/* Nav Links */}
-        <nav className="flex gap-2 md:gap-1 overflow-x-auto no-scrollbar max-w-[70vw] sm:max-w-[60vw]">
+        
+        {/* These nav links are now HIDDEN on mobile (hidden md:flex) */}
+        <nav className="hidden md:flex gap-2 md:gap-1">
           {navItems.map((item) => {
             const active = location.pathname === item.to;
             return (
