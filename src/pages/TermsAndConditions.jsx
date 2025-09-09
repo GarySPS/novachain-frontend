@@ -4,7 +4,7 @@ import React from "react";
 export default function TermsAndConditions() {
   return (
     <div
-      className="min-h-screen w-full text-gray-200"
+      className="min-h-screen w-full text-gray-200 pb-24"
       style={{
         background: 'url("/novachain.jpg") no-repeat center center fixed',
         backgroundSize: "cover",
