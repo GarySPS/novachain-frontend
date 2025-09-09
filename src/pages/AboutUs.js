@@ -35,8 +35,8 @@ export default function AboutUs() {
   const { t } = useTranslation();
 
 return (
-  // This is now the root element for the page. It's just a content wrapper.
-  <div className="relative z-10 w-full max-w-6xl mx-auto px-4 md:px-6 pt-10">
+  // Added pb-24 to give bottom space so footer links stay above navbar
+  <div className="relative z-10 w-full max-w-6xl mx-auto px-4 md:px-6 pt-10 pb-24">
     {/* Header */}
     <div className="flex items-center gap-3 mb-6">
       <img src={NovaChainLogo} alt="NovaChain" className="h-10 md:h-12 drop-shadow-xl" />
