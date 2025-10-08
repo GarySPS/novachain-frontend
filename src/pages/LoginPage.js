@@ -41,7 +41,6 @@ export default function LoginPage() {
   };
 
 return (
-    // ---- UPDATED: Main background is now an image ----
     <div
       className="min-h-screen w-full relative flex items-center justify-center px-4 py-10 md:py-14"
       style={{
@@ -50,10 +49,7 @@ return (
         backgroundPosition: "center",
       }}
     >
-      {/* The <video> element has been removed. */}
-      
-      {/* overlay */}
-      <div className="absolute inset-0 bg-[#0c1022e6] backdrop-blur-[2px]" />
+      {/* ---- OVERLAY DIV REMOVED FROM HERE ---- */}
 
       <div className="relative z-10 w-full">
         <div className="mx-auto w-full max-w-[480px] rounded-3xl bg-[#10162F]/80 backdrop-blur-xl shadow-2xl border border-sky-500/30 px-6 py-8 md:px-10 md:py-10">
