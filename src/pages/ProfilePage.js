@@ -294,25 +294,19 @@ useEffect(() => {
     } catch { setPwErr(t('Failed')); }
   }
 
-  /* -------- skeleton -------- */
+/* -------- skeleton -------- */
   if (!authChecked || loading || !user) {
+    // This is the updated loading screen using your video.
     return (
-      <div
-        className="min-h-screen w-full flex items-center justify-center"
-        style={{
-          background: 'url("/novachain.jpg") no-repeat center/cover fixed',
-        }}
-      >
-        <div className="fixed inset-0 bg-[linear-gradient(120deg,#0b1020f0_0%,#0d1220d8_60%,#0a101dd1_100%)]" />
-        <div className="relative z-10 flex flex-col items-center">
-          <svg className="animate-spin h-14 w-14 mb-3 text-[#ffd700]" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-20" cx="12" cy="12" r="10" stroke="#ffd700" strokeWidth="4" />
-            <path className="opacity-85" fill="#ffd700" d="M4 12a8 8 0 018-8v8z" />
-          </svg>
-          <span className="text-[#ffd700] font-extrabold text-xl tracking-wide">
-            {t('Refreshing Balance')}
-          </span>
-        </div>
+      <div className="fixed inset-0 w-full h-full bg-black">
+        <video
+          src="/loading.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+        />
       </div>
     );
   }
