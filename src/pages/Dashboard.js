@@ -183,11 +183,33 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="w-full flex flex-col items-center px-3 pt-3 pb-6">
+    <div className="w-full flex flex-col items-center bg-slate-100 px-3 pt-3 pb-6">
       <div className="w-full max-w-7xl mx-auto space-y-4">
+
+        {/* ---- Hero Video Section ---- */}
+<div className="relative w-full h-64 md:h-80 rounded-2xl overflow-hidden shadow-2xl border border-slate-200/20 mb-4">
+    <video
+        src="/novachainvd.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute top-0 left-0 w-full h-full object-cover z-0"
+    />
+    <div className="absolute top-0 left-0 w-full h-full bg-black/50 z-10"></div>
+    <div className="relative z-20 flex flex-col items-center justify-center h-full text-center text-white px-4">
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+        NovaChain Dashboard
+        </h1>
+        <p className="mt-4 text-lg md:text-xl text-slate-200" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
+        Your all-in-one hub for crypto market insights.
+        </p>
+    </div>
+</div>
+
         {/* ---- Top Stats ---- */}
         <Card className="p-0 overflow-hidden rounded-2xl shadow-lg border border-slate-100">
-          <div className="bg-gradient-to-r from-indigo-50 via-sky-50 to-emerald-50 px-4 py-4 md:px-6 md:py-5">
+          <div className="bg-white px-4 py-4 md:px-6 md:py-5">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <div className="text-slate-500 text-sm">
@@ -205,28 +227,32 @@ export default function Dashboard() {
                   {formatBigNum(totalVol)}
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <select
-                  className="w-full rounded-xl border border-slate-200 bg-white/80 px-4 py-2.5 outline-none focus:ring-2 focus:ring-sky-200"
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                >
-                  <option value="mcap">Sort by Market Cap</option>
-                  <option value="volume">Sort by 24h Volume</option>
-                  <option value="change">Sort by 24h Change</option>
-                  <option value="price">Sort by Price</option>
-                  <option value="name">Sort by Name</option>
-                </select>
+<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+  <select
+    className="w-full cursor-pointer appearance-none rounded-xl border border-slate-300 bg-white bg-no-repeat px-4 py-2.5 outline-none transition-all focus:ring-2 focus:ring-sky-400"
+    style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.5em 1.5em' }}
+    value={sortBy}
+    onChange={(e) => setSortBy(e.target.value)}
+  >
+    <option value="mcap">Sort by Market Cap</option>
+    <option value="volume">Sort by 24h Volume</option>
+    <option value="change">Sort by 24h Change</option>
+    <option value="price">Sort by Price</option>
+    <option value="name">Sort by Name</option>
+  </select>
 
-                <div className="relative">
-                  <input
-                    className="w-full rounded-xl border border-slate-200 bg-white/80 px-4 py-2.5 pr-10 outline-none focus:ring-2 focus:ring-sky-200"
-                    placeholder="Search coin by name or symbol…"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                  />
-                </div>
-              </div>
+  <div className="relative">
+      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+          <svg className="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </div>
+      <input
+          className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 outline-none transition-all focus:ring-2 focus:ring-sky-400"
+          placeholder="Search..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+      />
+  </div>
+</div>
             </div>
           </div>
 
