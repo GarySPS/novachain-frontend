@@ -48,6 +48,19 @@ return (
     {/* Hero */}
     <div className="grid grid-cols-1 lg:grid-cols-[1.1fr,0.9fr] gap-6 lg:gap-10">
       <GlassCard className="p-6 md:p-8">
+        
+        {/* ---- NEW: Video player added here ---- */}
+        <div className="w-full h-48 rounded-xl overflow-hidden shadow-lg mb-6 border border-sky-400/20">
+            <video
+                src="/login.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+            />
+        </div>
+
         <GradientTitle className="text-3xl md:text-4xl lg:text-5xl leading-tight">
           {t("about_trade_future_today")}
         </GradientTitle>
