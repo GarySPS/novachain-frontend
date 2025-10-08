@@ -41,24 +41,21 @@ export default function LoginPage() {
   };
 
 return (
-    // The main container now holds the background video
-    <div className="min-h-screen w-full relative flex items-center justify-center px-4 py-10 md:py-14">
+    // ---- UPDATED: Main background is now an image ----
+    <div
+      className="min-h-screen w-full relative flex items-center justify-center px-4 py-10 md:py-14"
+      style={{
+        backgroundImage: 'url("/login.jpg")',
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      {/* The <video> element has been removed. */}
       
-      {/* ---- NEW: Background Video ---- */}
-      <video
-        src="/loading.mp4"
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover z-0"
-      />
       {/* overlay */}
       <div className="absolute inset-0 bg-[#0c1022e6] backdrop-blur-[2px]" />
 
       <div className="relative z-10 w-full">
-        {/* ---- UPDATED: Login Card Styling ---- */}
-        {/* Changed background to navy blue, updated borders and shadows. */}
         <div className="mx-auto w-full max-w-[480px] rounded-3xl bg-[#10162F]/80 backdrop-blur-xl shadow-2xl border border-sky-500/30 px-6 py-8 md:px-10 md:py-10">
           {/* logo */}
           <div className="flex justify-center">
@@ -82,7 +79,6 @@ return (
           </div>
           
           <form onSubmit={handleLogin} className="mt-8 space-y-5">
-            {/* ---- UPDATED: Text and Input Fields Styling ---- */}
             <div className="space-y-2">
               <label htmlFor="email" className="block text-sm md:text-base font-semibold text-slate-300">
                 Username or Email
@@ -132,7 +128,6 @@ return (
               </div>
             </div>
 
-            {/* Errors (Styling assumes a light-on-dark theme by default) */}
             {error &&
               (error.toLowerCase().includes("maintain") || error.toLowerCase().includes("database") ? (
                 <DatabaseErrorCard />
@@ -142,7 +137,6 @@ return (
                 </div>
               ))}
 
-            {/* Submit */}
             <button
               type="submit"
               className="w-full h-12 md:h-12 rounded-xl font-extrabold text-base md:text-lg tracking-wide shadow-lg border-0 outline-none transition active:scale-[.99]"
@@ -158,12 +152,10 @@ return (
             </button>
           </form>
 
-          {/* Divider */}
           <div className="my-6 flex items-center gap-3">
             <div className="h-px w-full bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
           </div>
 
-          {/* Support + Sign up */}
           <div className="grid grid-cols-2 gap-2">
             <a
               href="https://wa.me/16627053615"
@@ -194,7 +186,6 @@ return (
         </div>
       </div>
 
-      {/* Subtle logo glow */}
       <style>
         {`
           @keyframes logoGlow {
