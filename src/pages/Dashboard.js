@@ -182,32 +182,25 @@ export default function Dashboard() {
     </tr>
   );
 
-  return (
-    <div className="w-full flex flex-col items-center bg-slate-100 px-3 pt-3 pb-6">
-      <div className="w-full max-w-7xl mx-auto space-y-4">
-
+return (
+    <div className="w-full flex flex-col items-center bg-slate-100">
+        
         {/* ---- Hero Video Section ---- */}
-<div className="relative w-full h-64 md:h-80 rounded-2xl overflow-hidden shadow-2xl border border-slate-200/20 mb-4">
-    <video
-        src="/novachainvd.mp4"
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute top-0 left-0 w-full h-full object-cover z-0"
-    />
-    <div className="absolute top-0 left-0 w-full h-full bg-black/50 z-10"></div>
-    <div className="relative z-20 flex flex-col items-center justify-center h-full text-center text-white px-4">
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
-        NovaChain Dashboard
-        </h1>
-        <p className="mt-4 text-lg md:text-xl text-slate-200" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
-        Your all-in-one hub for crypto market insights.
-        </p>
-    </div>
-</div>
+        <div className="relative w-full h-64 md:h-80 overflow-hidden">
+            <video
+                src="/novachainvd.mp4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute top-0 left-0 w-full h-full object-cover z-0"
+            />
+        </div>
 
-        {/* ---- Top Stats ---- */}
+        {/* Main Content Container */}
+        <div className="w-full max-w-7xl mx-auto space-y-4 px-3 pb-6 -mt-20">
+
+            {/* ---- Top Stats ---- */}
         <Card className="p-0 overflow-hidden rounded-2xl shadow-lg border border-slate-100">
           <div className="bg-white px-4 py-4 md:px-6 md:py-5">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
