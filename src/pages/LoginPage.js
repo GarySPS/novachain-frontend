@@ -53,15 +53,6 @@ return (
 
       <div className="relative z-10 w-full">
         <div className="mx-auto w-full max-w-[480px] rounded-3xl bg-[#10162F]/80 backdrop-blur-xl shadow-2xl border border-sky-500/30 px-6 py-8 md:px-10 md:py-10">
-          {/* logo */}
-          <div className="flex justify-center">
-            <img
-              src={NovaChainLogo}
-              alt="NovaChain Logo"
-              className="w-40 md:w-48 select-none pointer-events-none"
-              draggable={false}
-            />
-          </div>
 
           <div className="mt-8 w-full h-36 md:h-40 rounded-2xl overflow-hidden shadow-inner border border-sky-400/20">
               <video

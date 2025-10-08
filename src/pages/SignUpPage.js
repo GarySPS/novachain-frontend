@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { MAIN_API_BASE } from "../config";
-import NovaChainLogo from "../components/NovaChainLogo.svg";
 
 export default function SignUpPage() {
   const [username, setUsername] = useState("");
@@ -44,39 +43,45 @@ export default function SignUpPage() {
     }
   };
 
-  return (
+return (
     <div
       className="min-h-screen w-full relative flex items-center justify-center px-4 py-10 md:py-14"
       style={{
-        backgroundImage: 'url("/novachain.jpg")',
+        backgroundImage: 'url("/login.jpg")',
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
     >
-      <div className="absolute inset-0 bg-[#0c1022e6] backdrop-blur-[2px]" />
+      {/* Overlay has been removed */}
 
       <div className="relative z-10 w-full">
-        <div className="mx-auto w-full max-w-[480px] rounded-3xl bg-white/90 backdrop-blur shadow-2xl border border-white/40 px-6 py-8 md:px-10 md:py-10">
-          {/* Logo */}
-          <div className="flex justify-center">
-            <img
-              src={NovaChainLogo}
-              alt="NovaChain Logo"
-              className="w-40 md:w-48 select-none pointer-events-none"
-              draggable={false}
-            />
+        {/* UPDATED: Card styling to match login page */}
+        <div className="mx-auto w-full max-w-[480px] rounded-3xl bg-[#10162F]/80 backdrop-blur-xl shadow-2xl border border-sky-500/30 px-6 py-8 md:px-10 md:py-10">
+          
+          {/* Logo has been removed */}
+
+          {/* ADDED: Inner video to match login page */}
+          <div className="w-full h-36 md:h-40 rounded-2xl overflow-hidden shadow-inner border border-sky-400/20">
+              <video
+                  src="/login.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+              />
           </div>
 
-          {/* Title */}
-          <h2 className="mt-5 text-center text-2xl md:text-3xl font-extrabold tracking-tight text-[#232836]">
+          {/* UPDATED: Title styling for dark theme */}
+          <h2 className="mt-8 text-center text-2xl md:text-3xl font-extrabold tracking-tight text-slate-100">
             Create Account
           </h2>
 
-          {/* Form */}
+          {/* UPDATED: Form styling for dark theme */}
           <form onSubmit={handleSignUp} className="mt-6 space-y-4 md:space-y-5">
             {/* Username */}
             <div className="space-y-2">
-              <label htmlFor="username" className="block text-sm md:text-base font-semibold text-[#232836]">
+              <label htmlFor="username" className="block text-sm md:text-base font-semibold text-slate-300">
                 Username
               </label>
               <input
@@ -87,13 +92,13 @@ export default function SignUpPage() {
                 required
                 autoComplete="username"
                 placeholder="Create your username"
-                className="w-full h-12 rounded-xl px-4 bg-[#eef4ff] text-[#0f1224] placeholder-[#6b7280] border border-[#d7e3ff] focus:outline-none focus:ring-4 focus:ring-[#1f2fff1f] focus:border-[#1f2fff] transition"
+                className="w-full h-12 rounded-xl px-4 bg-slate-800/60 text-slate-100 placeholder-slate-500 border border-slate-700 focus:outline-none focus:ring-4 focus:ring-sky-400/20 focus:border-sky-400 transition"
               />
             </div>
 
             {/* Email */}
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm md:text-base font-semibold text-[#232836]">
+              <label htmlFor="email" className="block text-sm md:text-base font-semibold text-slate-300">
                 Email
               </label>
               <input
@@ -104,13 +109,13 @@ export default function SignUpPage() {
                 required
                 autoComplete="email"
                 placeholder="Enter your email"
-                className="w-full h-12 rounded-xl px-4 bg-[#eef4ff] text-[#0f1224] placeholder-[#6b7280] border border-[#d7e3ff] focus:outline-none focus:ring-4 focus:ring-[#00eaff22] focus:border-[#00eaff] transition"
+                className="w-full h-12 rounded-xl px-4 bg-slate-800/60 text-slate-100 placeholder-slate-500 border border-slate-700 focus:outline-none focus:ring-4 focus:ring-sky-400/20 focus:border-sky-400 transition"
               />
             </div>
 
             {/* Password */}
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm md:text-base font-semibold text-[#232836]">
+              <label htmlFor="password" className="block text-sm md:text-base font-semibold text-slate-300">
                 Password
               </label>
               <input
@@ -121,13 +126,13 @@ export default function SignUpPage() {
                 required
                 autoComplete="new-password"
                 placeholder="Create a password"
-                className="w-full h-12 rounded-xl px-4 bg-[#eef4ff] text-[#0f1224] placeholder-[#6b7280] border border-[#d7e3ff] focus:outline-none focus:ring-4 focus:ring-[#ffd70022] focus:border-[#ffd700] transition"
+                className="w-full h-12 rounded-xl px-4 bg-slate-800/60 text-slate-100 placeholder-slate-500 border border-slate-700 focus:outline-none focus:ring-4 focus:ring-sky-400/20 focus:border-sky-400 transition"
               />
             </div>
 
             {/* Confirm Password */}
             <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="block text-sm md:text-base font-semibold text-[#232836]">
+              <label htmlFor="confirmPassword" className="block text-sm md:text-base font-semibold text-slate-300">
                 Confirm Password
               </label>
               <input
@@ -138,18 +143,18 @@ export default function SignUpPage() {
                 required
                 autoComplete="new-password"
                 placeholder="Re-enter your password"
-                className="w-full h-12 rounded-xl px-4 bg-[#eef4ff] text-[#0f1224] placeholder-[#6b7280] border border-[#d7e3ff] focus:outline-none focus:ring-4 focus:ring-[#ffd70022] focus:border-[#ffd700] transition"
+                className="w-full h-12 rounded-xl px-4 bg-slate-800/60 text-slate-100 placeholder-slate-500 border border-slate-700 focus:outline-none focus:ring-4 focus:ring-sky-400/20 focus:border-sky-400 transition"
               />
             </div>
 
             {/* Alerts */}
             {error && (
-              <div className="w-full rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm md:text-base text-red-600">
+              <div className="w-full rounded-lg border border-red-400/50 bg-red-500/20 px-3 py-2 text-sm md:text-base text-red-200">
                 {error}
               </div>
             )}
             {success && (
-              <div className="w-full rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm md:text-base text-emerald-700">
+              <div className="w-full rounded-lg border border-emerald-400/50 bg-emerald-500/20 px-3 py-2 text-sm md:text-base text-emerald-200">
                 {success}
               </div>
             )}
@@ -163,7 +168,7 @@ export default function SignUpPage() {
                   "linear-gradient(90deg,#00eaff 0%,#1f2fff 55%,#ffd700 100%)",
                 color: "#141726",
                 letterSpacing: "0.02em",
-                boxShadow: "0 10px 24px rgba(31,47,255,0.12)",
+                boxShadow: "0 10px 24px rgba(0, 234, 255, 0.15)",
               }}
             >
               Register
@@ -171,17 +176,17 @@ export default function SignUpPage() {
           </form>
 
           {/* Terms */}
-          <p className="mt-7 text-center text-[11px] md:text-xs text-gray-600 font-medium leading-relaxed">
+          <p className="mt-7 text-center text-[11px] md:text-xs text-slate-400 font-medium leading-relaxed">
             By signing up, you agree to the{" "}
-            <a className="text-[#00eaff] hover:underline" href="/" target="_blank" rel="noreferrer">
+            <a className="text-sky-400 hover:underline" href="/" target="_blank" rel="noreferrer">
               Terms of Use
             </a>
             ,{" "}
-            <a className="text-[#00eaff] hover:underline" href="/" target="_blank" rel="noreferrer">
+            <a className="text-sky-400 hover:underline" href="/" target="_blank" rel="noreferrer">
               Privacy Notice
             </a>{" "}
             and{" "}
-            <a className="text-[#00eaff] hover:underline" href="/" target="_blank" rel="noreferrer">
+            <a className="text-sky-400 hover:underline" href="/" target="_blank" rel="noreferrer">
               Cookie Notice
             </a>
             .
@@ -191,25 +196,13 @@ export default function SignUpPage() {
           <div className="mt-4 flex justify-center">
             <Link
               to="/login"
-              className="text-sm md:text-base font-bold text-[#1f2fff] hover:text-[#00eaff] hover:underline"
+              className="text-sm md:text-base font-bold text-sky-400 hover:text-sky-300 hover:underline"
             >
               Already have an account? Login
             </Link>
           </div>
         </div>
       </div>
-
-      {/* Subtle logo glow */}
-      <style>
-        {`
-          @keyframes logoGlow {
-            0% { filter: drop-shadow(0 0 12px rgba(0,234,255,.55)); }
-            50% { filter: drop-shadow(0 0 36px rgba(0,234,255,.35)); }
-            100% { filter: drop-shadow(0 0 12px rgba(0,234,255,.55)); }
-          }
-          img[alt="NovaChain Logo"] { animation: logoGlow 3s ease-in-out infinite; }
-        `}
-      </style>
     </div>
   );
 }
