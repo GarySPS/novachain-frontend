@@ -40,7 +40,7 @@ export default function LoginPage() {
     }
   };
 
-  return (
+return (
     <div
       className="min-h-screen w-full relative flex items-center justify-center px-4 py-10 md:py-14"
       style={{
@@ -64,7 +64,21 @@ export default function LoginPage() {
             />
           </div>
 
-          <form onSubmit={handleLogin} className="mt-6 space-y-5">
+          {/* ---- NEW: Video Display ---- */}
+          {/* This block adds your looping video inside the login card. */}
+          <div className="mt-8 w-full h-36 md:h-40 rounded-2xl overflow-hidden shadow-inner border border-white/50">
+              <video
+                  src="/login.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+              />
+          </div>
+
+          {/* Adjusted form margin from mt-6 to mt-8 for better spacing */}
+          <form onSubmit={handleLogin} className="mt-8 space-y-5">
             {/* Email/Username */}
             <div className="space-y-2">
               <label htmlFor="email" className="block text-sm md:text-base font-semibold text-[#232836]">
@@ -167,15 +181,14 @@ export default function LoginPage() {
             </a>
           </div>
 
-<div className="mt-5 flex justify-center">
-  <Link
-    to="/signup"
-    className="text-sm md:text-base font-bold text-[#1f2fff] hover:text-[#00eaff] hover:underline"
-  >
-    New here? Create an account
-  </Link>
-</div>
-
+          <div className="mt-5 flex justify-center">
+            <Link
+              to="/signup"
+              className="text-sm md:text-base font-bold text-[#1f2fff] hover:text-[#00eaff] hover:underline"
+            >
+              New here? Create an account
+            </Link>
+          </div>
         </div>
       </div>
 
