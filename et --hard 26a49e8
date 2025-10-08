@@ -1,0 +1,110 @@
+[33mb6baeb4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m add
+[33m26a49e8[m finish
+[33m1775449[m ate
+[33m952a782[m aete
+[33m3de5182[m ate
+[33m266be09[m aete
+[33me209a58[m mobile
+[33mef101f9[m mobile
+[33m016e87e[m Update Terms and Conditions page
+[33m8382e4b[m Update Android install button with PWA prompt handling
+[33mff1e3e3[m Update Android install button with PWA prompt handling
+[33me72f9a9[m fix wallet
+[33mef8aa75[m Fix duplicate balance card block and center total balance
+[33mbe1e0f6[m Center total balance card content and improve layout
+[33me1746cf[m Improve TradePage insufficient USDT popup and WalletPage fixes
+[33ma136774[m Update Terms modal and VerifyOTPPage flow
+[33mcded374[m Fix balance card center alignment on Wallet page
+[33m58065d3[m Fix assets donut text color, update Dashboard/ProfilePage UI, remove background card from coin selector in TradePage
+[33m977af12[m Update AboutUs, Dashboard, ProfilePage, Trade pages, WalletPage, and NewsPage UI fixes
+[33m3249e8c[m Fix VerifyOTP redirect to site root instead of /dashboard
+[33mda6f0ee[m Update UI/UX for Login & SignUp, hide Navbar on ForgotPassword
+[33macf4116[m Add Terms & Conditions page, link from AboutUs, show Terms popup after OTP verification
+[33m8898696[m KYC UX: optimistic submit, no alert popup; lock form while pending
+[33m32b9961[m Update login and profile pages
+[33m5c81488[m Fix: Dashboard keeps last prices from localStorage to prevent flicker
+[33me7a22c1[m Fix: prevent  balance flash, cache prices, add USDT fallback
+[33m9d0e938[m Fix ProfilePage prices fetch to match WalletPage
+[33me5345b6[m Update WalletPage UI/logic
+[33mfe684c6[m Fix timer reset issue by using endAt timestamp in TimerBar
+[33mccab82f[m Fix missing closing brace in executeTrade
+[33m8f79c07[m getSpotUSD: add TON alias + Coinbase fallback; use client_price fallback
+[33m5d63b05[m Fix missing closing brace in executeTrade
+[33mc2b578e[m Fix trade execution API call and loadTradeState logic
+[33mc0311a7[m Update TradePage and WalletPage
+[33m270feda[m Update ProfilePage.js for universal Android/iOS PWA install
+[33md6204af[m Show Android and iOS install buttons separately on profile page
+[33mafd9ebc[m Style: Make WhatsApp and Telegram buttons smaller and cleaner on login page
+[33m12f3e02[m Fix i18n import and beautify language selector in ProfilePage
+[33meed6a73[m Fix i18n import and beautify language selector in ProfilePage
+[33m18363a2[m Enhance language select dropdown on ProfilePage for NovaChain theme
+[33mb3cd180[m Fix: Multi-coin support and frontend trade logic
+[33m16c404d[m Add leadership and team bios translations (EN/ES/ZH) for About Us page
+[33m6850f51[m Match Profile page loading screen to History page style
+[33mb4787d8[m Fix order book columns for mobile responsive view
+[33m9f7cf15[m Fix background image/gradient, remove CSS import bug
+[33mf7eef35[m fix: background image set in index.html, AppShell cleanup, ProfilePage updated
+[33m2423964[m fix: background image set in index.html, AppShell cleanup, ProfilePage updated
+[33m5ce9ed3[m Your commit message describing changes in TradeHistory.js
+[33mfc9deb9[m Center order book table on Trade page
+[33m2b3eb81[m Update all auth pages for unified style and premium responsive UI
+[33m3e330da[m Profile page background, wallet address center, and latest updates
+[33mf210cad[m Update novachain login image
+[33me16b368[m style: reassure users on maintenance card, privacy & asset safety message
+[33m71ff8d0[m style: update maintenance card to premium platform standard text
+[33m6864284[m style: update maintenance card UI, remove button, improve spacing
+[33m54bfdd3[m style: update maintenance card UI, remove button, improve spacing
+[33m6d70437[m style: update global Tailwind CSS and enhance login error logic
+[33mea43205[m fix: maintenance message and syntax error in handleLogin
+[33m8d8506c[m fix: move DatabaseErrorCard to components folder
+[33md949acc[m feat: add beautiful database error card to LoginPage and install react-icons
+[33m457475d[m Fix: Sync balance logic between Profile and Wallet pages
+[33mf453878[m Add blurred background and logo to all auth pages, add novachainlogin.png
+[33m03fd74c[m transfer
+[33m57154b3[m transfer
+[33mfdab814[m Update ProfilePage and WalletPage
+[33mbe83698[m Fix navbar padding on mobile, align market cap badges, and update related pages
+[33mb27d610[m Style support buttons smaller in a separate box below main login/signup
+[33m751e33d[m Remove Telegram logo from support buttons
+[33m868a49a[m Fix Telegram logo for customer support buttons on Login and Profile pages
+[33m603232d[m Improve Login page: Center WhatsApp and Telegram support buttons
+[33m8d54125[m Add WhatsApp and Telegram support buttons to Login and Profile pages
+[33m7075997[m Update ProfilePage: Unified Install App button for Android & iOS
+[33m1ef76a8[m chore: remove unsupported notice, modal polish, translation tweaks
+[33m8fa3202[m Enable PWA support: add serviceWorkerRegistration, manifest, and custom install button
+[33m98cc5d7[m Update WalletPage layout and make ticker full width
+[33m3349a5a[m Update WalletPage layout and make ticker full width
+[33m086613a[m Fix WalletPage: remove screenshot column from history table
+[33mc1b30b6[m Fix dependencies, successful build
+[33m1c68031[m Move language switcher to Profile settings 2x2 grid, update settings UI, i18n keys
+[33m933059a[m Update Chinese translation
+[33m1f3d778[m frontend update
+[33m2913bac[m Update NewsPage: match card theme and remove tabs
+[33m9ee6fda[m feat: add premium News page, real NewsTicker, and menu link
+[33mbe5dbeb[m Update ProfilePage and WalletPage
+[33ma86fab9[m Install @supabase/supabase-js to fix build error
+[33m6b5015c[m Fix login/signup flow and user menu, update ProfilePage
+[33mecc389c[m chore: trigger vercel redeploy
+[33m57e0204[m Fix: Supabase avatar logic and avatar upload
+[33mc3690bf[m Fix: Supabase avatar logic and avatar upload
+[33m051a5f4[m Fix: Supabase avatar logic and avatar upload
+[33m4317bee[m Fix: Supabase avatar logic and avatar upload
+[33mc580d00[m Update WalletPage: add Supabase anon key for deposit upload
+[33m74470b4[m Fix avatar modal: show success/error message and add cancel button
+[33m9e03f36[m Remove popup alerts
+[33m9d7d37a[m Remove popup alerts from forgot password, show clean success/error messages
+[33m4e48a7f[m Fix forgot password API route (remove extra /api)
+[33m5048ae3[m Fix forgot password flow: remove old component and use correct OTP reset page
+[33m794f68c[m Fix forgot password endpoint bug, use /api/auth/* URLs
+[33m5b67b4d[m Fix KYC form to use FormData upload with selfie and id_card fields
+[33mcbe5e6f[m Fix forgot password flow, add resend OTP, and UX improvements
+[33m552ed79[m Add debug logs to ForgotPasswordPage for OTP bug tracking
+[33m212c22a[m Fix forgot password flow, add resend OTP, and UX improvements
+[33md6a98cd[m ProfilePage avatar upload working, bugfix for WalletPage
+[33md6e518e[m Add Forgot Password page and route
+[33mec2d246[m 🔥 Fix KYC image flip-flop bug with stable preview URLs
+[33m7e79e84[m Fix login redirect: always go to /profile after login
+[33mf4cc99c[m Fix avatar upload and display logic for profile
+[33m20b10d0[m Fix: Profile picture upload shows user image and success feedback
+[33mdd9ceef[m Fix profile picture: show user-uploaded avatar instead of default
+[33mdbbb22f[m Fix: profile picture upload button now works by using <span> instead of <button> in label
