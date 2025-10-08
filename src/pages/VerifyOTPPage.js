@@ -284,7 +284,7 @@ return (
               style={{
                 background:
                   "linear-gradient(90deg,#00eaff 0%,#1f2fff 55%,#ffd700 100%)",
-                color: "#141726",
+                color: "white",
                 boxShadow: "0 10px 24px rgba(0, 234, 255, 0.15)",
               }}
               disabled={otp.length < 6 || !email}
