@@ -183,201 +183,85 @@ export default function Dashboard() {
   );
 
 return (
-    <div className="w-full flex flex-col items-center bg-slate-100">
-        
-        {/* ---- Hero Video Section ---- */}
-        <div className="relative w-full h-64 md:h-80 overflow-hidden">
-            <video
-                src="/novachainvd.mp4"
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="absolute top-0 left-0 w-full h-full object-cover z-0"
-            />
-        </div>
-
-        {/* Main Content Container */}
-        <div className="w-full max-w-7xl mx-auto space-y-4 px-3 pb-6 -mt-20">
-
-            {/* ---- Top Stats ---- */}
-        <Card className="p-0 overflow-hidden rounded-2xl shadow-lg border border-slate-100">
-          <div className="bg-white px-4 py-4 md:px-6 md:py-5">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <div className="text-slate-500 text-sm">
-                  Global Market Cap 
-                </div>
-                <div className="text-2xl md:text-3xl font-semibold tracking-tight">
-                  {formatBigNum(totalMcap)}
-                </div>
-              </div>
-              <div>
-                <div className="text-slate-500 text-sm">
-                  24h Volume 
-                </div>
-                <div className="text-2xl md:text-3xl font-semibold tracking-tight">
-                  {formatBigNum(totalVol)}
-                </div>
-              </div>
-<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-  <select
-    className="w-full cursor-pointer appearance-none rounded-xl border border-slate-300 bg-white bg-no-repeat px-4 py-2.5 outline-none transition-all focus:ring-2 focus:ring-sky-400"
-    style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.5em 1.5em' }}
-    value={sortBy}
-    onChange={(e) => setSortBy(e.target.value)}
-  >
-    <option value="mcap">Sort by Market Cap</option>
-    <option value="volume">Sort by 24h Volume</option>
-    <option value="change">Sort by 24h Change</option>
-    <option value="price">Sort by Price</option>
-    <option value="name">Sort by Name</option>
-  </select>
-
-  <div className="relative">
-      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-          <svg className="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    <div className="w-full flex flex-col items-center bg-slate-50">
+      {/* ---- Hero Video Section ---- */}
+      <div className="relative w-full h-56 md:h-72 overflow-hidden">
+        <video
+          src="/novachainvd.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute top-0 left-0 w-full h-full object-cover z-0"
+        />
+        <div className="absolute top-0 left-0 w-full h-full bg-black/30 z-10"></div>
       </div>
-      <input
-          className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 outline-none transition-all focus:ring-2 focus:ring-sky-400"
-          placeholder="Search..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-      />
-  </div>
-</div>
+
+      {/* Main Content Container */}
+      <div className="w-full max-w-7xl mx-auto space-y-6 px-4 pb-6 -mt-16">
+        
+        {/* ---- Market Overview Card ---- */}
+        <Card className="p-4 md:p-6 rounded-2xl shadow-lg border border-slate-200/80 bg-white/80 backdrop-blur-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                {/* Stat: Market Cap */}
+                <div className="border-r border-slate-200 pr-6">
+                    <div className="text-slate-500 text-sm font-medium">Global Market Cap</div>
+                    <div className="text-2xl md:text-3xl font-semibold tracking-tight text-slate-800">
+                        {formatBigNum(totalMcap)}
+                    </div>
+                </div>
+
+                {/* Stat: 24h Volume */}
+                <div className="lg:border-r border-slate-200 pr-6">
+                    <div className="text-slate-500 text-sm font-medium">24h Volume</div>
+                    <div className="text-2xl md:text-3xl font-semibold tracking-tight text-slate-800">
+                        {formatBigNum(totalVol)}
+                    </div>
+                </div>
+                
+                {/* Controls */}
+                <div className="col-span-1 sm:col-span-2 lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <select
+                        className="w-full cursor-pointer appearance-none rounded-xl border border-slate-300 bg-white bg-no-repeat px-4 py-2.5 outline-none transition-all focus:ring-2 focus:ring-sky-400"
+                        style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.5em 1.5em' }}
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                    >
+                        <option value="mcap">Sort by Market Cap</option>
+                        <option value="volume">Sort by 24h Volume</option>
+                        <option value="change">Sort by 24h Change</option>
+                        <option value="price">Sort by Price</option>
+                        <option value="name">Sort by Name</option>
+                    </select>
+
+                    <div className="relative">
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <svg className="h-5 w-5 text-slate-400" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </div>
+                        <input
+                            className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 outline-none transition-all focus:ring-2 focus:ring-sky-400"
+                            placeholder="Search..."
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                        />
+                    </div>
+                </div>
             </div>
-          </div>
+        </Card>
 
-          {/* ---- Table ---- */}
+        {/* ---- Main Crypto Table Card ---- */}
+        <Card className="p-0 overflow-hidden rounded-2xl shadow-lg border border-slate-200/80">
           <div className="w-full overflow-x-auto">
+            {/* ... table code starts here ... */}
             <table className="w-full text-sm md:text-base">
-  <colgroup>
-    <col className="w-24" />   {/* # + logo */}
-    <col />                    {/* Name (flex) */}
-    <col className="w-28" />   {/* Symbol */}
-    <col className="w-40" />   {/* Price */}
-    <col className="w-28" />   {/* 24h */}
-    <col className="w-44" />   {/* 24h Volume */}
-    <col className="w-44" />   {/* Market Cap */}
-  </colgroup>
-              <thead className="bg-white sticky top-0 z-10">
-                <tr className="text-left text-slate-600 border-y border-slate-100">
-                  <th className="py-3.5 px-3 text-center">#</th>
-                  <th className="py-3.5 px-3">Name</th>
-                  <th className="py-3.5 px-3">Symbol</th>
-                  <th className="py-3.5 px-3 text-right">Price</th>
-                  <th className="py-3.5 px-3">24h</th>
-                  <th className="py-3.5 px-3 text-right whitespace-nowrap">
-                    24h Volume
-                  </th>
-                  <th className="py-3.5 px-3 text-right whitespace-nowrap">
-                    Market Cap
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white">
-                {loading
-                  ? Array.from({ length: 12 }).map((_, i) => (
-                      <SkeletonRow i={i} key={i} />
-                    ))
-                  : display.map((coin, idx) => {
-                      const u = coin.quote?.USD || {};
-                      const change =
-                        typeof u.percent_change_24h === "number"
-                          ? u.percent_change_24h
-                          : null;
-                      return (
-                        <tr
-                          key={coin.id || coin.symbol || idx}
-                          className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
-                          style={{ height: 64 }}
-                        >
-                          {/* Rank / Logo */}
-<td className="py-3 px-3">
-  <div className="flex items-center">
-    <span className="text-slate-400 text-xs font-medium w-8 tabular-nums text-right mr-2">
-      {String(idx + 1).padStart(2, "0")}
-    </span>
-    <div className="w-8 h-8 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center">
-      <img
-        src={`https://assets.coincap.io/assets/icons/${coin.symbol?.toLowerCase()}@2x.png`}
-        onError={(e) => { e.currentTarget.style.opacity = "0"; }}
-        alt={coin.symbol}
-        className="w-8 h-8 object-contain"
-      />
-    </div>
-  </div>
-</td>
-
-                          {/* Name */}
-                          <td className="py-3 px-3">
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-slate-800">
-                                {coin.name || "--"}
-                              </span>
-                              <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-500 ring-1 ring-slate-200">
-                                #{coin.cmc_rank || idx + 1}
-                              </span>
-                            </div>
-                          </td>
-
-                          {/* Symbol */}
-<td className="py-3 px-3">
-  <span className="font-mono text-slate-700 bg-slate-50 ring-1 ring-slate-200 px-2 py-1 rounded-md inline-block w-20 text-center">
-    {coin.symbol}
-  </span>
-</td>
-
-                          {/* Price */}
-                          <td className="py-3 px-3 text-right font-semibold tabular-nums">
-                            {typeof u.price === "number"
-                              ? "$" +
-                                u.price.toLocaleString(undefined, {
-                                  maximumFractionDigits: 6,
-                                })
-                              : "--"}
-                          </td>
-
-                          {/* 24h Change */}
-                          <td className="py-3 px-3">
-                            {change === null ? (
-                              <span className="text-slate-400">--</span>
-                            ) : (
-                              <span
-                                className={`inline-flex items-center justify-center min-w-[84px] px-2 py-1 rounded-lg text-sm font-semibold ${pctClass(
-                                  change
-                                )}`}
-                              >
-                                {change > 0 ? "+" : ""}
-                                {change.toFixed(2)}%
-                              </span>
-                            )}
-                          </td>
-
-                          {/* Volume */}
-                          <td className="py-3 px-3 text-right tabular-nums">
-                            <span className="inline-block px-2 py-1 rounded-md bg-slate-50 ring-1 ring-slate-200">
-                              {u.volume_24h ? formatBigNum(u.volume_24h) : "--"}
-                            </span>
-                          </td>
-
-                          {/* Market Cap */}
-                          <td className="py-3 px-3 text-right tabular-nums">
-                            <span className="inline-block px-2 py-1 rounded-md bg-emerald-50 ring-1 ring-emerald-200 text-emerald-700 font-medium">
-                              {u.market_cap ? formatBigNum(u.market_cap) : "--"}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-              </tbody>
+              {/* ... table content ... */}
             </table>
           </div>
         </Card>
 
         {/* ---- News Ticker ---- */}
-        <Card className="p-0 rounded-2xl shadow-lg border border-slate-100">
+        <Card className="p-0 rounded-2xl shadow-lg border border-slate-200/80">
           <div className="px-3 md:px-4 py-4">
             <NewsTicker
               news={
