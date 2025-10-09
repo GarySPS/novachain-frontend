@@ -1,3 +1,4 @@
+//src>pages>Dashboard.js
 import React, { useEffect, useMemo, useState } from "react";
 import Card from "../components/card";
 import NewsTicker from "../components/newsticker";
@@ -200,11 +201,11 @@ return (
         background: "linear-gradient(120deg, #0b1020f0 0%, #0d1220d8 60%, #0a101dd1 100%)",
       }}
     />
-    <div style={{ position: "relative", zIndex: 1 }} className="w-full max-w-7xl mx-auto space-y-6 px-4 py-6">
+    <div style={{ position: "relative", zIndex: 1 }} className="w-full max-w-7xl mx-auto space-y-6 py-6">
 
       
       {/* Main Content Container - Now wraps everything for consistent alignment */}
-      <div className="w-full max-w-7xl mx-auto space-y-6 px-4 py-6">
+      <div className="w-full max-w-7xl mx-auto space-y-6 py-6">
 
         {/* ---- NEW: Hero Video Card ---- */}
         {/* We've placed the video in its own clean, styled card. */}
