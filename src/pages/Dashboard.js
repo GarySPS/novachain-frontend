@@ -183,8 +183,25 @@ export default function Dashboard() {
   );
 
 return (
-    // Changed the main background for a slightly cleaner feel
-    <div className="w-full min-h-screen bg-gray-50">
+  <div
+    className="min-h-screen w-full flex flex-col items-center py-8 px-3"
+    style={{
+      background: 'url("/novachain.jpg") no-repeat center center fixed',
+      backgroundSize: "cover",
+      minHeight: "100vh",
+      position: "relative",
+    }}
+  >
+    {/* overlay */}
+    <div
+      className="fixed inset-0 pointer-events-none"
+      style={{
+        zIndex: 0,
+        background: "linear-gradient(120deg, #0b1020f0 0%, #0d1220d8 60%, #0a101dd1 100%)",
+      }}
+    />
+    <div style={{ position: "relative", zIndex: 1 }} className="w-full max-w-7xl mx-auto space-y-6 px-4 py-6">
+
       
       {/* Main Content Container - Now wraps everything for consistent alignment */}
       <div className="w-full max-w-7xl mx-auto space-y-6 px-4 py-6">
@@ -393,5 +410,6 @@ return (
         </Card>
       </div>
     </div>
+  </div>
   );
 }
