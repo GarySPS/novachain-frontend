@@ -52,7 +52,7 @@ return (
         {/* ---- NEW: Video player added here ---- */}
         <div className="w-full h-48 rounded-xl overflow-hidden shadow-lg mb-6 border border-sky-400/20">
             <video
-                src="/novachainvd.mp4"
+                src="/aboutus.mp4"
                 autoPlay
                 loop
                 muted
