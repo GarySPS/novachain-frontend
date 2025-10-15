@@ -184,50 +184,32 @@ export default function Dashboard() {
   );
 
 return (
-  <div
-    className="min-h-screen w-full flex flex-col items-center py-8 px-3"
-    style={{
-      background: 'url("/novachain.jpg") no-repeat center center fixed',
-      backgroundSize: "cover",
-      minHeight: "100vh",
-      position: "relative",
-    }}
-  >
-    {/* overlay */}
     <div
-      className="fixed inset-0 pointer-events-none"
+      className="min-h-screen w-full flex flex-col items-center py-8 px-3"
       style={{
-        zIndex: 0,
-        background: "linear-gradient(120deg, #0b1020f0 0%, #0d1220d8 60%, #0a101dd1 100%)",
+        background: 'url("/novachain.jpg") no-repeat center center fixed',
+        backgroundSize: "cover",
+        minHeight: "100vh",
+        position: "relative",
       }}
-    />
-    <div style={{ position: "relative", zIndex: 1 }} className="w-full max-w-7xl mx-auto space-y-6 py-6">
-
-      
-      {/* Main Content Container - Now wraps everything for consistent alignment */}
-      <div className="w-full max-w-7xl mx-auto space-y-6 py-6">
-
-        {/* ---- NEW: Hero Video Card ---- */}
-        {/* We've placed the video in its own clean, styled card. */}
-        <div className="w-full h-56 md:h-72 rounded-2xl shadow-lg overflow-hidden border border-slate-100">
-            <video
-                src="/novachainvd.mp4"
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full h-full object-cover"
-            />
-        </div>
+    >
+      {/* overlay */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          zIndex: 0,
+          background: "linear-gradient(120deg, #0b1020f0 0%, #0d1220d8 60%, #0a101dd1 100%)",
+        }}
+      />
+      <div style={{ position: "relative", zIndex: 1 }} className="w-full max-w-7xl mx-auto space-y-6">
 
         {/* ---- Top Stats Card ---- */}
-        {/* This card now sits cleanly below the video, with no overlap. */}
         <Card className="p-0 overflow-hidden rounded-2xl shadow-lg border border-slate-100">
           <div className="bg-white px-4 py-4 md:px-6 md:py-5">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
               <div>
                 <div className="text-slate-500 text-sm">
-                  Global Market Cap 
+                  Global Market Cap
                 </div>
                 <div className="text-2xl md:text-3xl font-semibold tracking-tight">
                   {formatBigNum(totalMcap)}
@@ -235,7 +217,7 @@ return (
               </div>
               <div>
                 <div className="text-slate-500 text-sm">
-                  24h Volume 
+                  24h Volume
                 </div>
                 <div className="text-2xl md:text-3xl font-semibold tracking-tight">
                   {formatBigNum(totalVol)}
@@ -256,15 +238,15 @@ return (
                 </select>
 
                 <div className="relative">
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <svg className="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    </div>
-                    <input
-                        className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 outline-none transition-all focus:ring-2 focus:ring-sky-400"
-                        placeholder="Search..."
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                    />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg className="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                  </div>
+                  <input
+                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 outline-none transition-all focus:ring-2 focus:ring-sky-400"
+                    placeholder="Search..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                  />
                 </div>
               </div>
             </div>
@@ -274,13 +256,13 @@ return (
           <div className="w-full overflow-x-auto">
             <table className="w-full text-sm md:text-base">
               <colgroup>
-                <col className="w-24" />   {/* # + logo */}
-                <col />                   {/* Name (flex) */}
-                <col className="w-28" />   {/* Symbol */}
-                <col className="w-40" />   {/* Price */}
-                <col className="w-28" />   {/* 24h */}
-                <col className="w-44" />   {/* 24h Volume */}
-                <col className="w-44" />   {/* Market Cap */}
+                <col className="w-24" />   {/* # + logo */}
+                <col />                   {/* Name (flex) */}
+                <col className="w-28" />   {/* Symbol */}
+                <col className="w-40" />   {/* Price */}
+                <col className="w-28" />   {/* 24h */}
+                <col className="w-44" />   {/* 24h Volume */}
+                <col className="w-44" />   {/* Market Cap */}
               </colgroup>
               <thead className="bg-white sticky top-0 z-10">
                 <tr className="text-left text-slate-600 border-y border-slate-100">
@@ -300,98 +282,98 @@ return (
               <tbody className="bg-white">
                 {loading
                   ? Array.from({ length: 12 }).map((_, i) => (
-                      <SkeletonRow i={i} key={i} />
-                    ))
+                    <SkeletonRow i={i} key={i} />
+                  ))
                   : display.map((coin, idx) => {
-                      const u = coin.quote?.USD || {};
-                      const change =
-                        typeof u.percent_change_24h === "number"
-                          ? u.percent_change_24h
-                          : null;
-                      return (
-                        <tr
-                          key={coin.id || coin.symbol || idx}
-                          className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
-                          style={{ height: 64 }}
-                        >
-                          {/* Rank / Logo */}
-                          <td className="py-3 px-3">
-                            <div className="flex items-center">
-                              <span className="text-slate-400 text-xs font-medium w-8 tabular-nums text-right mr-2">
-                                {String(idx + 1).padStart(2, "0")}
-                              </span>
-                              <div className="w-8 h-8 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center">
-                                <img
-                                  src={`https://assets.coincap.io/assets/icons/${coin.symbol?.toLowerCase()}@2x.png`}
-                                  onError={(e) => { e.currentTarget.style.opacity = "0"; }}
-                                  alt={coin.symbol}
-                                  className="w-8 h-8 object-contain"
-                                />
-                              </div>
+                    const u = coin.quote?.USD || {};
+                    const change =
+                      typeof u.percent_change_24h === "number"
+                        ? u.percent_change_24h
+                        : null;
+                    return (
+                      <tr
+                        key={coin.id || coin.symbol || idx}
+                        className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
+                        style={{ height: 64 }}
+                      >
+                        {/* Rank / Logo */}
+                        <td className="py-3 px-3">
+                          <div className="flex items-center">
+                            <span className="text-slate-400 text-xs font-medium w-8 tabular-nums text-right mr-2">
+                              {String(idx + 1).padStart(2, "0")}
+                            </span>
+                            <div className="w-8 h-8 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center">
+                              <img
+                                src={`https://assets.coincap.io/assets/icons/${coin.symbol?.toLowerCase()}@2x.png`}
+                                onError={(e) => { e.currentTarget.style.opacity = "0"; }}
+                                alt={coin.symbol}
+                                className="w-8 h-8 object-contain"
+                              />
                             </div>
-                          </td>
+                          </div>
+                        </td>
 
-                          {/* Name */}
-                          <td className="py-3 px-3">
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-slate-800">
-                                {coin.name || "--"}
-                              </span>
-                              <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-500 ring-1 ring-slate-200">
-                                #{coin.cmc_rank || idx + 1}
-                              </span>
-                            </div>
-                          </td>
-
-                          {/* Symbol */}
-                          <td className="py-3 px-3">
-                            <span className="font-mono text-slate-700 bg-slate-50 ring-1 ring-slate-200 px-2 py-1 rounded-md inline-block w-20 text-center">
-                              {coin.symbol}
+                        {/* Name */}
+                        <td className="py-3 px-3">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-slate-800">
+                              {coin.name || "--"}
                             </span>
-                          </td>
-
-                          {/* Price */}
-                          <td className="py-3 px-3 text-right font-semibold tabular-nums">
-                            {typeof u.price === "number"
-                              ? "$" +
-                                u.price.toLocaleString(undefined, {
-                                  maximumFractionDigits: 6,
-                                })
-                              : "--"}
-                          </td>
-
-                          {/* 24h Change */}
-                          <td className="py-3 px-3">
-                            {change === null ? (
-                              <span className="text-slate-400">--</span>
-                            ) : (
-                              <span
-                                className={`inline-flex items-center justify-center min-w-[84px] px-2 py-1 rounded-lg text-sm font-semibold ${pctClass(
-                                  change
-                                )}`}
-                              >
-                                {change > 0 ? "+" : ""}
-                                {change.toFixed(2)}%
-                              </span>
-                            )}
-                          </td>
-
-                          {/* Volume */}
-                          <td className="py-3 px-3 text-right tabular-nums">
-                            <span className="inline-block px-2 py-1 rounded-md bg-slate-50 ring-1 ring-slate-200">
-                              {u.volume_24h ? formatBigNum(u.volume_24h) : "--"}
+                            <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-500 ring-1 ring-slate-200">
+                              #{coin.cmc_rank || idx + 1}
                             </span>
-                          </td>
+                          </div>
+                        </td>
 
-                          {/* Market Cap */}
-                          <td className="py-3 px-3 text-right tabular-nums">
-                            <span className="inline-block px-2 py-1 rounded-md bg-emerald-50 ring-1 ring-emerald-200 text-emerald-700 font-medium">
-                              {u.market_cap ? formatBigNum(u.market_cap) : "--"}
+                        {/* Symbol */}
+                        <td className="py-3 px-3">
+                          <span className="font-mono text-slate-700 bg-slate-50 ring-1 ring-slate-200 px-2 py-1 rounded-md inline-block w-20 text-center">
+                            {coin.symbol}
+                          </span>
+                        </td>
+
+                        {/* Price */}
+                        <td className="py-3 px-3 text-right font-semibold tabular-nums">
+                          {typeof u.price === "number"
+                            ? "$" +
+                            u.price.toLocaleString(undefined, {
+                              maximumFractionDigits: 6,
+                            })
+                            : "--"}
+                        </td>
+
+                        {/* 24h Change */}
+                        <td className="py-3 px-3">
+                          {change === null ? (
+                            <span className="text-slate-400">--</span>
+                          ) : (
+                            <span
+                              className={`inline-flex items-center justify-center min-w-[84px] px-2 py-1 rounded-lg text-sm font-semibold ${pctClass(
+                                change
+                              )}`}
+                            >
+                              {change > 0 ? "+" : ""}
+                              {change.toFixed(2)}%
                             </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                          )}
+                        </td>
+
+                        {/* Volume */}
+                        <td className="py-3 px-3 text-right tabular-nums">
+                          <span className="inline-block px-2 py-1 rounded-md bg-slate-50 ring-1 ring-slate-200">
+                            {u.volume_24h ? formatBigNum(u.volume_24h) : "--"}
+                          </span>
+                        </td>
+
+                        {/* Market Cap */}
+                        <td className="py-3 px-3 text-right tabular-nums">
+                          <span className="inline-block px-2 py-1 rounded-md bg-emerald-50 ring-1 ring-emerald-200 text-emerald-700 font-medium">
+                            {u.market_cap ? formatBigNum(u.market_cap) : "--"}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>
@@ -411,6 +393,5 @@ return (
         </Card>
       </div>
     </div>
-  </div>
   );
 }
