@@ -411,7 +411,7 @@ return (
     {/* ===== Promotion Video Card ===== */}
     {showPromotion && (
       <div
-        className="fixed bottom-6 right-6 z-50 w-full max-w-[280px] sm:max-w-xs rounded-2xl shadow-2xl border border-slate-700 overflow-hidden"
+        className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-[90vw] max-w-sm rounded-2xl shadow-2xl border border-slate-700 overflow-hidden"
         style={{
           background: "linear-gradient(120deg, #0b1020f0 0%, #0d1220d8 60%, #0a101dd1 100%)",
         }}
