@@ -440,7 +440,7 @@ const handleWithdraw = async (e) => {
                       className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
                       style={{ height: 64 }}
                     >
-              _       {/* Type: Matched padding pl-4 pr-2 */}
+                     {/* Type: Matched padding pl-4 pr-2 */}
                       <td className="py-3 pl-4 pr-2">
                         <div className="flex items-center gap-2">
                           <Icon name={symbol?.toLowerCase() || "coin"} className="w-6 h-6" />
