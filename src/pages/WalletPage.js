@@ -440,31 +440,31 @@ const handleWithdraw = async (e) => {
                       className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
                       style={{ height: 64 }}
                     >
-                      <td className="py-3 px-4">
+                      <td className="py-3 pl-4 pr-2">
                         <div className="flex items-center gap-2">
                           <Icon name={symbol?.toLowerCase() || "coin"} className="w-6 h-6" />
                           <span className="font-semibold text-slate-900">{symbol}</span>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-right tabular-nums font-medium text-slate-800">
+                      <td className="py-3 px-2 text-right tabular-nums font-medium text-slate-800">
                         {Number(balance).toLocaleString(undefined, {
                           minimumFractionDigits: symbol === "BTC" ? 6 : 2,
                           maximumFractionDigits: symbol === "BTC" ? 8 : 6,
                         })}
                       </td>
-                      <td className="py-3 px-4 text-right tabular-nums font-medium text-amber-600">
+                      <td className="py-3 px-2 text-right tabular-nums font-medium text-amber-600">
                         {Number(frozen || 0).toLocaleString(undefined, {
                           minimumFractionDigits: symbol === "BTC" ? 6 : 2,
                           maximumFractionDigits: symbol === "BTC" ? 8 : 6,
                     })}
                       </td>
-                      <td className="py-3 px-4 text-right tabular-nums font-semibold text-slate-900">
+                      <td className="py-3 px-2 text-right tabular-nums font-semibold text-slate-900">
                         {(() => {
                           const p = prices[symbol] ?? (symbol === "USDT" ? 1 : undefined);
                           return p !== undefined ? fmtUSD(Number(balance) * p) : "--";
                         })()}
                       </td>
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3 pl-2 pr-4 text-right">
                         <div className="inline-flex items-center gap-2">
                           <button
                             className="h-10 px-4 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:scale-[1.02] transition"
