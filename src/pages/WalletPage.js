@@ -435,54 +435,59 @@ const handleWithdraw = async (e) => {
                 </thead>
                 <tbody className="bg-white">
                   {balances.map(({ symbol, icon, balance, frozen }) => (
-                    <tr
-                      key={symbol}
-                      className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
-                      style={{ height: 64 }}
-                    >
-                      <td className="py-3 pl-4 pr-2">
-                        <div className="flex items-center gap-2">
-                          <Icon name={symbol?.toLowerCase() || "coin"} className="w-6 h-6" />
-                          <span className="font-semibold text-slate-900">{symbol}</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-2 text-right tabular-nums font-medium text-slate-800">
-                        {Number(balance).toLocaleString(undefined, {
-                          minimumFractionDigits: symbol === "BTC" ? 6 : 2,
-                          maximumFractionDigits: symbol === "BTC" ? 8 : 6,
-                        })}
-                      </td>
-                      <td className="py-3 px-2 text-right tabular-nums font-medium text-amber-600">
-                        {Number(frozen || 0).toLocaleString(undefined, {
-                          minimumFractionDigits: symbol === "BTC" ? 6 : 2,
-                          maximumFractionDigits: symbol === "BTC" ? 8 : 6,
-                    })}
-                      </td>
-                      <td className="py-3 px-2 text-right tabular-nums font-semibold text-slate-900">
-                        {(() => {
-                          const p = prices[symbol] ?? (symbol === "USDT" ? 1 : undefined);
-                          return p !== undefined ? fmtUSD(Number(balance) * p) : "--";
-                        })()}
-                      </td>
-                      <td className="py-3 pl-2 pr-4 text-right">
-                        <div className="inline-flex items-center gap-2">
-                          <button
-                            className="h-10 px-4 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:scale-[1.02] transition"
-                            onClick={() => { setSelectedDepositCoin(symbol); openModal("deposit", symbol); }}
-                          >
-                            <span className="inline-flex items-center gap-1"><Icon name="download" />{t("deposit")}</span>
-                          </button>
-                          <button
-                            className="h-10 px-4 rounded-xl bg-white ring-1 ring-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
-                            onClick={() => openModal("withdraw", symbol)}
-                          >
-                            <span className="inline-flex items-center gap-1"><Icon name="upload" />{t("withdraw")}</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
+                    <tr
+                      key={symbol}
+                      className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
+                      style={{ height: 64 }}
+                    >
+              _       {/* Type: Matched padding pl-4 pr-2 */}
+                      <td className="py-3 pl-4 pr-2">
+                        <div className="flex items-center gap-2">
+                          <Icon name={symbol?.toLowerCase() || "coin"} className="w-6 h-6" />
+                          <span className="font-semibold text-slate-900">{symbol}</span>
+                      </div>
+                      </td>
+                      {/* Amount: Matched padding px-2 */}
+                      <td className="py-3 px-2 text-right tabular-nums font-medium text-slate-800">
+                        {Number(balance).toLocaleString(undefined, {
+                        s   minimumFractionDigits: symbol === "BTC" ? 6 : 2,
+                          maximumFractionDigits: symbol === "BTC" ? 8 : 6,
+                        })}
+                      </td>
+                      {/* Frozen: Matched padding px-2 */}
+                    <td className="py-3 px-2 text-right tabular-nums font-medium text-amber-600">
+                        {Number(frozen || 0).toLocaleString(undefined, {
+                          minimumFractionDigits: symbol === "BTC" ? 6 : 2,
+                          maximumFractionDigits: symbol === "BTC" ? 8 : 6,
+                    })}
+                      </td>
+                      {/* USD Value: Matched padding px-2 */}
+                   <td className="py-3 px-2 text-right tabular-nums font-semibold text-slate-900">
+                        {(() => {
+                          const p = prices[symbol] ?? (symbol === "USDT" ? 1 : undefined);
+                          return p !== undefined ? fmtUSD(Number(balance) * p) : "--";
+                     })()}
+                      </td>
+                      {/* Transfer: Matched padding pl-2 pr-4 */}
+                      <td className="py-3 pl-2 pr-4 text-right">
+                        <div className="inline-flex items-center gap-2">
+                          <button
+                            className="h-10 px-4 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:scale-[1.02] transition"
+                         onClick={() => { setSelectedDepositCoin(symbol); openModal("deposit", symbol); }}
+                          >
+                            <span className="inline-flex items-center gap-1"><Icon name="download" />{t("deposit")}</span>
+                          </button>
+                          <button
+                            className="h-10 px-4 rounded-xl bg-white ring-1 ring-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+                          onClick={() => openModal("withdraw", symbol)}
+                        >
+                            <span className="inline-flex items-center gap-1"><Icon name="upload" />{t("withdraw")}</span>
+                          </button>
+                      </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
               </table>
             </div>
           </Card>
