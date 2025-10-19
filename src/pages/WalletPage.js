@@ -391,131 +391,28 @@ const handleWithdraw = async (e) => {
         }}
       />
       <div style={{ position: "relative", zIndex: 1 }} className="w-full max-w-7xl">
-
         {/* ===== Top row: balance + assets ===== */}
 <div className="w-full grid grid-cols-1 lg:grid-cols-[minmax(320px,380px),1fr] gap-6 md:gap-8 items-stretch">
 
-<Card className="rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden">
-  {/* --- Card Header --- */}
-  <div className="px-5 pt-5 pb-2 md:pb-5">
-    <div className="text-slate-700 font-semibold">{t("my_assets")}</div>
-  </div>
-
-  {/* --- Mobile View (List of Cards) --- */}
-  <div className="md:hidden px-2 pb-2 space-y-2">
-    {balances.map(({ symbol, balance, frozen }) => (
-      <div key={symbol} className="bg-slate-50/70 rounded-2xl p-3 space-y-3">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Icon name={symbol?.toLowerCase() || "coin"} className="w-7 h-7" />
-            <span className="font-extrabold text-slate-900 text-lg">{symbol}</span>
-          </div>
-          <div className="text-right">
-            <div className="font-bold text-slate-900 tabular-nums">
-              {(() => {
-                const p = prices[symbol] ?? (symbol === "USDT" ? 1 : undefined);
-                return p !== undefined ? fmtUSD(Number(balance) * p) : "--";
-              })()}
-            </div>
-            <div className="text-sm text-slate-500 tabular-nums">
-              {Number(balance).toLocaleString(undefined, {
-                minimumFractionDigits: symbol === "BTC" ? 6 : 2,
-                maximumFractionDigits: symbol === "BTC" ? 8 : 6,
-              })}
-            </div>
-          </div>
-        </div>
-        {Number(frozen || 0) > 0 && (
-          <div className="flex justify-between items-center text-sm bg-amber-50 ring-1 ring-amber-200 rounded-lg px-3 py-1.5">
-            <span className="font-semibold text-amber-700">{t("frozen", "Frozen")}</span>
-            <span className="font-medium text-amber-600 tabular-nums">
-              {Number(frozen || 0).toLocaleString(undefined, {
-                minimumFractionDigits: symbol === "BTC" ? 6 : 2,
-                maximumFractionDigits: symbol === "BTC" ? 8 : 6,
-              })}
-            </span>
-          </div>
-        )}
-        <div className="grid grid-cols-2 gap-2 pt-1">
-          <button
-            className="h-10 px-4 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:scale-[1.02] transition flex items-center justify-center gap-1.5"
-            onClick={() => { setSelectedDepositCoin(symbol); openModal("deposit", symbol); }}
-          >
-            <Icon name="download" className="w-4 h-4" />{t("deposit")}
-          </button>
-          <button
-            className="h-10 px-4 rounded-xl bg-white ring-1 ring-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition flex items-center justify-center gap-1.5"
-            onClick={() => openModal("withdraw", symbol)}
-          >
-            <Icon name="upload" className="w-4 h-4" />{t("withdraw")}
-          </button>
-        </div>
+<Card className="rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden h-full">
+  <div className="w-full h-full min-h-[180px] md:min-h-[220px] flex items-center justify-center
+                  px-4 sm:px-6 bg-gradient-to-br from-indigo-50 via-sky-50 to-emerald-50">
+    <div className="flex flex-col items-center gap-1 w-full">
+      <div className="text-center text-slate-500 text-xs sm:text-sm font-semibold">
+        {t("total_balance")}
       </div>
-    ))}
-  </div>
 
-  {/* --- Desktop View (Aligned Table) --- */}
-  <div className="hidden md:block w-full overflow-x-auto">
-    <table className="w-full text-sm md:text-base">
-      <thead className="bg-white sticky top-0 z-10">
-        <tr className="text-left text-slate-600 border-y border-slate-100">
-          <th className="py-3.5 px-4 font-medium whitespace-nowrap">{t("type")}</th>
-          <th className="py-3.5 px-4 text-right font-medium whitespace-nowrap">{t("amount")}</th>
-          <th className="py-3.5 px-4 text-right font-medium whitespace-nowrap">{t("frozen", "Frozen")}</th>
-          <th className="py-3.5 px-4 text-right font-medium whitespace-nowrap">{t("usd_value", "USD Value")}</th>
-          <th className="py-3.5 px-4 text-right font-medium whitespace-nowrap">{t("Transfer")}</th>
-        </tr>
-      </thead>
-      <tbody className="bg-white">
-        {balances.map(({ symbol, balance, frozen }) => (
-          <tr
-            key={symbol}
-            className="group border-b border-slate-100 last:border-b-0 hover:bg-slate-50/60 transition-colors"
-          >
-            <td className="py-3 px-4">
-              <div className="flex items-center gap-2">
-                <Icon name={symbol?.toLowerCase() || "coin"} className="w-6 h-6" />
-                <span className="font-semibold text-slate-900">{symbol}</span>
-              </div>
-            </td>
-            <td className="py-3 px-4 text-right tabular-nums font-medium text-slate-800">
-              {Number(balance).toLocaleString(undefined, {
-                minimumFractionDigits: symbol === "BTC" ? 6 : 2,
-                maximumFractionDigits: symbol === "BTC" ? 8 : 6,
-              })}
-            </td>
-            <td className="py-3 px-4 text-right tabular-nums font-medium text-amber-600">
-              {Number(frozen || 0).toLocaleString(undefined, {
-                minimumFractionDigits: symbol === "BTC" ? 6 : 2,
-                maximumFractionDigits: symbol === "BTC" ? 8 : 6,
-              })}
-            </td>
-            <td className="py-3 px-4 text-right tabular-nums font-semibold text-slate-900">
-              {(() => {
-                const p = prices[symbol] ?? (symbol === "USDT" ? 1 : undefined);
-                return p !== undefined ? fmtUSD(Number(balance) * p) : "--";
-              })()}
-            </td>
-            <td className="py-3 px-4 text-right">
-              <div className="inline-flex items-center gap-2">
-                <button
-                  className="h-9 px-4 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:scale-[1.02] active:scale-[0.98] transition"
-                  onClick={() => { setSelectedDepositCoin(symbol); openModal("deposit", symbol); }}
-                >
-                  <span className="inline-flex items-center gap-1"><Icon name="download" />{t("deposit")}</span>
-                </button>
-                <button
-                  className="h-9 px-4 rounded-xl bg-white ring-1 ring-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 active:scale-[0.98] transition"
-                  onClick={() => openModal("withdraw", symbol)}
-                >
-                  <span className="inline-flex items-center gap-1"><Icon name="upload" />{t("withdraw")}</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+      {/* key: clamp + break-all + leading + full width */}
+      <div
+        className="
+          w-full max-w-full px-1 text-center font-extrabold text-slate-900 tabular-nums
+          leading-[1.1] tracking-tight break-all
+          text-[clamp(1.5rem,5.2vw,2.75rem)]
+        "
+      >
+        {fmtUSD(totalUsd)}
+      </div>
+    </div>
   </div>
 </Card>
 
@@ -558,7 +455,7 @@ const handleWithdraw = async (e) => {
                         {Number(frozen || 0).toLocaleString(undefined, {
                           minimumFractionDigits: symbol === "BTC" ? 6 : 2,
                           maximumFractionDigits: symbol === "BTC" ? 8 : 6,
-                     })}
+                    })}
                       </td>
                       <td className="py-3 px-4 text-right tabular-nums font-semibold text-slate-900">
                         {(() => {
@@ -668,90 +565,57 @@ const handleWithdraw = async (e) => {
         </Card>
 
         {/* ===== History ===== */}
-<Card className="mt-8 rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden">
-  {/* --- Card Header --- */}
-  <div className="px-5 py-4 md:px-6 md:py-5 bg-white/80 border-b border-slate-100">
-    <div className="flex items-center gap-2 text-slate-800 text-xl font-extrabold">
-      <Icon name="clock" className="w-6 h-6" /> {t("deposit_withdraw_history")}
-    </div>
-  </div>
-
-  {/* --- Mobile View (List of Cards) --- */}
-  <div className="md:hidden px-2 py-2 space-y-2">
-    {(Array.isArray(allHistory) ? allHistory : []).map((row, idx) => (
-      <div 
-        key={row.type === "Deposit" ? `m-deposit-${row.id || idx}` : `m-withdraw-${row.id || idx}`}
-        className="bg-slate-50/70 rounded-2xl p-3"
-      >
-        <div className="flex justify-between items-start">
-          <div>
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-semibold ring-1 ${
-              row.type === "Deposit"
-                ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
-                : "bg-amber-50 text-amber-700 ring-amber-200"
-            }`}>
-              <Icon name={row.type === "Deposit" ? "download" : "upload"} className="w-4 h-4" />
-              {t(row.type.toLowerCase())}
-            </span>
-          </div>
-          <div className="text-right">
-            <div className="font-bold text-slate-900 tabular-nums text-base">
-              {row.amount} {row.coin}
-            </div>
-            <div className="text-xs text-slate-500 mt-0.5">
-              {row.created_at ? new Date(row.created_at).toLocaleString() : (row.date || "--")}
+        <Card className="mt-8 rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden">
+          <div className="px-5 py-4 md:px-6 md:py-5 bg-white/80">
+            <div className="flex items-center gap-2 text-slate-800 text-xl font-extrabold">
+              <Icon name="clock" className="w-6 h-6" /> {t("deposit_withdraw_history")}
             </div>
           </div>
-        </div>
-      </div>
-    ))}
-  </div>
-
-  {/* --- Desktop View (Aligned Table) --- */}
-  <div className="hidden md:block w-full overflow-x-auto">
-    <table className="w-full text-sm md:text-base">
-      <thead className="bg-white sticky top-0 z-10">
-        <tr className="text-left text-slate-600 border-y border-slate-100">
-          <th className="py-3.5 px-4 font-medium whitespace-nowrap">{t("type")}</th>
-          <th className="py-3.5 px-4 font-medium whitespace-nowrap">{t("coin")}</th>
-          <th className="py-3.5 px-4 text-right font-medium whitespace-nowrap">{t("amount")}</th>
-          <th className="py-3.5 px-4 text-right font-medium whitespace-nowrap">{t("date")}</th>
-        </tr>
-      </thead>
-      <tbody className="bg-white">
-        {(Array.isArray(allHistory) ? allHistory : []).map((row, idx) => (
-          <tr
-            key={row.type === "Deposit" ? `d-deposit-${row.id || idx}` : `d-withdraw-${row.id || idx}`}
-            className="group border-b border-slate-100 last:border-b-0 hover:bg-slate-50/60 transition-colors"
-          >
-            <td className="py-3 px-4">
-              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ring-1 ${
-                row.type === "Deposit"
-                  ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
-                  : "bg-amber-50 text-amber-700 ring-amber-200"
-              }`}>
-                <Icon name={row.type === "Deposit" ? "download" : "upload"} className="w-4 h-4" />
-                {t(row.type.toLowerCase())}
-              </span>
-            </td>
-            <td className="py-3 px-4 font-semibold text-slate-900">
-              <span className="inline-flex items-center gap-2">
-                <Icon name={row.coin?.toLowerCase() || "coin"} className="w-5 h-5" />
-                {row.coin}
-              </span>
-            </td>
-            <td className="py-3 px-4 text-right tabular-nums font-medium">
-              {row.amount}
-            </td>
-            <td className="py-3 px-4 text-right text-slate-700">
-              {row.created_at ? new Date(row.created_at).toLocaleString() : (row.date || "--")}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-</Card>
+          <div className="w-full overflow-x-auto">
+            <table className="w-full text-sm md:text-base">
+              <thead className="bg-white sticky top-0 z-10">
+                <tr className="text-left text-slate-600 border-y border-slate-100">
+                  <th className="py-3.5 px-4">{t("type")}</th>
+                  <th className="py-3.5 px-4 text-right">{t("amount")}</th>
+                  <th className="py-3.5 px-4">{t("coin")}</th>
+                  <th className="py-3.5 px-4">{t("date")}</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white">
+                {(Array.isArray(allHistory) ? allHistory : []).map((row, idx) => (
+                  <tr
+                    key={row.type === "Deposit" ? `deposit-${row.id || idx}` : row.type === "Withdraw" ? `withdraw-${row.id || idx}` : idx}
+                    className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
+                    style={{ height: 60 }}
+                  >
+                    <td className="py-3 px-4">
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ring-1 ${
+                        row.type === "Deposit"
+                          ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+                          : "bg-amber-50 text-amber-700 ring-amber-200"
+                      }`}>
+                        <Icon name={row.type === "Deposit" ? "download" : "upload"} className="w-4 h-4" />
+                        {t(row.type.toLowerCase())}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right tabular-nums font-medium">
+                      {row.amount}
+                    </td>
+                    <td className="py-3 px-4 font-semibold text-slate-900">
+                      <span className="inline-flex items-center gap-2">
+                        <Icon name={row.coin?.toLowerCase() || "coin"} className="w-5 h-5" />
+                        {row.coin}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-slate-700">
+                      {row.created_at ? new Date(row.created_at).toLocaleString() : (row.date || "--")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       </div>
 
       {/* ===== Modals ===== */}
