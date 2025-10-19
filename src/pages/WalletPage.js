@@ -1,3 +1,4 @@
+//src>pages>WalletPage.js
 import { MAIN_API_BASE, ADMIN_API_BASE } from '../config';
 import { jwtDecode } from "jwt-decode";
 import React, { useState, useEffect, useRef } from "react";
@@ -423,15 +424,16 @@ const handleWithdraw = async (e) => {
             <div className="w-full overflow-x-auto">
               <table className="w-full text-sm md:text-base">
                 <thead className="bg-white sticky top-0 z-10">
-                  <tr className="text-left text-slate-600 border-y border-slate-100">
-                    <th className="py-3.5 px-4">{t("type")}</th>
-                    <th className="py-3.5 px-4 text-right">{t("amount")}</th>
-                    <th className="py-3.5 px-4 text-right">{t("usd_value", "USD Value")}</th>
-                    <th className="py-3.5 px-4 text-right">{t("Transfer")}</th>
-                  </tr>
-                </thead>
+                  <tr className="text-left text-slate-600 border-y border-slate-100">
+                    <th className="py-3.5 px-4">{t("type")}</th>
+                    <th className="py-3.5 px-4 text-right">{t("amount")}</th>
+                      <th className="py-3.5 px-4 text-right">{t("frozen", "Frozen")}</th>
+                    <th className="py-3.5 px-4 text-right">{t("usd_value", "USD Value")}</th>
+                    <th className="py-3.5 px-4 text-right">{t("Transfer")}</th>
+                  </tr>
+                </thead>
                 <tbody className="bg-white">
-                  {balances.map(({ symbol, icon, balance }) => (
+                  {balances.map(({ symbol, icon, balance, frozen }) => (
                     <tr
                       key={symbol}
                       className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
@@ -448,6 +450,12 @@ const handleWithdraw = async (e) => {
                           minimumFractionDigits: symbol === "BTC" ? 6 : 2,
                           maximumFractionDigits: symbol === "BTC" ? 8 : 6,
                         })}
+                      </td>
+                      <td className="py-3 px-4 text-right tabular-nums font-medium text-amber-600">
+                        {Number(frozen || 0).toLocaleString(undefined, {
+                          minimumFractionDigits: symbol === "BTC" ? 6 : 2,
+                          maximumFractionDigits: symbol === "BTC" ? 8 : 6,
+                     })}
                       </td>
                       <td className="py-3 px-4 text-right tabular-nums font-semibold text-slate-900">
                         {(() => {

@@ -26,6 +26,7 @@ export default function Dashboard() {
   const [newsHeadlines, setNewsHeadlines] = useState([]);
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState("mcap"); // mcap | volume | change | price | name
+  const [showPromotion, setShowPromotion] = useState(false);
 
   /* ---------- prices (fetch >= 100) ---------- */
   useEffect(() => {
@@ -99,6 +100,20 @@ export default function Dashboard() {
     }
     fetchHeadlines();
   }, []);
+
+  /* ---------- promotion modal ---------- */
+  useEffect(() => {
+    // Check session storage to see if user already closed it
+    const hasClosed = sessionStorage.getItem("novaPromotionClosed");
+    if (!hasClosed) {
+      setShowPromotion(true);
+    }
+  }, []);
+
+  const handleClosePromotion = () => {
+    sessionStorage.setItem("novaPromotionClosed", "true");
+    setShowPromotion(false);
+  };
 
   /* ---------- computed ---------- */
   const filteredSorted = useMemo(() => {
@@ -392,6 +407,48 @@ return (
           </div>
         </Card>
       </div>
+
+    {/* ===== Promotion Video Card ===== */}
+    {showPromotion && (
+      <div
+        className="fixed bottom-6 right-6 z-50 w-full max-w-[280px] sm:max-w-xs rounded-2xl shadow-2xl border border-slate-700 overflow-hidden"
+        style={{
+          background: "linear-gradient(120deg, #0b1020f0 0%, #0d1220d8 60%, #0a101dd1 100%)",
+        }}
+      >
+        <div className="relative">
+          <button
+            onClick={handleClosePromotion}
+            className="absolute top-2 right-2 z-10 h-7 w-7 rounded-full bg-black/60 text-white hover:bg-black/90 transition-colors flex items-center justify-center"
+            aria-label="Close promotion"
+          >
+            {/* Simple 'X' icon */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+          <video
+            src="/promotion.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-auto"
+          />
+        </div>
+      </div>
+    )}
     </div>
   );
 }
