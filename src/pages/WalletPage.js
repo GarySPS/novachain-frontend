@@ -418,18 +418,19 @@ const handleWithdraw = async (e) => {
 
           {/* Assets table */}
           <Card className="rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden">
-            <div className="px-5 pt-5">
+            <div className="px-5 pt-4 pb-2">
               <div className="text-slate-700 font-semibold">{t("my_assets")}</div>
             </div>
             <div className="w-full overflow-x-auto">
-              <table className="w-full text-sm md:text-base">
+              <table className="w-full text-sm md:text-base table-fixed">
                 <thead className="bg-white sticky top-0 z-10">
                   <tr className="text-left text-slate-600 border-y border-slate-100">
-                    <th className="py-3.5 px-4">{t("type")}</th>
-                    <th className="py-3.5 px-4 text-right">{t("amount")}</th>
-                      <th className="py-3.5 px-4 text-right">{t("frozen", "Frozen")}</th>
-                    <th className="py-3.5 px-4 text-right">{t("usd_value", "USD Value")}</th>
-                    <th className="py-3.5 px-4 text-right">{t("Transfer")}</th>
+                    {/* Adjusted padding (py-3, px-2) and added widths (w-...) */}
+                    <th className="py-3 pl-4 pr-2 w-1/5">{t("type")}</th>
+                    <th className="py-3 px-2 text-right w-1/5">{t("amount")}</th>
+                    <th className="py-3 px-2 text-right w-[15%]">{t("frozen", "Frozen")}</th>
+                    <th className="py-3 px-2 text-right w-1/5">{t("usd_value", "USD Value")}</th>
+                    <th className="py-3 pl-2 pr-4 text-right w-1/4">{t("Transfer")}</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white">
