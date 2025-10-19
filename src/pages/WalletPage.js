@@ -1,4 +1,3 @@
-//src>pages>WalletPage.js
 import { MAIN_API_BASE, ADMIN_API_BASE } from '../config';
 import { jwtDecode } from "jwt-decode";
 import React, { useState, useEffect, useRef } from "react";
@@ -396,7 +395,7 @@ const handleWithdraw = async (e) => {
 
 <Card className="rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden h-full">
   <div className="w-full h-full min-h-[180px] md:min-h-[220px] flex items-center justify-center
-                  px-4 sm:px-6 bg-gradient-to-br from-indigo-50 via-sky-50 to-emerald-50">
+                px-4 sm:px-6 bg-gradient-to-br from-indigo-50 via-sky-50 to-emerald-50">
     <div className="flex flex-col items-center gap-1 w-full">
       <div className="text-center text-slate-500 text-xs sm:text-sm font-semibold">
         {t("total_balance")}
@@ -416,82 +415,86 @@ const handleWithdraw = async (e) => {
   </div>
 </Card>
 
-          {/* Assets table */}
-          <Card className="rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden">
-            <div className="px-5 pt-4 pb-2">
-              <div className="text-slate-700 font-semibold">{t("my_assets")}</div>
-            </div>
-            <div className="w-full overflow-x-auto">
-              <table className="w-full text-sm md:text-base table-fixed">
-                <thead className="bg-white sticky top-0 z-10">
-                  <tr className="text-left text-slate-600 border-y border-slate-100">
-                    {/* Adjusted padding (py-3, px-2) and added widths (w-...) */}
-                    <th className="py-3 pl-4 pr-2 w-1/5">{t("type")}</th>
-                    <th className="py-3 px-2 text-right w-1/5">{t("amount")}</th>
-                    <th className="py-3 px-2 text-right w-[15%]">{t("frozen", "Frozen")}</th>
-                    <th className="py-3 px-2 text-right w-1/5">{t("usd_value", "USD Value")}</th>
-                    <th className="py-3 pl-2 pr-4 text-right w-1/4">{t("Transfer")}</th>
-                  </tr>
-                </thead>
-          <tbody className="bg-white">
-            {balances.map(({ symbol, icon, balance, frozen }) => (
-              <tr
-                key={symbol}
-                className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
-                style={{ height: 64 }}
-              >
-                {/* Type: Matched padding pl-4 pr-2 */}
-                <td className="py-3 pl-4 pr-2">
-                  <div className="flex items-center gap-2">
-                    <Icon name={symbol?.toLowerCase() || "coin"} className="w-6 h-6" />
-                    <span className="font-semibold text-slate-900">{symbol}</span>
-                  </div>
-                </td>
-                {/* Amount: Matched padding px-2 */}
-                <td className="py-3 px-2 text-right tabular-nums font-medium text-slate-800">
-                  {Number(balance).toLocaleString(undefined, {
-                    minimumFractionDigits: symbol === "BTC" ? 6 : 2,
-                    maximumFractionDigits: symbol === "BTC" ? 8 : 6,
-                  })}
-                </td>
-                {/* Frozen: Matched padding px-2 */}
-                <td className="py-3 px-2 text-right tabular-nums font-medium text-amber-600">
-                  {Number(frozen || 0).toLocaleString(undefined, {
-                    minimumFractionDigits: symbol === "BTC" ? 6 : 2,
-                    maximumFractionDigits: symbol === "BTC" ? 8 : 6,
-                  })}
-                </td>
-                {/* USD Value: Matched padding px-2 */}
-                <td className="py-3 px-2 text-right tabular-nums font-semibold text-slate-900">
-                  {(() => {
-                    const p = prices[symbol] ?? (symbol === "USDT" ? 1 : undefined);
-                    return p !== undefined ? fmtUSD(Number(balance) * p) : "--";
-                  })()}
-                </td>
-                {/* Transfer: Matched padding pl-2 pr-4 */}
-                <td className="py-3 pl-2 pr-4 text-right">
-                  <div className="inline-flex items-center gap-2">
-                    <button
-                      className="h-10 px-4 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:scale-[1.02] transition"
-                      onClick={() => { setSelectedDepositCoin(symbol); openModal("deposit", symbol); }}
-                    >
-                      <span className="inline-flex items-center gap-1"><Icon name="download" />{t("deposit")}</span>
-                    </button>
-                    <button
-                      className="h-10 px-4 rounded-xl bg-white ring-1 ring-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
-                      onClick={() => openModal("withdraw", symbol)}
-                    >
-                      <span className="inline-flex items-center gap-1"><Icon name="upload" />{t("withdraw")}</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-              </table>
-            </div>
-          </Card>
-        </div>
+        {/* Assets table */}
+        <Card className="rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden">
+          <div className="px-5 pt-4 pb-2">
+            <div className="text-slate-700 font-semibold">{t("my_assets")}</div>
+          </div>
+          <div className="w-full overflow-x-auto">
+            {/* REVISED: 
+              - Removed 'table-fixed' to allow columns to size based on content, fixing alignment.
+              - Added 'min-w-[700px]' to ensure the table is scrollable on small screens instead of collapsing.
+            */}
+            <table className="w-full min-w-[700px] text-sm md:text-base">
+              <thead className="bg-white sticky top-0 z-10">
+                <tr className="text-left text-slate-600 border-y border-slate-100">
+                  {/* REVISED: Removed width classes (e.g., w-1/5) and added whitespace-nowrap */}
+                  <th className="py-3 pl-4 pr-2 whitespace-nowrap">{t("type")}</th>
+                  <th className="py-3 px-2 text-right whitespace-nowrap">{t("amount")}</th>
+                  <th className="py-3 px-2 text-right whitespace-nowrap">{t("frozen", "Frozen")}</th>
+                  <th className="py-3 px-2 text-right whitespace-nowrap">{t("usd_value", "USD Value")}</th>
+                  <th className="py-3 pl-2 pr-4 text-right whitespace-nowrap">{t("Transfer")}</th>
+                </tr>
+              </thead>
+        <tbody className="bg-white">
+          {balances.map(({ symbol, icon, balance, frozen }) => (
+            <tr
+              key={symbol}
+              className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
+              style={{ height: 64 }}
+            >
+              {/* Type */}
+              <td className="py-3 pl-4 pr-2">
+                <div className="flex items-center gap-2">
+                  <Icon name={symbol?.toLowerCase() || "coin"} className="w-6 h-6" />
+                  <span className="font-semibold text-slate-900">{symbol}</span>
+                </div>
+              </td>
+              {/* Amount */}
+              <td className="py-3 px-2 text-right tabular-nums font-medium text-slate-800">
+                {Number(balance).toLocaleString(undefined, {
+                  minimumFractionDigits: symbol === "BTC" ? 6 : 2,
+                  maximumFractionDigits: symbol === "BTC" ? 8 : 6,
+                })}
+              </td>
+              {/* Frozen */}
+              <td className="py-3 px-2 text-right tabular-nums font-medium text-amber-600">
+                {Number(frozen || 0).toLocaleString(undefined, {
+                  minimumFractionDigits: symbol === "BTC" ? 6 : 2,
+                  maximumFractionDigits: symbol === "BTC" ? 8 : 6,
+                })}
+              </td>
+              {/* USD Value */}
+              <td className="py-3 px-2 text-right tabular-nums font-semibold text-slate-900">
+                {(() => {
+                  const p = prices[symbol] ?? (symbol === "USDT" ? 1 : undefined);
+                  return p !== undefined ? fmtUSD(Number(balance) * p) : "--";
+                })()}
+              </td>
+              {/* Transfer */}
+              <td className="py-3 pl-2 pr-4 text-right">
+                <div className="inline-flex items-center gap-2">
+                  <button
+                    className="h-10 px-4 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:scale-[1.02] transition whitespace-nowrap"
+                    onClick={() => { setSelectedDepositCoin(symbol); openModal("deposit", symbol); }}
+                  >
+                    <span className="inline-flex items-center gap-1"><Icon name="download" />{t("deposit")}</span>
+                  </button>
+                  <button
+                    className="h-10 px-4 rounded-xl bg-white ring-1 ring-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition whitespace-nowrap"
+                    onClick={() => openModal("withdraw", symbol)}
+                  >
+                    <span className="inline-flex items-center gap-1"><Icon name="upload" />{t("withdraw")}</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+            </table>
+          </div>
+        </Card>
+      </div>
 
         {/* ===== Convert section ===== */}
         <Card id="convert-section" className="mt-8 rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden">
@@ -719,7 +722,7 @@ const handleWithdraw = async (e) => {
   {depositToast && (
     <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-[70]">
       <div className="flex items-center gap-2 px-4 py-2 rounded-2xl shadow-2xl
-                      bg-slate-900/95 backdrop-blur text-white font-semibold ring-1 ring-white/15">
+                  bg-slate-900/95 backdrop-blur text-white font-semibold ring-1 ring-white/15">
         <Icon name="check" className="w-5 h-5" />
         <span>{depositToast}</span>
       </div>
@@ -780,7 +783,7 @@ const handleWithdraw = async (e) => {
   {withdrawToast && (
     <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-[70]">
       <div className="flex items-center gap-2 px-4 py-2 rounded-2xl shadow-2xl
-                      bg-slate-900/95 backdrop-blur text-white font-semibold ring-1 ring-white/15">
+                  bg-slate-900/95 backdrop-blur text-white font-semibold ring-1 ring-white/15">
         <Icon name="check" className="w-5 h-5" />
         <span>{withdrawToast}</span>
       </div>
