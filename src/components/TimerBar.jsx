@@ -1,3 +1,4 @@
+//src>components>TimerBar.jsx
 import React, { useEffect, useRef, useState } from "react";
 
 export default function TimerBar({ endAt, onComplete }) {
@@ -33,7 +34,7 @@ export default function TimerBar({ endAt, onComplete }) {
 
   return (
     <div className="w-full max-w-[290px]">
-      <div className="mb-2 text-4xl font-extrabold text-theme-primary text-center">
+      <div className="mb-2 text-4xl font-extrabold text-yellow-300 text-center">
         {timeLeft}s
       </div>
       <div className="relative w-full h-6 bg-theme-n-5 rounded-full overflow-hidden shadow-inner border border-theme-stroke">

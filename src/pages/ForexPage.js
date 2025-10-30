@@ -498,7 +498,7 @@ export default function ForexPage() {
                          animate={{ opacity: 1, y: 0 }}
                          exit={{ opacity: 0, y: 10 }}
 
-                        className="text-3xl font-extrabold text-stone-100 py-4 tabular-nums tracking-tight"
+                        className="text-3xl font-extrabold text-yellow-300 py-4 tabular-nums tracking-tight" // Changed to bright yellow
                          style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }} // Add subtle shadow for visibility
                        >
                          <ActiveTradeTimer
