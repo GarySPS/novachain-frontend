@@ -96,7 +96,7 @@ const [totalEarnUsd, setTotalEarnUsd] = useState(0);
 const [currentEarnRate, setCurrentEarnRate] = useState(0);
 const [earnModal, setEarnModal] = useState({ open: false, type: "save", coin: "USDT", amount: "" });
 const [earnBusy, setEarnBusy] = useState(false);
-const [earnToast, setEarnToast] = useState("");
+const [earnToast, setEarnToast] = useState(null);
 // ======================================
 
 
@@ -337,37 +337,51 @@ const [earnToast, setEarnToast] = useState("");
   const closeEarnModal = () => setEarnModal({ open: false, type: "save", coin: "USDT", amount: "" });
 
   const handleEarnSubmit = async (e) => {
-    e.preventDefault();
-    if (earnBusy) return;
-    setEarnBusy(true);
+    e.preventDefault();
+    if (earnBusy) return;
+    setEarnBusy(true);
+    setEarnToast(null); // Clear previous toast
 
-    const { type, coin, amount } = earnModal;
-    // NOTE: Assumes *new* endpoints: /earn/deposit and /earn/withdraw
-    const endpoint = type === 'save' ? '/earn/deposit' : '/earn/withdraw';
-    const payload = { coin, amount: parseFloat(amount) };
+    const { type, coin, amount } = earnModal;
+    const endpoint = type === 'save' ? '/earn/deposit' : '/earn/withdraw';
+    const payload = { coin, amount: parseFloat(amount) };
 
-    try {
-      const res = await axios.post(`${MAIN_API_BASE}${endpoint}`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+    try {
+      const res = await axios.post(`${MAIN_API_BASE}${endpoint}`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-      if (res.data && res.data.success) {
-        setEarnToast(type === 'save' ? (t("Save Successful") || "Save Successful") : (t("Redeem Successful") || "Redeem Successful"));
-        fetchBalances(); // Refresh main wallet
-        fetchEarnBalances(); // Refresh earn wallet
-      } else {
-        setEarnToast(res.data.error || t("Operation Failed") || "Operation Failed");
-      }
-    } catch (err) {
-      setEarnToast(err.response?.data?.error || t("Operation Failed") || "Operation Failed");
-    } finally {
-      setTimeout(() => {
-        setEarnToast("");
-        closeEarnModal();
-      }, 1400);
-      setEarnBusy(false);
-    }
-  };
+      if (res.data && res.data.success) {
+        // --- SUCCESS ---
+        setEarnToast({
+          type: "success",
+          message: type === 'save' ? (t("Save Successful") || "Save Successful") : (t("Redeem Successful") || "Redeem Successful")
+        });
+        fetchBalances(); // Refresh main wallet
+        fetchEarnBalances(); // Refresh earn wallet
+      } else {
+        // --- KNOWN ERROR ---
+        setEarnToast({
+          type: "error",
+          message: res.data.error || t("Operation Failed") || "Operation Failed"
+        });
+      }
+    } catch (err) {
+      // --- UNKNOWN ERROR ---
+      setEarnToast({
+        type: "error",
+        message: err.response?.data?.error || t("Operation Failed") || "Operation Failed"
+      });
+    } finally {
+      setTimeout(() => {
+        setEarnToast(null);
+        if (earnToast && earnToast.type === 'success') {
+          closeEarnModal(); // Only close modal on success
+        }
+      }, 1400);
+      setEarnBusy(false);
+    }
+  };
   // ============================================
 
 const handleDepositSubmit = async (e) => {
@@ -1025,14 +1039,23 @@ const handleWithdraw = async (e) => {
             </button>
 
             {earnToast && (
-              <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-[70]">
-                <div className="flex items-center gap-2 px-4 py-2 rounded-2xl shadow-2xl
-                      bg-slate-900/95 backdrop-blur text-white font-semibold ring-1 ring-white/15">
-                  <Icon name="check" className="w-5 h-5" />
-                  <span>{earnToast}</span>
-                </div>
-              </div>
-            )}
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-[70]">
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-2xl shadow-2xl
+                      backdrop-blur text-white font-semibold ring-1 ring-white/15
+                      ${
+                        earnToast.type === 'success'
+                          ? 'bg-emerald-600/95' // Success green
+                          : 'bg-rose-600/95'    // Error red
+                      }`}
+                >
+                  <Icon 
+                    name={earnToast.type === 'success' ? 'check-circle' : 'alert-circle'} 
+                    className="w-5 h-5" 
+                  />
+                  <span>{earnToast.message}</span>
+                </div>
+              </div>
+            )}
           </div>
         </form>
       </Modal>

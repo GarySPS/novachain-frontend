@@ -269,10 +269,8 @@ return (
 
           {/* ---- Table ---- */}
           <div className="w-full overflow-x-auto">
-            <table className="w-full text-sm md:text-base">
-              <colgroup><col className="w-24" /><col /><col className="w-28" /><col className="w-40" /><col className="w-28" /><col className="w-44" /><col className="w-44" /></colgroup>
-              <thead className="bg-white sticky top-0 z-10">
-                <tr className="text-left text-slate-600 border-y border-slate-100">
+            <table className="w-full text-sm md:text-base"><colgroup><col className="w-24" /><col /><col className="w-28" /><col className="w-40" /><col className="w-28" /><col className="w-44" /><col className="w-44" /></colgroup><thead className="bg-white sticky top-0 z-10">
+              <tr className="text-left text-slate-600 border-y border-slate-100">
                   <th className="py-3.5 px-3 text-center">#</th>
                   <th className="py-3.5 px-3">Name</th>
                   <th className="py-3.5 px-3">Symbol</th>
@@ -283,104 +281,96 @@ return (
                   </th>
                   <th className="py-3.5 px-3 text-right whitespace-nowrap">
                     Market Cap
-                  </th>
-                </tr>
-              </thead>
-                  <tbody className="bg-white">{
+                </th>
+              </tr>
+                </thead><tbody className="bg-white">{
                     loading
                       ? Array.from({ length: 12 }).map((_, i) => (
                           <SkeletonRow i={i} key={i} />
                         ))
                       : display.map((coin, idx) => {
-                          const u = coin.quote?.USD || {};
-                    const change =
-                      typeof u.percent_change_24h === "number"
-                        ? u.percent_change_24h
-                        : null;
-                    return (
-                      <tr
-                        key={coin.id || coin.symbol || idx}
-                        className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
-                        style={{ height: 64 }}
-                      >
-                        {/* Rank / Logo */}
-                        <td className="py-3 px-3">
-                          <div className="flex items-center">
-                            <span className="text-slate-400 text-xs font-medium w-8 tabular-nums text-right mr-2">
-                              {String(idx + 1).padStart(2, "0")}
-                            </span>
-                            <div className="w-8 h-8 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center">
-                              <img
-                                src={`https://assets.coincap.io/assets/icons/${coin.symbol?.toLowerCase()}@2x.png`}
-                                onError={(e) => { e.currentTarget.style.opacity = "0"; }}
-                                alt={coin.symbol}
-                                className="w-8 h-8 object-contain"
-                              />
-                            </div>
-                          </div>
-                        </td>
+                          const u = coin.quote?.USD || {};
+                   const change =
+                        typeof u.percent_change_24h === "number"
+                         ? u.percent_change_24h
+                         : null;
+                   return (
+                   <tr
+                        key={coin.id || coin.symbol || idx}
+                       className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
+                       style={{ height: 64 }}
+                      >
+                        <td className="py-3 px-3">
+                        <div className="flex items-center">
+                          <span className="text-slate-400 text-xs font-medium w-8 tabular-nums text-right mr-2">
+                           {String(idx + 1).padStart(2, "0")}
+                         </span>
+                       <div className="w-8 h-8 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center">
+                              <img
+                                src={`https://assets.coincap.io/assets/icons/${coin.symbol?.toLowerCase()}@2x.png`}
+                             onError={(e) => { e.currentTarget.style.opacity = "0"; }}
+                              alt={coin.symbol}
+                            className="w-8 h-8 object-contain"
+                             />
+                          </div>
+                         </div>
+                        </td>
 
-                        {/* Name */}
-                        <td className="py-3 px-3">
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-slate-800">
-                              {coin.name || "--"}
-                            </span>
-                            <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-500 ring-1 ring-slate-200">
-                              #{coin.cmc_rank || idx + 1}
-                            </span>
-                          </div>
-                        </td>
+                     <td className="py-3 px-3">
+                       <div className="flex items-center gap-2">
+                         <span className="font-semibold text-slate-800">
+                          {coin.name || "--"}
+                        </span>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-500 ring-1 ring-slate-200">
+                            #{coin.cmc_rank || idx + 1}
+                        </span>
+                   </div>
+                     </td>
 
-                        {/* Symbol */}
-                        <td className="py-3 px-3">
-                          <span className="font-mono text-slate-700 bg-slate-50 ring-1 ring-slate-200 px-2 py-1 rounded-md inline-block w-20 text-center">
-                            {coin.symbol}
-                          </span>
-                        </td>
+                      <td className="py-3 px-3">
+                         <span className="font-mono text-slate-700 bg-slate-50 ring-1 ring-slate-200 px-2 py-1 rounded-md inline-block w-20 text-center">
+                          {coin.symbol}
+                     </span>
+                    </td>
 
-                        {/* Price */}
-                        <td className="py-3 px-3 text-right font-semibold tabular-nums">
-                          {typeof u.price === "number"
-                            ? "$" +
-                            u.price.toLocaleString(undefined, {
-                              maximumFractionDigits: 6,
-                            })
-                            : "--"}
-                        </td>
+                  <td className="py-3 px-3 text-right font-semibold tabular-nums">
+                   {typeof u.price === "number"
+                          ? "$" +
+                        u.price.toLocaleString(undefined, {
+                           maximumFractionDigits: 6,
+                      })
+                     : "--"}
+                  </td>
 
-                        {/* 24h Change */}
-                        <td className="py-3 px-3">
-                          {change === null ? (
-                            <span className="text-slate-400">--</span>
-                          ) : (
-                            <span
-                              className={`inline-flex items-center justify-center min-w-[84px] px-2 py-1 rounded-lg text-sm font-semibold ${pctClass(
-                                change
-                              )}`}
-                            >
-                              {change > 0 ? "+" : ""}
-                              {change.toFixed(2)}%
-                            </span>
-                          )}
-                        </td>
+                    <td className="py-3 px-3">
+                    {change === null ? (
+                      <span className="text-slate-400">--</span>
+                      ) : (
+                        <span
+                            className={`inline-flex items-center justify-center min-w-[84px] px-2 py-1 rounded-lg text-sm font-semibold ${pctClass(
+                          change
+                      )}`}
+                       >
+                        {change > 0 ? "+" : ""}
+                         {change.toFixed(2)}%
+                      </span>
+                   )}
+                  </td>
 
-                        {/* Volume */}
-                        <td className="py-3 px-3 text-right tabular-nums">
-                          <span className="inline-block px-2 py-1 rounded-md bg-slate-50 ring-1 ring-slate-200">
-                            {u.volume_24h ? formatBigNum(u.volume_24h) : "--"}
-                          </span>
-                        </td>
+                <td className="py-3 px-3 text-right tabular-nums">
+                    <span className="inline-block px-2 py-1 rounded-md bg-slate-50 ring-1 ring-slate-200">
+                       {u.volume_24h ? formatBigNum(u.volume_24h) : "--"}
+                  </span>
+                 </td>
 
-                        {/* Market Cap */}
-                        <td className="py-3 px-3 text-right tabular-nums">
-                          <span className="inline-block px-2 py-1 rounded-md bg-emerald-50 ring-1 ring-emerald-200 text-emerald-700 font-medium">
-                            {u.market_cap ? formatBigNum(u.market_cap) : "--"}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                    <td className="py-3 px-3 text-right tabular-nums">
+                    <span className="inline-block px-2 py-1 rounded-md bg-emerald-50 ring-1 ring-emerald-200 text-emerald-700 font-medium">
+                        {u.market_cap ? formatBigNum(u.market_cap) : "--"}
+                      </span>
+                    </td>
+                    </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>
