@@ -1,3 +1,4 @@
+//src>pages>WalletPage.js
 import { MAIN_API_BASE, ADMIN_API_BASE } from '../config';
 import { jwtDecode } from "jwt-decode";
 import React, { useState, useEffect, useRef } from "react";
@@ -89,6 +90,15 @@ const [withdrawBusy, setWithdrawBusy] = useState(false);
 const [depositToast, setDepositToast] = useState("");
 const [withdrawToast, setWithdrawToast] = useState("");
 
+// ===== NEW: State for Earn Wallet =====
+const [earnBalances, setEarnBalances] = useState([]); // { symbol, balance }
+const [totalEarnUsd, setTotalEarnUsd] = useState(0);
+const [currentEarnRate, setCurrentEarnRate] = useState(0);
+const [earnModal, setEarnModal] = useState({ open: false, type: "save", coin: "USDT", amount: "" });
+const [earnBusy, setEarnBusy] = useState(false);
+const [earnToast, setEarnToast] = useState("");
+// ======================================
+
 
   /* ---------------- history merge (unchanged logic) ---------------- */
   const userDepositHistory = depositHistory.filter(d => userId && Number(d.user_id) === Number(userId));
@@ -98,6 +108,7 @@ const [withdrawToast, setWithdrawToast] = useState("");
     ...userWithdrawHistory.map(w => ({ ...w, type: "Withdraw" })),
   ].sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
 
+  // ===== MODIFIED: This now calculates total for *main* wallet only =====
   useEffect(() => {
     if (!balances.length) { setTotalUsd(0); return; }
     if (!Object.keys(prices).length) { return; }
@@ -108,6 +119,34 @@ const [withdrawToast, setWithdrawToast] = useState("");
     });
     setTotalUsd(sum);
   }, [balances, prices]);
+
+  // ===== NEW: Calculate total USD in Earn Wallet =====
+  useEffect(() => {
+    if (!earnBalances.length || !Object.keys(prices).length) {
+      setTotalEarnUsd(0);
+      return;
+    }
+    let sum = 0;
+    earnBalances.forEach(({ symbol, balance }) => {
+      const coinPrice = prices[symbol] || (symbol === "USDT" ? 1 : 0);
+      sum += Number(balance) * coinPrice;
+    });
+    setTotalEarnUsd(sum);
+  }, [earnBalances, prices]);
+
+  // ===== NEW: Calculate current earn rate based on total Earn USD =====
+  useEffect(() => {
+    if (totalEarnUsd >= 100000) {
+      setCurrentEarnRate(10); // 10%
+    } else if (totalEarnUsd >= 10000) {
+      setCurrentEarnRate(7); // 7%
+    } else if (totalEarnUsd >= 1000) {
+      setCurrentEarnRate(4); // 4%
+    } else {
+      setCurrentEarnRate(0); // 0%
+    }
+  }, [totalEarnUsd]);
+  // ===============================================================
 
   useEffect(() => {
     async function fetchHistoryScreenshots() {
@@ -235,14 +274,17 @@ const [withdrawToast, setWithdrawToast] = useState("");
       });
   }, []);
 
+  // ===== MODIFIED: Added fetchEarnBalances() =====
   useEffect(() => {
     if (!token || !userId) return;
     fetchBalances();
+    fetchEarnBalances(); // <-- NEW
     axios.get(`${MAIN_API_BASE}/deposits`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => setDepositHistory(res.data)).catch(() => setDepositHistory([]));
     axios.get(`${MAIN_API_BASE}/withdrawals`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => setWithdrawHistory(res.data)).catch(() => setWithdrawHistory([]));
   }, [token, userId]);
+  // ===============================================
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -271,13 +313,62 @@ const [withdrawToast, setWithdrawToast] = useState("");
 
   function fetchBalances() {
     if (!token || !userId) return;
+    // This endpoint should return the *main* wallet (e.g., "spot" wallet)
     axios.get(`${MAIN_API_BASE}/balance`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => setBalances(res.data.assets || []))
       .catch(() => setBalances([]));
   }
 
+  // ===== NEW: Function to fetch Earn Wallet balances =====
+  function fetchEarnBalances() {
+    if (!token || !userId) return;
+    // NOTE: This assumes a *new* endpoint `/earn/balance` for the savings wallet
+    axios.get(`${MAIN_API_BASE}/earn/balance`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => setEarnBalances(res.data.assets || []))
+      .catch(() => setEarnBalances([])); // Set to empty on error
+  }
+  // =====================================================
+
   const openModal = (type, coin) => setModal({ open: true, type, coin });
   const closeModal = () => setModal({ open: false, type: "", coin: "" });
+
+  // ===== NEW: Handlers for Earn Modal =====
+  const openEarnModal = (type) => setEarnModal({ open: true, type, coin: "USDT", amount: "" });
+  const closeEarnModal = () => setEarnModal({ open: false, type: "save", coin: "USDT", amount: "" });
+
+  const handleEarnSubmit = async (e) => {
+    e.preventDefault();
+    if (earnBusy) return;
+    setEarnBusy(true);
+
+    const { type, coin, amount } = earnModal;
+    // NOTE: Assumes *new* endpoints: /earn/deposit and /earn/withdraw
+    const endpoint = type === 'save' ? '/earn/deposit' : '/earn/withdraw';
+    const payload = { coin, amount: parseFloat(amount) };
+
+    try {
+      const res = await axios.post(`${MAIN_API_BASE}${endpoint}`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.data && res.data.success) {
+        setEarnToast(type === 'save' ? (t("Save Successful") || "Save Successful") : (t("Redeem Successful") || "Redeem Successful"));
+        fetchBalances(); // Refresh main wallet
+        fetchEarnBalances(); // Refresh earn wallet
+      } else {
+        setEarnToast(res.data.error || t("Operation Failed") || "Operation Failed");
+      }
+    } catch (err) {
+      setEarnToast(err.response?.data?.error || t("Operation Failed") || "Operation Failed");
+    } finally {
+      setTimeout(() => {
+        setEarnToast("");
+        closeEarnModal();
+      }, 1400);
+      setEarnBusy(false);
+    }
+  };
+  // ============================================
 
 const handleDepositSubmit = async (e) => {
   e.preventDefault();
@@ -395,7 +486,7 @@ const handleWithdraw = async (e) => {
 
 <Card className="rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden h-full">
   <div className="w-full h-full min-h-[180px] md:min-h-[220px] flex items-center justify-center
-                px-4 sm:px-6 bg-gradient-to-br from-indigo-50 via-sky-50 to-emerald-50">
+            px-4 sm:px-6 bg-gradient-to-br from-indigo-50 via-sky-50 to-emerald-50">
     <div className="flex flex-col items-center gap-1 w-full">
       <div className="text-center text-slate-500 text-xs sm:text-sm font-semibold">
         {t("total_balance")}
@@ -495,6 +586,95 @@ const handleWithdraw = async (e) => {
           </div>
         </Card>
       </div>
+
+        {/* ===== NEW: Earn Savings Card ===== */}
+        <Card id="earn-section" className="mt-8 rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden">
+          <div className="bg-gradient-to-r from-teal-50 via-sky-50 to-indigo-50 px-5 py-5 md:px-6 md:py-6">
+            <div className="flex items-center gap-2 text-slate-800 text-xl md:text-2xl font-extrabold">
+              <Icon name="zap" className="w-7 h-7 text-teal-500" /> {t("savings_earn", "Savings Earn")}
+            </div>
+          </div>
+          
+          {/* --- Earn Stats --- */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-6 py-5 border-b border-slate-100">
+            <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-slate-50 ring-1 ring-slate-200">
+              <div className="text-sm font-semibold text-slate-500">{t("total_saved", "Total Saved")}</div>
+              <div className="text-3xl font-extrabold text-slate-900 tabular-nums">{fmtUSD(totalEarnUsd)}</div>
+            </div>
+            <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-teal-50 ring-1 ring-teal-200">
+              <div className="text-sm font-semibold text-teal-600">{t("monthly_rate", "Monthly Rate")}</div>
+              <div className="text-3xl font-extrabold text-teal-700 tabular-nums">{currentEarnRate}%</div>
+            </div>
+          </div>
+
+          {/* --- Earn Actions --- */}
+          <div className="flex flex-col md:flex-row gap-3 px-6 py-5 border-b border-slate-100">
+            <button
+              onClick={() => openEarnModal('save')}
+              className="flex-1 h-12 rounded-xl bg-slate-900 text-white text-lg font-extrabold hover:scale-[1.02] transition"
+            >
+              <span className="inline-flex items-center gap-2">
+                <Icon name="plus" /> {t("save", "Save")}
+              </span>
+            </button>
+            <button
+              onClick={() => openEarnModal('redeem')}
+              className="flex-1 h-12 rounded-xl bg-white ring-1 ring-slate-200 text-slate-800 text-lg font-extrabold hover:bg-slate-50 transition"
+            >
+              <span className="inline-flex items-center gap-2">
+                <Icon name="check-circle" /> {t("redeem", "Redeem")}
+              </span>
+            </button>
+          </div>
+
+          {/* --- Earn Balances Table --- */}
+          <div className="w-full overflow-x-auto">
+            <table className="w-full min-w-[600px] text-sm md:text-base">
+              <thead className="bg-white sticky top-0 z-10">
+                <tr className="text-left text-slate-600 border-y border-slate-100">
+                  <th className="py-3 pl-4 pr-2 whitespace-nowrap">{t("asset", "Asset")}</th>
+                  <th className="py-3 px-2 text-right whitespace-nowrap">{t("balance", "Balance")}</th>
+                  <th className="py-3 px-2 text-right whitespace-nowrap">{t("usd_value", "USD Value")}</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white">
+                {earnBalances.length > 0 ? earnBalances.map(({ symbol, balance }) => (
+                  <tr key={symbol} className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors" style={{ height: 60 }}>
+                    {/* Asset */}
+                    <td className="py-3 pl-4 pr-2">
+                      <div className="flex items-center gap-2">
+                        <Icon name={symbol?.toLowerCase() || "coin"} className="w-6 h-6" />
+                        <span className="font-semibold text-slate-900">{symbol}</span>
+                      </div>
+                    </td>
+                    {/* Balance */}
+                    <td className="py-3 px-2 text-right tabular-nums font-medium text-slate-800">
+                      {Number(balance).toLocaleString(undefined, {
+                        minimumFractionDigits: symbol === "BTC" ? 6 : 2,
+                        maximumFractionDigits: symbol === "BTC" ? 8 : 6,
+                      })}
+                    </td>
+                    {/* USD Value */}
+                    <td className="py-3 px-2 text-right tabular-nums font-semibold text-slate-900">
+                      {(() => {
+                        const p = prices[symbol] ?? (symbol === "USDT" ? 1 : undefined);
+                        return p !== undefined ? fmtUSD(Number(balance) * p) : "--";
+                      })()}
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan="3" className="text-center py-10 text-slate-500">
+                      {t("no_savings_yet", "You have no assets in savings.")}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+        {/* =================================== */}
+
 
         {/* ===== Convert section ===== */}
         <Card id="convert-section" className="mt-8 rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden">
@@ -722,7 +902,7 @@ const handleWithdraw = async (e) => {
   {depositToast && (
     <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-[70]">
       <div className="flex items-center gap-2 px-4 py-2 rounded-2xl shadow-2xl
-                  bg-slate-900/95 backdrop-blur text-white font-semibold ring-1 ring-white/15">
+              bg-slate-900/95 backdrop-blur text-white font-semibold ring-1 ring-white/15">
         <Icon name="check" className="w-5 h-5" />
         <span>{depositToast}</span>
       </div>
@@ -783,7 +963,7 @@ const handleWithdraw = async (e) => {
   {withdrawToast && (
     <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-[70]">
       <div className="flex items-center gap-2 px-4 py-2 rounded-2xl shadow-2xl
-                  bg-slate-900/95 backdrop-blur text-white font-semibold ring-1 ring-white/15">
+              bg-slate-900/95 backdrop-blur text-white font-semibold ring-1 ring-white/15">
         <Icon name="check" className="w-5 h-5" />
         <span>{withdrawToast}</span>
       </div>
@@ -799,6 +979,65 @@ const handleWithdraw = async (e) => {
         </form>
       </Modal>
 
-  </div>
+      {/* ===== NEW: Earn Modal ===== */}
+      <Modal visible={earnModal.open} onClose={closeEarnModal}>
+        <form onSubmit={handleEarnSubmit} className="space-y-5 p-2">
+          <div className="text-2xl font-bold mb-3 flex items-center gap-2 text-slate-900">
+            <Icon name={earnModal.type === 'save' ? 'plus' : 'check-circle'} className="w-7 h-7" />
+            {earnModal.type === 'save' ? t("save_to_earn", "Save to Earn") : t("redeem_from_earn", "Redeem from Earn")}
+          </div>
+
+          <select
+            className="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-sky-200 outline-none"
+            value={earnModal.coin}
+            onChange={e => setEarnModal(m => ({ ...m, coin: e.target.value }))}
+          >
+            {coinSymbols.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          
+          <Field
+            label={t("amount_with_coin", { coin: earnModal.coin })}
+            type="number"
+            min={0.0001}
+            step="any"
+            required
+            placeholder={t("enter_amount", "Enter amount")}
+            value={earnModal.amount}
+            onChange={e => setEarnModal(m => ({ ...m, amount: e.target.value }))}
+            icon="dollar-sign"
+          />
+
+          <div className="text-sm text-slate-600 bg-slate-50 ring-1 ring-slate-200 rounded px-3 py-2">
+            {earnModal.type === 'save'
+              ? t("save_desc", "Assets will be moved from 'My Assets' to 'Savings Earn'.")
+              : t("redeem_desc", "Assets will be moved from 'Savings Earn' to 'My Assets'.")
+            }
+          </div>
+
+          <div className="relative">
+            <button
+              type="submit"
+              disabled={earnBusy || !earnModal.amount || parseFloat(earnModal.amount) <= 0}
+              className={`w-full h-12 rounded-xl text-white text-lg font-extrabold transition
+                ${earnBusy ? "bg-slate-500 cursor-not-allowed" : "bg-slate-900 hover:scale-[1.02]"}`}
+            >
+              {earnBusy ? (t("submitting", "Submitting...")) : (earnModal.type === 'save' ? t("confirm_save", "Confirm Save") : t("confirm_redeem", "Confirm Redeem"))}
+            </button>
+
+            {earnToast && (
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-[70]">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-2xl shadow-2xl
+                      bg-slate-900/95 backdrop-blur text-white font-semibold ring-1 ring-white/15">
+                  <Icon name="check" className="w-5 h-5" />
+                  <span>{earnToast}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </form>
+      </Modal>
+      {/* ============================= */}
+
+    </div>
   );
 }

@@ -270,15 +270,7 @@ return (
           {/* ---- Table ---- */}
           <div className="w-full overflow-x-auto">
             <table className="w-full text-sm md:text-base">
-              <colgroup>
-                <col className="w-24" />   {/* # + logo */}
-                <col />                   {/* Name (flex) */}
-                <col className="w-28" />   {/* Symbol */}
-                <col className="w-40" />   {/* Price */}
-                <col className="w-28" />   {/* 24h */}
-                <col className="w-44" />   {/* 24h Volume */}
-                <col className="w-44" />   {/* Market Cap */}
-              </colgroup>
+              <colgroup><col className="w-24" /><col /><col className="w-28" /><col className="w-40" /><col className="w-28" /><col className="w-44" /><col className="w-44" /></colgroup>
               <thead className="bg-white sticky top-0 z-10">
                 <tr className="text-left text-slate-600 border-y border-slate-100">
                   <th className="py-3.5 px-3 text-center">#</th>
@@ -294,13 +286,13 @@ return (
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white">
-                {loading
-                  ? Array.from({ length: 12 }).map((_, i) => (
-                    <SkeletonRow i={i} key={i} />
-                  ))
-                  : display.map((coin, idx) => {
-                    const u = coin.quote?.USD || {};
+                  <tbody className="bg-white">{
+                    loading
+                      ? Array.from({ length: 12 }).map((_, i) => (
+                          <SkeletonRow i={i} key={i} />
+                        ))
+                      : display.map((coin, idx) => {
+                          const u = coin.quote?.USD || {};
                     const change =
                       typeof u.percent_change_24h === "number"
                         ? u.percent_change_24h

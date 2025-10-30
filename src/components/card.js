@@ -1,7 +1,8 @@
+//src>components>card.js
 import React from "react";
-import Select from "./select";   // Adjust import path
-import Icon from "./icon";       // Adjust import path
-import Tooltip from "./tooltip"; // Adjust import path
+import Select from "./select";
+import Icon from "./icon";
+import Tooltip from "./tooltip";
 import { Link } from "react-router-dom";
 
 export default function Card({

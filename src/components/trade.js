@@ -1,3 +1,4 @@
+//src>components>trade.js
 import React, { useState } from "react";
 import TabsSame from "./tabssame";
 import BuyAndSell from "./buyandsell";

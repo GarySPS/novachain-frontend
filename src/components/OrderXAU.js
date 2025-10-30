@@ -1,23 +1,23 @@
-//src>components>orderbtc.js
+//src>components>OrderXAU.js
 
 import React, { useEffect, useState } from "react";
 import { MAIN_API_BASE } from "../config";
 
 function generateOrderBook(midPrice) {
-  // Generate mock order book data
+  // Generate mock order book data suitable for XAU/USD
   const bids = Array.from({ length: 14 }).map((_, i) => ({
-    price: (midPrice - 20 - i * 30).toLocaleString(),
-    amount: (Math.random() * 1 + 0.01).toFixed(5),
+    price: (midPrice - 0.5 - i * 0.1).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), // Smaller steps, format as currency
+    amount: (Math.random() * 5 + 0.1).toFixed(3), // Adjusted amount range slightly
   }));
   const asks = Array.from({ length: 14 }).map((_, i) => ({
-    price: (midPrice + 20 + i * 30).toLocaleString(),
-    amount: (Math.random() * 1 + 0.01).toFixed(5),
+    price: (midPrice + 0.5 + i * 0.1).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), // Smaller steps, format as currency
+    amount: (Math.random() * 5 + 0.1).toFixed(3), // Adjusted amount range slightly
   }));
   return { bids, asks };
 }
 
-export default function OrderBTC() {
-  const [btcPrice, setBtcPrice] = useState(null);
+export default function OrderXAU() {
+  const [xauPrice, setXauPrice] = useState(null);
   const [bids, setBids] = useState([]);
   const [asks, setAsks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,10 +27,10 @@ export default function OrderBTC() {
     const fetchPrice = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${MAIN_API_BASE}/price/BTC`);
+        const res = await fetch(`${MAIN_API_BASE}/price/xau`);
         const data = await res.json();
         const price = data.price;
-        setBtcPrice(price);
+        setXauPrice(price);
         const { bids, asks } = generateOrderBook(price);
         setBids(bids);
         setAsks(asks);
@@ -57,7 +57,7 @@ export default function OrderBTC() {
 
       {/* Pair + Price */}
       <div className="flex justify-between items-center px-6 mt-4 mb-2">
-        <span className="text-gray-400 text-sm font-semibold">BTC/USDT</span>
+        <span className="text-gray-400 text-sm font-semibold">XAU/USD</span>
         <span className="bg-yellow-100 px-3 py-1 rounded-xl font-bold text-yellow-700 text-xs shadow ml-2">Novachain</span>
       </div>
 
@@ -95,7 +95,7 @@ export default function OrderBTC() {
       {/* Center Price */}
       <div className="text-center my-4">
         <span className="inline-block text-[15px] font-bold text-blue-300 bg-blue-900/30 px-6 py-2 rounded-lg shadow">
-          {btcPrice ? `Live Price: $${btcPrice.toLocaleString()}` : "Loading..."}
+          {xauPrice ? `Live Price: $${xauPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "Loading..."}
         </span>
       </div>
 

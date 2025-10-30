@@ -1,4 +1,4 @@
-// src/pages/TradePage.js
+// src/pages/CommoditiesPage.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,7 +6,7 @@ import NovaChainLogo from "../components/NovaChainLogo.svg";
 import { MAIN_API_BASE } from "../config";
 import Card from "../components/card";
 import Icon from "../components/icon";
-import OrderBTC from "../components/orderbtc";
+import OrderXAU from "../components/OrderXAU"
 import { useTranslation } from "react-i18next";
 
 // Import our new components
@@ -14,13 +14,13 @@ import TradeModal from "../components/TradeModal";
 import TradeResult from "../components/TradeResult";
 import ActiveTradeTimer from "../components/ActiveTradeTimer";
 
-/* ---------------- Coins (unchanged logics) ---------------- */
-const COINS = [
-  { symbol: "BTC", name: "Bitcoin", tv: "BINANCE:BTCUSDT", api: "bitcoin" },
-  { symbol: "ETH", name: "Ethereum", tv: "BINANCE:ETHUSDT", api: "ethereum" },
-  { symbol: "SOL", name: "Solana", tv: "BINANCE:SOLUSDT", api: "solana" },
-  { symbol: "XRP", name: "Ripple", tv: "BINANCE:XRPUSDT", api: "ripple" },
-  { symbol: "TON", name: "Toncoin", tv: "BINANCE:TONUSDT", api: "toncoin" },
+/* ---------------- Commodities Definition ---------------- */
+const COMMODITIES = [
+  { symbol: "XAU/USD", name: "Gold", tv: "OANDA:XAUUSD", api: "xau" },
+  { symbol: "XAG/USD", name: "Silver", tv: "OANDA:XAGUSD", api: "xag" },
+  { symbol: "WTI/USD", name: "WTI Oil", tv: "OANDA:WTICOUSD", api: "wti" },
+  { symbol: "GAS/USD", name: "Natural Gas", tv: "OANDA:NATGASUSD", api: "natgas" },
+  { symbol: "XCU/USD", name: "Copper", tv: "OANDA:XCUUSD", api: "xcu" },
 ];
 const profitMap = { 30: 0.3, 60: 0.5, 90: 0.7, 120: 1.0 };
 
@@ -41,11 +41,11 @@ function createTradeState(trade_id, user_id, duration) {
   return { trade_id, user_id, duration, endAt };
 }
 
-export default function TradePage() {
+export default function CommoditiesPage() {
   const { t } = useTranslation();
 
   /* ---------------- State (unchanged) ---------------- */
-  const [selectedCoin, setSelectedCoin] = useState(COINS[0]);
+  const [selectedCommodity, setSelectedCommodity] = useState(COMMODITIES[0]);
   const [coinPrice, setCoinPrice] = useState(null);
   const [loadingChart, setLoadingChart] = useState(true);
   const [coinStats, setCoinStats] = useState(null);
@@ -92,7 +92,7 @@ export default function TradePage() {
     let interval;
     const fetchPrice = async () => {
       try {
-        const res = await axios.get(`${MAIN_API_BASE}/prices/${selectedCoin.api}`);
+        const res = await axios.get(`${MAIN_API_BASE}/prices/${selectedCommodity.api}`); // Use .api here
         
         // Set price
         setCoinPrice(Number(res.data?.price));
@@ -114,7 +114,7 @@ export default function TradePage() {
     fetchPrice();
     interval = setInterval(fetchPrice, 5000);
     return () => clearInterval(interval);
-  }, [selectedCoin]);
+  }, [selectedCommodity]);
 
   /* ---------------- TradingView loader (Fixed) ---------------- */
   useEffect(() => {
@@ -136,7 +136,7 @@ export default function TradePage() {
           container_id: "tradingview_chart_container",
           width: "100%",
           height: 420,
-          symbol: selectedCoin.tv,
+          symbol: selectedCommodity.tv,
           interval: "15",
           timezone: "Etc/UTC",
           theme: "dark",
@@ -182,7 +182,7 @@ export default function TradePage() {
         container.innerHTML = ""; // Just empty the container
       }
     };
-  }, [selectedCoin]); // This still re-runs correctly when selectedCoin changes
+  }, [selectedCommodity]);
 
   /* ---------------- Result polling (unchanged) ---------------- */
   async function pollResult(trade_id, user_id) {
@@ -263,7 +263,7 @@ export default function TradePage() {
           direction: direction.toUpperCase(),
           amount: Number(amount),
           duration: Number(duration),
-          symbol: selectedCoin.symbol,
+          symbol: selectedCommodity.api,
           client_price: Number(coinPrice) || null,
         },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -327,7 +327,7 @@ export default function TradePage() {
               <div className="absolute right-[88px] top-[46px] md:right-3 md:top-3 z-10">
                 <div className="px-2 py-1 rounded-lg bg-black/50 backdrop-blur-sm ring-1 ring-white/10 text-white font-medium shadow-sm">
                   <div className="text-[9px] uppercase tracking-wide text-white/60 leading-none">
-                    {selectedCoin.symbol}/USDT
+                    {selectedCommodity.symbol}
                   </div>
                   <div className="text-sm tabular-nums font-bold leading-tight">
                     {typeof coinPrice === "number" && !isNaN(coinPrice)
@@ -342,7 +342,7 @@ export default function TradePage() {
           </div>
 
           {/* ---------------- Right: Trade panel ---------------- */}
-          {/* This is now much cleaner! */}
+          {/* This wrapper div holds the right column content */}
           <div className="w-full">
             <Card className="w-full px-5 py-6 rounded-2xl shadow-2xl bg-gradient-to-br from-[#FFFAF0] to-[#FDFBFB] border border-slate-200">
               {/* header */}
@@ -357,7 +357,7 @@ export default function TradePage() {
                       WebkitTextFillColor: "transparent",
                     }}
                   >
-                    {selectedCoin.symbol}/USDT
+                    {selectedCommodity.symbol}
                   </span>
                 </div>
                 <img src={NovaChainLogo} alt="NovaChain" className="h-9 w-auto ml-4" />
@@ -372,7 +372,7 @@ export default function TradePage() {
                       ? "$" + coinPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })
                       : "Loading..."}
                   </div>
-                  {/* Note: You will need to get 24h percentage from your API to show here */}
+                  {/* Optional: 24h percentage change */}
                   {/* <span className="text-lg font-bold text-red-500">-0.68%</span> */}
                 </div>
 
@@ -398,27 +398,27 @@ export default function TradePage() {
                   </div>
                 </div>
 
-                {/* New Coin Selector */}
+                {/* New Commodity Selector */}
                 <div className="mt-4">
                   <select
-                    value={selectedCoin.symbol}
+                    value={selectedCommodity.symbol}
                     disabled={timerActive}
                     onChange={(e) => {
-                      const newCoin = COINS.find(c => c.symbol === e.target.value);
-                      if (newCoin) setSelectedCoin(newCoin);
+                      const newCommodity = COMMODITIES.find(c => c.symbol === e.target.value);
+                      if (newCommodity) setSelectedCommodity(newCommodity);
                     }}
                     className="w-full h-11 px-3 rounded-lg bg-slate-100 border border-slate-300 text-slate-900 font-bold text-base focus:ring-2 focus:ring-blue-500"
                   >
-                    {COINS.map(coin => (
-                      <option key={coin.symbol} value={coin.symbol}>
-                        {coin.symbol}/USDT
+                    {COMMODITIES.map(commodity => (
+                      <option key={commodity.symbol} value={commodity.symbol}>
+                        {commodity.symbol}
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              {/* NEW Buy/Sell Buttons */}
+              {/* Buy/Sell Buttons */}
               <AnimatePresence>
                 {!timerActive && !waitingResult && !tradeDetail && (
                   <motion.div
@@ -426,7 +426,7 @@ export default function TradePage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 20 }}
-                    className="grid grid-cols-2 gap-4 mt-5"
+                    className="grid grid-cols-2 gap-4 mt-5" // Removed redundant mt-5 here, added below
                   >
                     <button
                       onClick={() => openTradeModal("BUY")}
@@ -446,30 +446,35 @@ export default function TradePage() {
                 )}
               </AnimatePresence>
 
-              {/* timer / waiting */}
+              {/* Timer / Waiting Indicator */}
+              {/* Ensure mt-5 or similar is applied here if needed */}
+              <div className="mt-5"> {/* Added a wrapper div with margin-top */}
+                <AnimatePresence>
+                  <ActiveTradeTimer
+                    timerActive={timerActive}
+                    waitingResult={waitingResult}
+                    tradeState={tradeState}
+                    timerKey={timerKey}
+                    onTimerComplete={onTimerComplete}
+                    t={t}
+                  />
+                </AnimatePresence>
+              </div>
+
+
+              {/* Result Box */}
               <AnimatePresence>
-                <ActiveTradeTimer
-                  timerActive={timerActive}
-                  waitingResult={waitingResult}
-                  tradeState={tradeState}
-                  timerKey={timerKey}
-                  onTimerComplete={onTimerComplete}
-                  t={t}
-                />
+                 <TradeResult tradeDetail={tradeDetail} t={t} />
               </AnimatePresence>
 
-              {/* result box */}
-              <AnimatePresence>
-                <TradeResult tradeDetail={tradeDetail} t={t} />
-              </AnimatePresence>
-            </Card>
-          </div>
+            </Card> {/* This is the closing Card tag (around 463/464) */}
+          </div> {/* This is the closing div for the right column wrapper (around 465) */}
 
           {/* Orders strip beneath on small screens */}
           <div className="lg:col-span-2 mt-2">
             <div className="w-full flex justify-center">
               <div className="max-w-5xl w-full px-1 md:px-2">
-                <OrderBTC />
+                <OrderXAU />
               </div>
             </div>
           </div>

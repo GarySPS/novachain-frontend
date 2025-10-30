@@ -1,4 +1,4 @@
-// src/components/navbar.js (FINAL VERSION)
+// src/components/navbar.js
 
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -7,7 +7,8 @@ import { useTranslation } from "react-i18next";
 
 const navItems = [
   { label: "dashboard", to: "/" },
-  { label: "trade", to: "/trade" },
+  { label: "trade", to: "/trade" }, // Crypto
+  { label: "commodities", to: "/commodities" },
   { label: "history", to: "/trade-history" },
   { label: "wallet", to: "/wallet" },
   { label: "profile", to: "/profile" },

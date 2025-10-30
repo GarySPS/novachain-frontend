@@ -11,17 +11,13 @@ const NOTCH_RADIUS = 28;
 const CHIP_DIAMETER = 48;
 const BAR_CORNER_RADIUS = 20;
 
-// --- Navigation Items for YOUR App ---
 const NAV_ITEMS = [
   { label: 'dashboard', to: '/', icon: 'home', match: (p) => p === '/' },
-  // --- ICON CHANGE #1 ---
-  // Changed icon from 'trade' to 'chart' for a more intuitive look.
-  { label: 'trade', to: '/trade', icon: 'chart', match: (p) => p === '/trade' || p.startsWith('/trade/') },
+  { label: 'trade', to: '/trade', icon: 'chart', match: (p) => p === '/trade' }, // Crypto trade
+  { label: 'commodities', to: '/commodities', icon: 'dollar-sign', match: (p) => p === '/commodities' }, // <-- Added Commodities
   { label: 'history', to: '/trade-history', icon: 'history', match: (p) => p.startsWith('/trade-history') },
   { label: 'wallet', to: '/wallet', icon: 'wallet', match: (p) => p.startsWith('/wallet') },
-  // --- ICON CHANGE #2 ---
-  // Changed icon from 'profile' to 'user' to show a person/profile icon.
-  { label: 'profile', to: '/profile', icon: 'user', match: (p) => p.startsWith('/profile') },
+  { label: 'profile', to: '/profile', icon: 'user', match: (p) => p.startsWith('/profile') }, // Now 6 items
 ];
 
 export default function BottomNavBar() {
