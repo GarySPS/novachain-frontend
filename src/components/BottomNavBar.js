@@ -14,10 +14,10 @@ const BAR_CORNER_RADIUS = 20;
 const NAV_ITEMS = [
   { label: 'dashboard', to: '/', icon: 'home', match: (p) => p === '/' },
   { label: 'trade', to: '/trade', icon: 'chart', match: (p) => p === '/trade' }, // Crypto trade
-  { label: 'forex', to: '/forex', icon: 'gold', match: (p) => p === '/forex' }, // <-- Changed to Forex with gold icon
+  { label: 'forex', to: '/forex', icon: 'dollar-sign', match: (p) => p === '/forex' }, // <-- Changed icon to dollar-sign
   { label: 'history', to: '/trade-history', icon: 'history', match: (p) => p.startsWith('/trade-history') },
   { label: 'wallet', to: '/wallet', icon: 'wallet', match: (p) => p.startsWith('/wallet') },
-  { label: 'profile', to: '/profile', icon: 'user', match: (p) => p.startsWith('/profile') }, // Now 6 items
+  { label: 'profile', to: '/profile', icon: 'user', match: (p) => p.startsWith('/profile') }, // Now 6 items
 ];
 
 export default function BottomNavBar() {

@@ -1,3 +1,5 @@
+//src>pages>TradeHistory.js
+
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { MAIN_API_BASE } from "../config";
@@ -76,13 +78,14 @@ export default function TradeHistory() {
     // simple search (id, direction, result)
     const query = q.trim().toLowerCase();
     if (query) {
-      list = list.filter((t) => {
-        const id = String(t.id || "").toLowerCase();
-        const dir = String(t.direction || "").toLowerCase();
-        const res = String(t.result || "").toLowerCase();
-        return id.includes(query) || dir.includes(query) || res.includes(query);
-      });
-    }
+      list = list.filter((t) => {
+        const id = String(t.id || "").toLowerCase();
+        const dir = String(t.direction || "").toLowerCase();
+        const res = String(t.result || "").toLowerCase();
+        const sym = String(t.symbol || "").toLowerCase(); // <-- ADD THIS
+        return id.includes(query) || dir.includes(query) || res.includes(query) || sym.includes(query); // <-- UPDATE THIS
+      });
+    }
 
     // sort
     list.sort((a, b) => {
@@ -193,7 +196,7 @@ export default function TradeHistory() {
                 <div className="relative">
                   <input
                     className="w-full h-11 rounded-xl border border-slate-200 bg-white/80 px-4 pr-10 outline-none focus:ring-2 focus:ring-sky-200"
-                    placeholder="Search id / direction / result…"
+                    placeholder="Search symbol / id / direction…"
                     value={q}
                     onChange={(e) => setQ(e.target.value)}
                   />
@@ -247,6 +250,7 @@ export default function TradeHistory() {
                   <tr className="text-left text-slate-600 border-y border-slate-100">
                     <th className="py-3.5 px-3 text-center">#</th>
                     <th className="py-3.5 px-3 text-center">Direction</th>
+                    <th className="py-3.5 px-3 text-left">Symbol</th>
                     <th className="py-3.5 px-3 text-right">Amount</th>
                     <th className="py-3.5 px-3 text-right">Entry</th>
                     <th className="py-3.5 px-3 text-center">
@@ -282,6 +286,10 @@ export default function TradeHistory() {
                             <Icon name={isBuy ? "arrow-up" : "arrow-down"} className="w-4 h-4" />
                             {isBuy ? "BUY" : "SELL"}
                           </span>
+                        </td>
+
+                        <td className="py-3 px-3 text-left font-semibold tabular-nums text-slate-800">
+                          {(t.symbol || "N/A").toUpperCase()}
                         </td>
 
                         <td className="py-3 px-3 text-right font-medium tabular-nums">
