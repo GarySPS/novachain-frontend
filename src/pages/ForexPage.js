@@ -37,6 +37,21 @@ const formatPercent = (n) => {
   );
 };
 
+// Helper function to format large currency numbers for volume
+const formatVolume = (n) => {
+  const num = Number(n || 0);
+  if (num >= 1_000_000_000) {
+    return "$" + (num / 1_000_000_000).toFixed(2) + "B";
+  }
+  if (num >= 1_000_000) {
+    return "$" + (num / 1_000_000).toFixed(2) + "M";
+  }
+  if (num >= 1_000) {
+    return "$" + (num / 1_000).toFixed(2) + "K";
+  }
+  return "$" + num.toFixed(2);
+};
+
 /* ---------------- Local storage helpers (unchanged) ---------------- */
 function persistTradeState(tradeState) {
   if (tradeState) localStorage.setItem("activeTrade", JSON.stringify(tradeState));
@@ -358,11 +373,12 @@ export default function ForexPage() {
           {/* ---------------- Right: Trade panel ---------------- */}
           {/* This wrapper div holds the right column content */}
           <div className="w-full">
-            <Card className="w-full px-5 py-6 rounded-2xl shadow-2xl bg-gradient-to-br from-[#FFFAF0] to-[#FDFBFB] border border-slate-200">
+
+            <Card className="w-full px-5 py-6 rounded-2xl shadow-2xl bg-gradient-to-br from-[#141a2b] via-[#0f1424] to-[#0b1020] border border-[#1a2343]">
               {/* header */}
-              <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-slate-500">{t("pair", "Pair")}</span>
+                  <span className="text-xs font-semibold text-gray-400">{t("pair", "Pair")}</span>
                   <span
                     className="font-extrabold text-[1.6rem] tracking-wide"
                     style={{
@@ -378,66 +394,71 @@ export default function ForexPage() {
               </div>
 
               {/* NEW Price Stats & Selector */}
-              <div className="mb-5 border-b border-slate-200 pb-5">
-                {/* Price */}
-                <div className="flex items-baseline gap-2">
-                  <div className="text-3xl font-bold text-slate-900">
-                    {typeof coinPrice === "number" && !isNaN(coinPrice)
-                      ? "$" + coinPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })
-                      : "Loading..."}
-                  </div>
+              <div className="mb-5 border-b border-white/10 pb-5">
+                
+                {/* --- NEW Polished Price/Stats Layout --- */}
+                <div className="flex justify-between items-start mb-4">
+                    {/* Left: Price & % Change */}
+                    <div>
+                        <div className="text-3xl font-bold text-white tabular-nums">
+                        {typeof coinPrice === "number" && !isNaN(coinPrice)
+                            ? "$" + coinPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })
+                            : "Loading..."}
+                        </div>
+                        {coinStats && (
+                        <div className="text-lg mt-1">
+                            {formatPercent(coinStats.change)}
+                        </div>
+                        )}
+                    </div>
 
-                  {/* Show 24h percentage change from our coinStats state */}
-                  {coinStats && (
-                    <span className="text-lg">
-                      {formatPercent(coinStats.change)}
-                    </span>
-                  )}
+                    {/* Right: Stats Stack (like your example) */}
+                    <div className="flex flex-col text-right text-sm pt-1">
+                        <div className="flex justify-end gap-2">
+                            <span className="text-gray-400">24h High:</span>
+                            <span className="font-semibold text-white tabular-nums">
+                            {coinStats ? "$" + coinStats.high.toLocaleString() : "..."}
+                            </span>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <span className="text-gray-400">24h Low:</span>
+                            <span className="font-semibold text-white tabular-nums">
+                            {coinStats ? "$" + coinStats.low.toLocaleString() : "..."}
+                            </span>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <span className="text-gray-400">24h Vol:</span>
+                            <span className="font-semibold text-white tabular-nums">
+                            {/* Use the new formatter */}
+                            {coinStats ? formatVolume(coinStats.vol) : "..."}
+                            </span>
+                        </div>
+                    </div>
                 </div>
+                {/* --- End of Polished Layout --- */}
 
-                {/* Stats */}
-                <div className="mt-2 grid grid-cols-3 gap-2 text-sm">
-                  <div className="flex flex-col">
-                    <span className="text-slate-500">24h High</span>
-                    <span className="font-semibold text-slate-800">
-                      {coinStats ? "$" + coinStats.high.toLocaleString() : "..."}
-                    </span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-slate-500">24h Low</span>
-                    <span className="font-semibold text-slate-800">
-                      {coinStats ? "$" + coinStats.low.toLocaleString() : "..."}
-                    </span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-slate-500">24h Change</span>
-                    <span className="font-semibold text-slate-800">
-                      {coinStats ? formatPercent(coinStats.change) : "..."}
-                    </span>
-                  </div>
-                </div>
 
-                {/* New Commodity Selector */}
+                {/* Polished Commodity Selector */}
                 <div className="mt-4">
                   <select
-                    value={selectedCommodity.symbol}
-                    disabled={timerActive}
-                    onChange={(e) => {
-                      const newCommodity = FOREX_PAIRS.find(c => c.symbol === e.target.value);
-                      if (newCommodity) setSelectedCommodity(newCommodity);
-                  }}
-                    className="w-full h-11 px-3 rounded-lg bg-slate-100 border border-slate-300 text-slate-900 font-bold text-base focus:ring-2 focus:ring-blue-500"
-                  >
-                    {FOREX_PAIRS.map(commodity => (
-                      <option key={commodity.symbol} value={commodity.symbol}>
-                        {commodity.symbol}
-                      </option>
-                    ))}
-                  </select>
+                    value={selectedCommodity.symbol}
+                    disabled={timerActive}
+                    onChange={(e) => {
+                      const newCommodity = FOREX_PAIRS.find(c => c.symbol === e.target.value);
+                      if (newCommodity) setSelectedCommodity(newCommodity);
+                    }}
+                    className="w-full h-11 px-3 rounded-lg bg-[#2c3040] border border-gray-700 text-white font-bold text-base focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  >
+                    {FOREX_PAIRS.map(commodity => (
+                      <option key={commodity.symbol} value={commodity.symbol}>
+                        {commodity.symbol}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
-              {/* Buy/Sell Buttons */}
+              {/* Buy/Sell Buttons (Unchanged) */}
               <AnimatePresence>
                 {!timerActive && !waitingResult && !tradeDetail && (
                   <motion.div
@@ -445,7 +466,7 @@ export default function ForexPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 20 }}
-                    className="grid grid-cols-2 gap-4 mt-5" // Removed redundant mt-5 here, added below
+                    className="grid grid-cols-2 gap-4 mt-5"
                   >
                     <button
                       onClick={() => openTradeModal("BUY")}
@@ -465,9 +486,8 @@ export default function ForexPage() {
                 )}
               </AnimatePresence>
 
-              {/* Timer / Waiting Indicator */}
-              {/* Ensure mt-5 or similar is applied here if needed */}
-              <div className="mt-5"> {/* Added a wrapper div with margin-top */}
+              {/* timer / waiting (Unchanged) */}
+               <div className="mt-5">
                 <AnimatePresence>
                   <ActiveTradeTimer
                     timerActive={timerActive}
@@ -480,13 +500,11 @@ export default function ForexPage() {
                 </AnimatePresence>
               </div>
 
-
-              {/* Result Box */}
+              {/* result box (Unchanged) */}
               <AnimatePresence>
-                 <TradeResult tradeDetail={tradeDetail} t={t} />
+                <TradeResult tradeDetail={tradeDetail} t={t} />
               </AnimatePresence>
-
-            </Card> {/* This is the closing Card tag (around 463/464) */}
+            </Card>
           </div> {/* This is the closing div for the right column wrapper (around 465) */}
 
           {/* Orders strip beneath on small screens */}
