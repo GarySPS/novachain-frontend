@@ -415,7 +415,8 @@ export default function TradePage() {
                       {/* Use the new formatter and 'change' field */}
                       {coinStats ? formatPercent(coinStats.change) : "..."}
                     </span>
-                  </div>
+                  </div>
+                </div>
 
                 {/* New Coin Selector */}
                 <div className="mt-4">
