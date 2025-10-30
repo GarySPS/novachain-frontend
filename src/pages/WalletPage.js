@@ -337,51 +337,54 @@ const [earnToast, setEarnToast] = useState(null);
   const closeEarnModal = () => setEarnModal({ open: false, type: "save", coin: "USDT", amount: "" });
 
   const handleEarnSubmit = async (e) => {
-    e.preventDefault();
-    if (earnBusy) return;
-    setEarnBusy(true);
-    setEarnToast(null); // Clear previous toast
+    e.preventDefault();
+    if (earnBusy) return;
+    setEarnBusy(true);
+    setEarnToast(null); // Clear previous toast
 
-    const { type, coin, amount } = earnModal;
-    const endpoint = type === 'save' ? '/earn/deposit' : '/earn/withdraw';
-    const payload = { coin, amount: parseFloat(amount) };
+    const { type, coin, amount } = earnModal;
+    const endpoint = type === 'save' ? '/earn/deposit' : '/earn/withdraw';
+    const payload = { coin, amount: parseFloat(amount) };
+    
+    let wasSuccess = false; // <-- This flag will help us
 
-    try {
-      const res = await axios.post(`${MAIN_API_BASE}${endpoint}`, payload, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+    try {
+      const res = await axios.post(`${MAIN_API_BASE}${endpoint}`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-      if (res.data && res.data.success) {
-        // --- SUCCESS ---
-        setEarnToast({
-          type: "success",
-          message: type === 'save' ? (t("Save Successful") || "Save Successful") : (t("Redeem Successful") || "Redeem Successful")
-        });
-        fetchBalances(); // Refresh main wallet
-        fetchEarnBalances(); // Refresh earn wallet
-      } else {
-        // --- KNOWN ERROR ---
-        setEarnToast({
-          type: "error",
-          message: res.data.error || t("Operation Failed") || "Operation Failed"
-        });
-      }
-    } catch (err) {
-      // --- UNKNOWN ERROR ---
-      setEarnToast({
-        type: "error",
-        message: err.response?.data?.error || t("Operation Failed") || "Operation Failed"
-      });
-    } finally {
-      setTimeout(() => {
-        setEarnToast(null);
-        if (earnToast && earnToast.type === 'success') {
-          closeEarnModal(); // Only close modal on success
-        }
-      }, 1400);
-      setEarnBusy(false);
-    }
-  };
+      if (res.data && res.data.success) {
+        // --- SUCCESS ---
+        wasSuccess = true; // <-- Set flag to true
+        setEarnToast({
+          type: "success",
+          message: type === 'save' ? (t("Save Successful") || "Save Successful") : (t("Redeem Successful") || "Redeem Successful")
+        });
+        fetchBalances(); // Refresh main wallet
+        fetchEarnBalances(); // Refresh earn wallet
+      } else {
+        // --- KNOWN ERROR ---
+        setEarnToast({
+          type: "error",
+          message: res.data.error || t("Operation Failed") || "Operation Failed"
+        });
+      }
+    } catch (err) {
+      // --- UNKNOWN ERROR ---
+      setEarnToast({
+        type: "error",
+        message: err.response?.data?.error || t("Operation Failed") || "Operation Failed"
+      });
+    } finally {
+      setTimeout(() => {
+        setEarnToast(null);
+        if (wasSuccess) { // <-- Check the flag
+          closeEarnModal(); // Only close modal on success!
+        }
+      }, 1400); 
+      setEarnBusy(false);
+    }
+  };
   // ============================================
 
 const handleDepositSubmit = async (e) => {
@@ -1028,7 +1031,7 @@ const handleWithdraw = async (e) => {
             }
           </div>
 
-          <div className="relative">
+          <div className="space-y-4"> {/* Use space-y-4 to separate button and message */}
             <button
               type="submit"
               disabled={earnBusy || !earnModal.amount || parseFloat(earnModal.amount) <= 0}
@@ -1038,29 +1041,22 @@ const handleWithdraw = async (e) => {
               {earnBusy ? (t("submitting", "Submitting...")) : (earnModal.type === 'save' ? t("confirm_save", "Confirm Save") : t("confirm_redeem", "Confirm Redeem"))}
             </button>
 
+            {/* NEW: Message box styled exactly like the 'Convert' one */}
             {earnToast && (
-              <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-[70]">
-                <div className={`flex items-center gap-2 px-4 py-2 rounded-2xl shadow-2xl
-                      backdrop-blur text-white font-semibold ring-1 ring-white/15
-                      ${
-                        earnToast.type === 'success'
-                          ? 'bg-emerald-600/95' // Success green
-                          : 'bg-rose-600/95'    // Error red
-                      }`}
-                >
-                  <Icon 
-                    name={earnToast.type === 'success' ? 'check-circle' : 'alert-circle'} 
-                    className="w-5 h-5" 
-                  />
-                  <span>{earnToast.message}</span>
-                </div>
-              </div>
-            )}
+              <div className={`rounded-lg px-4 py-3 text-center text-base font-semibold ring-1
+                ${
+                  earnToast.type === 'success'
+                    ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+                    : 'bg-rose-50 text-rose-700 ring-rose-200'
+                }`}
+              >
+                {earnToast.message}
+              </div>
+            )}
           </div>
         </form>
       </Modal>
       {/* ============================= */}
-
     </div>
   );
 }
