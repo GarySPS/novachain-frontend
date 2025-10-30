@@ -486,7 +486,6 @@ export default function ForexPage() {
                 )}
               </AnimatePresence>
 
-              // WITH THIS (around line 533):
                  {/* --- Polished Timer/Waiting --- */}
                  <div className="mt-5 text-center"> {/* Add margin top and center alignment */}
                    <AnimatePresence>
@@ -498,8 +497,8 @@ export default function ForexPage() {
                          initial={{ opacity: 0, y: 10 }}
                          animate={{ opacity: 1, y: 0 }}
                          exit={{ opacity: 0, y: 10 }}
-                         // Make text large, bold, and bright white with a shadow
-                         className="text-3xl font-extrabold text-white py-4 tabular-nums tracking-tight"
+
+                        className="text-3xl font-extrabold text-stone-100 py-4 tabular-nums tracking-tight"
                          style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }} // Add subtle shadow for visibility
                        >
                          <ActiveTradeTimer
@@ -516,7 +515,6 @@ export default function ForexPage() {
                  </div>
                  {/* --- End Polished Timer/Waiting --- */}
 
-              // WITH THIS (around line 555):
                    {/* --- Polished Result Box with Close Button --- */}
                    <AnimatePresence>
                      {tradeDetail && ( // Only show wrapper if tradeDetail exists
