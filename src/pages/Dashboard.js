@@ -204,7 +204,7 @@ return (
       style={{
         background: 'url("/novachain.jpg") no-repeat center center fixed',
         backgroundSize: "cover",
-        minHeight: "100vh",
+        minHeight: "100vh", // Ensure it covers viewport height
         position: "relative",
       }}
     >
@@ -218,30 +218,34 @@ return (
       />
       <div style={{ position: "relative", zIndex: 1 }} className="w-full max-w-7xl mx-auto space-y-6">
 
-        {/* ---- Top Stats Card ---- */}
-        <Card className="p-0 overflow-hidden rounded-2xl shadow-lg border border-slate-100">
-          <div className="bg-white px-4 py-4 md:px-6 md:py-5">
+        {/* ---- ✨ Polished Top Stats Card ---- */}
+        <Card className="p-0 overflow-hidden rounded-2xl shadow-2xl bg-gradient-to-br from-[#141a2b] via-[#0f1424] to-[#0b1020] border border-[#1a2343]">
+          <div className="px-4 py-4 md:px-6 md:py-5">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+              {/* Market Cap */}
               <div>
-                <div className="text-slate-500 text-sm">
+                <div className="text-gray-400 text-sm">
                   Global Market Cap
                 </div>
-                <div className="text-2xl md:text-3xl font-semibold tracking-tight">
+                <div className="text-2xl md:text-3xl font-semibold tracking-tight text-white">
                   {formatBigNum(totalMcap)}
                 </div>
               </div>
+              {/* Volume */}
               <div>
-                <div className="text-slate-500 text-sm">
+                <div className="text-gray-400 text-sm">
                   24h Volume
                 </div>
-                <div className="text-2xl md:text-3xl font-semibold tracking-tight">
+                <div className="text-2xl md:text-3xl font-semibold tracking-tight text-white">
                   {formatBigNum(totalVol)}
                 </div>
               </div>
+              {/* Controls */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Sort Select */}
                 <select
-                  className="w-full cursor-pointer appearance-none rounded-xl border border-slate-300 bg-white bg-no-repeat px-4 py-2.5 outline-none transition-all focus:ring-2 focus:ring-sky-400"
-                  style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.5em 1.5em' }}
+                  className="w-full cursor-pointer appearance-none rounded-lg border border-gray-700 bg-[#2c3040] text-gray-200 bg-no-repeat px-4 py-2.5 outline-none transition-all focus:ring-2 focus:ring-sky-500"
+                  style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.75rem center', backgroundSize: '1.5em 1.5em' }}
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                 >
@@ -252,12 +256,13 @@ return (
                   <option value="name">Sort by Name</option>
                 </select>
 
+                {/* Search Input */}
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <svg className="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                   </div>
                   <input
-                    className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 outline-none transition-all focus:ring-2 focus:ring-sky-400"
+                    className="w-full rounded-lg border border-gray-700 bg-[#2c3040] text-gray-200 py-2.5 pl-10 pr-4 outline-none transition-all focus:ring-2 focus:ring-sky-500 placeholder:text-gray-500"
                     placeholder="Search..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
@@ -266,119 +271,178 @@ return (
               </div>
             </div>
           </div>
+        {/* --- Table Section Starts Here --- */}
 
-          {/* ---- Table ---- */}
-          <div className="w-full overflow-x-auto">
-            <table className="w-full text-sm md:text-base"><colgroup><col className="w-24" /><col /><col className="w-28" /><col className="w-40" /><col className="w-28" /><col className="w-44" /><col className="w-44" /></colgroup><thead className="bg-white sticky top-0 z-10">
-              <tr className="text-left text-slate-600 border-y border-slate-100">
-                  <th className="py-3.5 px-3 text-center">#</th>
-                  <th className="py-3.5 px-3">Name</th>
-                  <th className="py-3.5 px-3">Symbol</th>
-                  <th className="py-3.5 px-3 text-right">Price</th>
-                  <th className="py-3.5 px-3">24h</th>
-                  <th className="py-3.5 px-3 text-right whitespace-nowrap">
-                    24h Volume
-                  </th>
-                  <th className="py-3.5 px-3 text-right whitespace-nowrap">
-                    Market Cap
+        {/* ---- ✨ Polished Table ---- */}
+        <div className="w-full overflow-x-auto">
+          {/* Use min-w-[768px] or similar if needed for smaller screens */}
+          <table className="w-full min-w-[768px] text-sm md:text-base">
+            {/* Colgroup remains same */}
+            <colgroup><col className="w-24" /><col /><col className="w-28" /><col className="w-40" /><col className="w-28" /><col className="w-44" /><col className="w-44" /></colgroup>
+            {/* Polished Head */}
+            <thead className="sticky top-0 z-10 bg-[#0f1424]"> {/* Dark background for head */}
+              <tr className="text-left text-gray-400 border-y border-white/10">
+                <th className="py-3.5 px-3 text-center">#</th>
+                <th className="py-3.5 px-3">Name</th>
+                <th className="py-3.5 px-3">Symbol</th>
+                <th className="py-3.5 px-3 text-right">Price</th>
+                <th className="py-3.5 px-3 text-center">24h</th> {/* Centered */}
+                <th className="py-3.5 px-3 text-right whitespace-nowrap">
+                  24h Volume
+                </th>
+                <th className="py-3.5 px-3 text-right whitespace-nowrap">
+                  Market Cap
                 </th>
               </tr>
-                </thead><tbody className="bg-white">{
-                    loading
-                      ? Array.from({ length: 12 }).map((_, i) => (
-                          <SkeletonRow i={i} key={i} />
-                        ))
-                      : display.map((coin, idx) => {
-                          const u = coin.quote?.USD || {};
-                   const change =
-                        typeof u.percent_change_24h === "number"
-                         ? u.percent_change_24h
-                         : null;
-                   return (
-                   <tr
-                        key={coin.id || coin.symbol || idx}
-                       className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
-                       style={{ height: 64 }}
-                      >
-                        <td className="py-3 px-3">
-                        <div className="flex items-center">
-                          <span className="text-slate-400 text-xs font-medium w-8 tabular-nums text-right mr-2">
-                           {String(idx + 1).padStart(2, "0")}
-                         </span>
-                       <div className="w-8 h-8 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center">
-                              <img
-                                src={`https://assets.coincap.io/assets/icons/${coin.symbol?.toLowerCase()}@2x.png`}
-                             onError={(e) => { e.currentTarget.style.opacity = "0"; }}
-                              alt={coin.symbol}
-                            className="w-8 h-8 object-contain"
-                             />
-                          </div>
-                         </div>
-                        </td>
+            </thead>
+            {/* Polished Body */}
+            <tbody className="divide-y divide-white/10"> {/* Row dividers */}
+              {loading
+                ? Array.from({ length: 12 }).map((_, i) => (
+                    // Use Polished Skeleton
+                    /* ---------- ✨ Polished Skeleton ---------- */
+                    <tr key={`sk-${i}`} className="animate-pulse border-b border-white/10"> {/* Ensure border matches tbody divider */}
+                      {/* # and Icon */}
+                      <td className="py-3 px-3">
+                        <div className="flex items-center">
+                          <span className="text-transparent text-xs font-medium w-8 tabular-nums text-right mr-2 bg-gray-700 rounded">00</span>
+                          <div className="w-8 h-8 rounded-full bg-gray-700" />
+                        </div>
+                      </td>
+                      {/* Name */}
+                      <td className="py-4 px-3">
+                        <div className="h-4 w-32 bg-gray-700 rounded" />
+                      </td>
+                      {/* Symbol */}
+                      <td className="py-4 px-3">
+                        <div className="h-6 w-20 bg-gray-700 rounded-md" />
+                      </td>
+                      {/* Price */}
+                      <td className="py-4 px-3 text-right">
+                        <div className="h-4 w-24 bg-gray-700 rounded ml-auto" />
+                      </td>
+                      {/* 24h Change */}
+                      <td className="py-4 px-3 text-center">
+                        <div className="h-6 w-[70px] bg-gray-700 rounded-lg mx-auto" />
+                      </td>
+                      {/* Volume */}
+                      <td className="py-4 px-3 text-right">
+                        <div className="h-6 w-24 bg-gray-700 rounded-md ml-auto" />
+                      </td>
+                      {/* Market Cap */}
+                      <td className="py-4 px-3 text-right">
+                        <div className="h-6 w-24 bg-gray-700 rounded-md ml-auto" />
+                      </td>
+                    </tr>
+                  ))
+                : display.map((coin, idx) => {
+                    const u = coin.quote?.USD || {};
+                    const change =
+                      typeof u.percent_change_24h === "number"
+                        ? u.percent_change_24h
+                        : null;
+                    return (
+                      <tr
+                        key={coin.id || coin.symbol || idx}
+                        className="group hover:bg-white/5 transition-colors text-white" // White text for rows
+                        style={{ height: 64 }}
+                      >
+                        {/* # and Icon */}
+                        <td className="py-3 px-3">
+                          <div className="flex items-center">
+                            <span className="text-gray-500 text-xs font-medium w-8 tabular-nums text-right mr-2">
+                              {String(idx + 1).padStart(2, "0")}
+                            </span>
+                            {/* Darker icon bg */}
+                            <div className="w-8 h-8 rounded-full bg-[#2c3040] overflow-hidden flex items-center justify-center border border-white/10">
+                              <img
+                                src={`https://assets.coincap.io/assets/icons/${coin.symbol?.toLowerCase()}@2x.png`}
+                                onError={(e) => { e.currentTarget.style.opacity = "0"; e.currentTarget.parentElement.style.backgroundColor = 'transparent';}} // Hide broken image + bg
+                                alt={coin.symbol}
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                          </div>
+                        </td>
 
-                     <td className="py-3 px-3">
-                       <div className="flex items-center gap-2">
-                         <span className="font-semibold text-slate-800">
-                          {coin.name || "--"}
-                        </span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-500 ring-1 ring-slate-200">
-                            #{coin.cmc_rank || idx + 1}
-                        </span>
-                   </div>
-                     </td>
+                        {/* Name and Rank */}
+                        <td className="py-3 px-3">
+                           <div className="flex items-center gap-2">
+                             <span className="font-semibold text-gray-100"> {/* Brighter text */}
+                               {coin.name || "--"}
+                             </span>
+                             {/* Polished Rank Badge */}
+                             <span className="px-2 py-0.5 rounded-full text-[10px] bg-gray-700 text-gray-300 ring-1 ring-gray-600">
+                               #{coin.cmc_rank || idx + 1}
+                             </span>
+                           </div>
+                         </td>
 
-                      <td className="py-3 px-3">
-                         <span className="font-mono text-slate-700 bg-slate-50 ring-1 ring-slate-200 px-2 py-1 rounded-md inline-block w-20 text-center">
-                          {coin.symbol}
-                     </span>
-                    </td>
+                        {/* Symbol */}
+                        <td className="py-3 px-3">
+                          {/* Polished Symbol Badge */}
+                          <span className="font-mono text-gray-300 bg-[#2c3040] ring-1 ring-gray-700 px-2 py-1 rounded-md inline-block w-20 text-center">
+                            {coin.symbol}
+                          </span>
+                        </td>
 
-                  <td className="py-3 px-3 text-right font-semibold tabular-nums">
-                   {typeof u.price === "number"
-                          ? "$" +
-                        u.price.toLocaleString(undefined, {
-                           maximumFractionDigits: 6,
-                      })
-                     : "--"}
-                  </td>
+                        {/* Price */}
+                        <td className="py-3 px-3 text-right font-semibold tabular-nums text-gray-100"> {/* Brighter text */}
+                           {typeof u.price === "number"
+                             ? "$" +
+                               u.price.toLocaleString(undefined, {
+                                 maximumFractionDigits: u.price < 0.01 ? 6 : 2, // More digits for small prices
+                                 minimumFractionDigits: 2,
+                               })
+                             : "--"}
+                         </td>
 
-                    <td className="py-3 px-3">
-                    {change === null ? (
-                      <span className="text-slate-400">--</span>
-                      ) : (
-                        <span
-                            className={`inline-flex items-center justify-center min-w-[84px] px-2 py-1 rounded-lg text-sm font-semibold ${pctClass(
-                          change
-                      )}`}
-                       >
-                        {change > 0 ? "+" : ""}
-                         {change.toFixed(2)}%
-                      </span>
-                   )}
-                  </td>
+                        {/* 24h Change */}
+                        <td className="py-3 px-3 text-center"> {/* Centered */}
+                           {change === null ? (
+                             <span className="text-gray-500">--</span>
+                           ) : (
+                             // Polished % Badge (using updated pctClass logic)
+                             <span
+                               className={`inline-flex items-center justify-center min-w-[70px] px-2 py-1 rounded-lg text-sm font-semibold ${
+                                 change > 0 ? 'bg-green-500/10 text-green-400 ring-green-500/20' // Darker theme colors
+                                 : change < 0 ? 'bg-red-500/10 text-red-400 ring-red-500/20' // Darker theme colors
+                                 : 'bg-gray-500/10 text-gray-400 ring-gray-500/20' // Darker theme colors
+                               } ring-1`}
+                             >
+                               {change > 0 ? "+" : ""}
+                               {change.toFixed(2)}%
+                             </span>
+                           )}
+                         </td>
 
-                <td className="py-3 px-3 text-right tabular-nums">
-                    <span className="inline-block px-2 py-1 rounded-md bg-slate-50 ring-1 ring-slate-200">
-                       {u.volume_24h ? formatBigNum(u.volume_24h) : "--"}
-                  </span>
-                 </td>
+                        {/* Volume */}
+                        <td className="py-3 px-3 text-right tabular-nums text-gray-300"> {/* Adjusted text color */}
+                          {/* Polished Volume Badge */}
+                          <span className="inline-block px-2 py-1 rounded-md bg-[#2c3040] ring-1 ring-gray-700">
+                            {u.volume_24h ? formatBigNum(u.volume_24h) : "--"}
+                          </span>
+                        </td>
 
-                    <td className="py-3 px-3 text-right tabular-nums">
-                    <span className="inline-block px-2 py-1 rounded-md bg-emerald-50 ring-1 ring-emerald-200 text-emerald-700 font-medium">
-                        {u.market_cap ? formatBigNum(u.market_cap) : "--"}
-                      </span>
-                    </td>
-                    </tr>
-                    );
-                  })}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+                        {/* Market Cap */}
+                        <td className="py-3 px-3 text-right tabular-nums text-gray-300"> {/* Adjusted text color */}
+                          {/* Polished Market Cap Badge */}
+                          <span className="inline-block px-2 py-1 rounded-md bg-[#2c3040] ring-1 ring-gray-700">
+                            {u.market_cap ? formatBigNum(u.market_cap) : "--"}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+            </tbody>
+          </table>
+        </div>
+        </Card> {/* This closes the main card that wraps stats and table */}
 
-        {/* ---- News Ticker ---- */}
-        <Card className="p-0 rounded-2xl shadow-lg border border-slate-100">
+        {/* ---- ✨ Polished News Ticker ---- */}
+        <Card className="p-0 rounded-2xl shadow-lg bg-gradient-to-br from-[#141a2b] via-[#0f1424] to-[#0b1020] border border-[#1a2343]">
           <div className="px-3 md:px-4 py-4">
+            {/* Assuming NewsTicker component uses appropriate text colors or inherits */}
             <NewsTicker
               news={
                 newsHeadlines.length
@@ -388,49 +452,49 @@ return (
             />
           </div>
         </Card>
-      </div>
+      </div> {/* Closes z-index wrapper */}
 
-    {/* ===== Promotion Video Card ===== */}
-    {showPromotion && (
-      <div
-        className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-[90vw] max-w-sm rounded-2xl shadow-2xl border border-slate-700 overflow-hidden"
-        style={{
-          background: "linear-gradient(120deg, #0b1020f0 0%, #0d1220d8 60%, #0a101dd1 100%)",
-        }}
-      >
-        <div className="relative">
-          <button
-            onClick={handleClosePromotion}
-            className="absolute top-2 right-2 z-10 h-7 w-7 rounded-full bg-black/60 text-white hover:bg-black/90 transition-colors flex items-center justify-center"
-            aria-label="Close promotion"
-          >
-            {/* Simple 'X' icon */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-          <video
-            src="/promotion.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-auto"
-          />
-        </div>
-      </div>
-    )}
-    </div>
+      {/* ===== Promotion Video Card (Keep dark theme) ===== */}
+     {showPromotion && (
+       <div
+         className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-[90vw] max-w-sm rounded-2xl shadow-2xl border border-slate-700 overflow-hidden"
+         style={{
+           background: "linear-gradient(120deg, #0b1020f0 0%, #0d1220d8 60%, #0a101dd1 100%)", // Dark gradient
+         }}
+       >
+         <div className="relative">
+           <button
+             onClick={handleClosePromotion}
+             className="absolute top-2 right-2 z-10 h-7 w-7 rounded-full bg-black/60 text-white hover:bg-black/90 transition-colors flex items-center justify-center"
+             aria-label="Close promotion"
+           >
+             {/* Simple 'X' icon */}
+             <svg
+               xmlns="http://www.w3.org/2000/svg"
+               width="18"
+               height="18"
+               viewBox="0 0 24 24"
+               fill="none"
+               stroke="currentColor"
+               strokeWidth="2.5"
+               strokeLinecap="round"
+               strokeLinejoin="round"
+             >
+               <line x1="18" y1="6" x2="6" y2="18"></line>
+               <line x1="6" y1="6" x2="18" y2="18"></line>
+             </svg>
+           </button>
+           <video
+             src="/promotion.mp4"
+             autoPlay
+             loop
+             muted
+             playsInline // Important for mobile browsers
+             className="w-full h-auto"
+           />
+         </div>
+       </div>
+     )}
+    </div> // Closes main page div
   );
 }
