@@ -487,22 +487,74 @@ export default function TradePage() {
                 )}
               </AnimatePresence>
 
-              {/* timer / waiting (Unchanged) */}
-              <AnimatePresence>
-                <ActiveTradeTimer
-                  timerActive={timerActive}
-                  waitingResult={waitingResult}
-                  tradeState={tradeState}
-                  timerKey={timerKey}
-                  onTimerComplete={onTimerComplete}
-                  t={t}
-                />
-              </AnimatePresence>
+              // WITH THIS (around line 527):
+              {/* --- Polished Timer/Waiting --- */}
+              <div className="mt-5 text-center"> {/* Add margin top and center alignment */}
+                <AnimatePresence>
+                  {/* Keep AnimatePresence */}
+                  {(timerActive || waitingResult) && (
+                    // Apply styles within the animated div
+                    <motion.div
+                      key="timer-waiting"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      // Make text large, bold, and bright white with a shadow
+                      className="text-3xl font-extrabold text-white py-4 tabular-nums tracking-tight"
+                      style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }} // Add subtle shadow for visibility
+                    >
+                      <ActiveTradeTimer
+                        timerActive={timerActive}
+                        waitingResult={waitingResult}
+                        tradeState={tradeState}
+                        timerKey={timerKey}
+                        onTimerComplete={onTimerComplete}
+                        t={t}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              {/* --- End Polished Timer/Waiting --- */}
 
-              {/* result box (Unchanged) */}
+              // WITH THIS (around line 549):
+              {/* --- Polished Result Box with Close Button --- */}
               <AnimatePresence>
-                <TradeResult tradeDetail={tradeDetail} t={t} />
+                {tradeDetail && ( // Only show wrapper if tradeDetail exists
+                  <motion.div
+                    key="result-card-wrapper"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="relative mt-5" // Add margin top
+                  >
+                    {/* Close Button (Top Right corner of the card) */}
+                    <button
+                      onClick={() => {
+                         setTradeDetail(null); // Clear the result object
+                         setTradeResult(null); // Clear the numeric result value too
+                      }}
+                      className="absolute top-3 right-3 z-20 h-7 w-7 rounded-full bg-black/40 text-white hover:bg-black/70 transition-colors flex items-center justify-center backdrop-blur-sm"
+                      aria-label="Close Result"
+                    >
+                      {/* Simple 'X' icon using SVG */}
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+
+                    {/* Render the actual result card */}
+                    <TradeResult
+                      tradeDetail={tradeDetail}
+                      t={t}
+                      // Pass the onClose function if TradeResult needs it internally (optional)
+                      // onClose={() => { setTradeDetail(null); setTradeResult(null); }}
+                     />
+                  </motion.div>
+                )}
               </AnimatePresence>
+              {/* --- End Polished Result Box --- */}
             </Card>
           </div>
 
