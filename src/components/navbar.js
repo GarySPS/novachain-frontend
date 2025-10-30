@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 const navItems = [
   { label: "dashboard", to: "/" },
   { label: "trade", to: "/trade" }, // Crypto
-  { label: "forex", to: "/forex" },
+  { label: "Forex", to: "/forex" },
   { label: "history", to: "/trade-history" },
   { label: "wallet", to: "/wallet" },
   { label: "profile", to: "/profile" },
