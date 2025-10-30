@@ -24,6 +24,19 @@ const COINS = [
 ];
 const profitMap = { 30: 0.3, 60: 0.5, 90: 0.7, 120: 1.0 };
 
+// Helper function to format the percentage
+const formatPercent = (n) => {
+  const num = Number(n || 0);
+  const prefix = num > 0 ? "+" : "";
+  // Use Tailwind's text color classes
+  const colorClass = num >= 0 ? "text-green-500" : "text-red-500";
+  return (
+    <span className={`font-bold ${colorClass}`}>
+      {prefix}{num.toFixed(2)}%
+    </span>
+  );
+};
+
 /* ---------------- Local storage helpers (unchanged) ---------------- */
 function persistTradeState(tradeState) {
   if (tradeState) localStorage.setItem("activeTrade", JSON.stringify(tradeState));
@@ -102,6 +115,7 @@ export default function TradePage() {
           high: res.data?.high_24h || 0,
           low: res.data?.low_24h || 0,
           vol: res.data?.volume_24h || 0,
+          change: res.data?.percent_change_24h || 0,
         });
 
         setFetchError(false);
@@ -372,8 +386,13 @@ export default function TradePage() {
                       ? "$" + coinPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })
                       : "Loading..."}
                   </div>
-                  {/* Note: You will need to get 24h percentage from your API to show here */}
-                  {/* <span className="text-lg font-bold text-red-500">-0.68%</span> */}
+
+                  {/* Show 24h percentage change from our coinStats state */}
+                  {coinStats && (
+                    <span className="text-lg">
+                      {formatPercent(coinStats.change)}
+                    </span>
+                  )}
                 </div>
 
                 {/* Stats */}
@@ -390,13 +409,13 @@ export default function TradePage() {
                       {coinStats ? "$" + coinStats.low.toLocaleString() : "..."}
                     </span>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-slate-500">24h Vol</span>
-                    <span className="font-semibold text-slate-800">
-                      {coinStats ? coinStats.vol.toLocaleString() + "M" : "..."}
-                    </span>
-                  </div>
-                </div>
+                  <div className="flex flex-col">
+                    <span className="text-slate-500">24h Change</span> {/* <-- Updated label */}
+                    <span className="font-semibold text-slate-800">
+                      {/* Use the new formatter and 'change' field */}
+                      {coinStats ? formatPercent(coinStats.change) : "..."}
+                    </span>
+                  </div>
 
                 {/* New Coin Selector */}
                 <div className="mt-4">

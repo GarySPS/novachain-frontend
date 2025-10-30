@@ -1,4 +1,4 @@
-// src/pages/CommoditiesPage.js
+// src/pages/ForexPage.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,6 +23,19 @@ const FOREX_PAIRS = [
   { symbol: "XCU/USD", name: "Copper", tv: "OANDA:XCUUSD", api: "xcu" },
 ];
 const profitMap = { 30: 0.3, 60: 0.5, 90: 0.7, 120: 1.0 };
+
+// Helper function to format the percentage
+const formatPercent = (n) => {
+  const num = Number(n || 0);
+  const prefix = num > 0 ? "+" : "";
+  // Use Tailwind's text color classes
+  const colorClass = num >= 0 ? "text-green-500" : "text-red-500";
+  return (
+    <span className={`font-bold ${colorClass}`}>
+      {prefix}{num.toFixed(2)}%
+    </span>
+  );
+};
 
 /* ---------------- Local storage helpers (unchanged) ---------------- */
 function persistTradeState(tradeState) {
@@ -102,6 +115,7 @@ export default function ForexPage() {
           high: res.data?.high_24h || 0,
           low: res.data?.low_24h || 0,
           vol: res.data?.volume_24h || 0,
+          change: res.data?.percent_change_24h || 0,
         });
 
         setFetchError(false);
@@ -372,8 +386,13 @@ export default function ForexPage() {
                       ? "$" + coinPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })
                       : "Loading..."}
                   </div>
-                  {/* Optional: 24h percentage change */}
-                  {/* <span className="text-lg font-bold text-red-500">-0.68%</span> */}
+
+                  {/* Show 24h percentage change from our coinStats state */}
+                  {coinStats && (
+                    <span className="text-lg">
+                      {formatPercent(coinStats.change)}
+                    </span>
+                  )}
                 </div>
 
                 {/* Stats */}
@@ -391,9 +410,9 @@ export default function ForexPage() {
                     </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-slate-500">24h Vol</span>
+                    <span className="text-slate-500">24h Change</span>
                     <span className="font-semibold text-slate-800">
-                      {coinStats ? coinStats.vol.toLocaleString() + "M" : "..."}
+                      {coinStats ? formatPercent(coinStats.change) : "..."}
                     </span>
                   </div>
                 </div>
