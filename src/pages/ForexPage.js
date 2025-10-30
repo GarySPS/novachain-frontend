@@ -14,12 +14,12 @@ import TradeModal from "../components/TradeModal";
 import TradeResult from "../components/TradeResult";
 import ActiveTradeTimer from "../components/ActiveTradeTimer";
 
-/* ---------------- Commodities Definition ---------------- */
-const COMMODITIES = [
-  { symbol: "XAU/USD", name: "Gold", tv: "OANDA:XAUUSD", api: "xau" },
-  { symbol: "XAG/USD", name: "Silver", tv: "OANDA:XAGUSD", api: "xag" },
-  { symbol: "WTI/USD", name: "WTI Oil", tv: "OANDA:WTICOUSD", api: "wti" },
-  { symbol: "GAS/USD", name: "Natural Gas", tv: "OANDA:NATGASUSD", api: "natgas" },
+/* ---------------- Forex Definition ---------------- */
+const FOREX_PAIRS = [
+  { symbol: "XAU/USD", name: "Gold", tv: "OANDA:XAUUSD", api: "xau" },
+  { symbol: "XAG/USD", name: "Silver", tv: "OANDA:XAGUSD", api: "xag" },
+  { symbol: "WTI/USD", name: "WTI Oil", tv: "OANDA:WTICOUSD", api: "wti" },
+  { symbol: "GAS/USD", name: "Natural Gas", tv: "OANDA:NATGASUSD", api: "natgas" },
   { symbol: "XCU/USD", name: "Copper", tv: "OANDA:XCUUSD", api: "xcu" },
 ];
 const profitMap = { 30: 0.3, 60: 0.5, 90: 0.7, 120: 1.0 };
@@ -41,11 +41,11 @@ function createTradeState(trade_id, user_id, duration) {
   return { trade_id, user_id, duration, endAt };
 }
 
-export default function CommoditiesPage() {
+export default function ForexPage() {
   const { t } = useTranslation();
 
   /* ---------------- State (unchanged) ---------------- */
-  const [selectedCommodity, setSelectedCommodity] = useState(COMMODITIES[0]);
+  const [selectedCommodity, setSelectedCommodity] = useState(FOREX_PAIRS[0]);
   const [coinPrice, setCoinPrice] = useState(null);
   const [loadingChart, setLoadingChart] = useState(true);
   const [coinStats, setCoinStats] = useState(null);
@@ -401,20 +401,20 @@ export default function CommoditiesPage() {
                 {/* New Commodity Selector */}
                 <div className="mt-4">
                   <select
-                    value={selectedCommodity.symbol}
-                    disabled={timerActive}
-                    onChange={(e) => {
-                      const newCommodity = COMMODITIES.find(c => c.symbol === e.target.value);
-                      if (newCommodity) setSelectedCommodity(newCommodity);
-                    }}
-                    className="w-full h-11 px-3 rounded-lg bg-slate-100 border border-slate-300 text-slate-900 font-bold text-base focus:ring-2 focus:ring-blue-500"
-                  >
-                    {COMMODITIES.map(commodity => (
-                      <option key={commodity.symbol} value={commodity.symbol}>
-                        {commodity.symbol}
-                      </option>
-                    ))}
-                  </select>
+                    value={selectedCommodity.symbol}
+                    disabled={timerActive}
+                    onChange={(e) => {
+                      const newCommodity = FOREX_PAIRS.find(c => c.symbol === e.target.value);
+                      if (newCommodity) setSelectedCommodity(newCommodity);
+                  }}
+                    className="w-full h-11 px-3 rounded-lg bg-slate-100 border border-slate-300 text-slate-900 font-bold text-base focus:ring-2 focus:ring-blue-500"
+                  >
+                    {FOREX_PAIRS.map(commodity => (
+                      <option key={commodity.symbol} value={commodity.symbol}>
+                        {commodity.symbol}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

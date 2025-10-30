@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import TradePage from './pages/TradePage';
-import CommoditiesPage from './pages/CommoditiesPage';
+import ForexPage from './pages/ForexPage';
 import Dashboard from './pages/Dashboard';
 import TradeHistory from './pages/TradeHistory';
 import ProfilePage from './pages/ProfilePage';
@@ -66,7 +66,7 @@ function AppShell() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/trade" element={<TradePage />} />
-            <Route path="/commodities" element={<CommoditiesPage />} />
+            <Route path="/forex" element={<ForexPage />} />
             <Route path="/trade-history" element={<TradeHistory />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/wallet" element={<WalletPage />} />
