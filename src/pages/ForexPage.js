@@ -142,8 +142,8 @@ export default function ForexPage() {
       }
     };
     fetchPrice();
-    interval = setInterval(fetchPrice, 5000);
-    return () => clearInterval(interval);
+    interval = setInterval(fetchPrice, 30000); // Changed from 5s to 30s
+    return () => clearInterval(interval);
   }, [selectedCommodity]);
 
   /* ---------------- TradingView loader (Fixed) ---------------- */
