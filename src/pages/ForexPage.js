@@ -120,7 +120,7 @@ export default function ForexPage() {
     let interval;
     const fetchPrice = async () => {
       try {
-        const res = await axios.get(`${MAIN_API_BASE}/routeprice/${selectedCommodity.api}`);
+        const res = await axios.get(`${MAIN_API_BASE}/prices/${selectedCommodity.api}`);
 
         
         // Set price
