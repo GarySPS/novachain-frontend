@@ -141,7 +141,7 @@ export default function TradePage() {
       }
     };
     fetchPrice();
-    interval = setInterval(fetchPrice, 5000);
+    interval = setInterval(fetchPrice, 30000);
     return () => clearInterval(interval);
   }, [selectedCoin]);
 
