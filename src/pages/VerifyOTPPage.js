@@ -251,10 +251,10 @@ return (
                 initialFocus={true}
                 wrapperRef={pinWrapperRef}
                 id="pin"
-                codeLength={6}
-                type="number"
-                value={otp}
-                onChange={setOtp}
+                codeLength={6}
+                type="text"
+                value={otp}
+                onChange={setOtp}
                 inputMode="numeric"
                 autoFocus
               />
