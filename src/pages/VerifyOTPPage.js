@@ -246,7 +246,7 @@ return (
               <ReactCodesInput
                 classNameWrapper="flex justify-center gap-2"
                 classNameCodeWrapper="w-11 h-12 md:w-12 md:h-14 flex-none"
-                classNameCode="border-2 border-slate-700 bg-slate-800/60 rounded-xl text-center text-2xl font-bold text-slate-100 focus:border-sky-400 transition"
+                classNameCode="border-2 border-slate-700 bg-slate-800/60 rounded-xl text-center text-2xl font-bold text-white focus:border-sky-400 transition"
                 classNameCodeWrapperFocus="shadow-[0_0_0_3px_rgba(56,189,248,0.3)]"
                 initialFocus={true}
                 wrapperRef={pinWrapperRef}
