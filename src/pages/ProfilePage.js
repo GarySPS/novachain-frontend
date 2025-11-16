@@ -334,9 +334,6 @@ useEffect(() => {
                 className="w-28 h-28 rounded-full border-4 border-[#ffd700] shadow-xl bg-white object-cover"
                 onError={(e) => { e.currentTarget.src = "/logo192_new.png"; }}
               />
-              <div className="mt-3 text-xs tracking-wider text-white/60 font-mono select-none">
-                {user.id ? `NC-${String(user.id).padStart(7, "0")}` : "NC-USER"}
-              </div>
 
               <div className="mt-1 flex items-center gap-2">
                 <div className="text-2xl md:text-3xl font-black text-white drop-shadow">
