@@ -114,7 +114,8 @@ const [earnToast, setEarnToast] = useState(null);
     if (!Object.keys(prices).length) { return; }
     let sum = 0;
     balances.forEach(({ symbol, balance }) => {
-      const coinPrice = prices[symbol] || (symbol === "USDT" ? 1 : 0);
+      // FIX: Force USDT to 1.00 strictly, otherwise use API price
+      const coinPrice = symbol === "USDT" ? 1 : (prices[symbol] || 0);
       sum += Number(balance) * coinPrice;
     });
     setTotalUsd(sum);
@@ -128,7 +129,8 @@ const [earnToast, setEarnToast] = useState(null);
     }
     let sum = 0;
     earnBalances.forEach(({ symbol, balance }) => {
-      const coinPrice = prices[symbol] || (symbol === "USDT" ? 1 : 0);
+      // FIX: Force USDT to 1.00 strictly
+      const coinPrice = symbol === "USDT" ? 1 : (prices[symbol] || 0);
       sum += Number(balance) * coinPrice;
     });
     setTotalEarnUsd(sum);
@@ -575,7 +577,8 @@ const handleWithdraw = async (e) => {
               {/* USD Value */}
               <td className="py-3 px-2 text-right tabular-nums font-semibold text-slate-900">
                 {(() => {
-                  const p = prices[symbol] ?? (symbol === "USDT" ? 1 : undefined);
+                  // FIX: Check symbol first. If USDT, force 1.
+                  const p = symbol === "USDT" ? 1 : (prices[symbol] ?? undefined);
                   return p !== undefined ? fmtUSD(Number(balance) * p) : "--";
                 })()}
               </td>
@@ -674,7 +677,8 @@ const handleWithdraw = async (e) => {
                     {/* USD Value */}
                     <td className="py-3 px-2 text-right tabular-nums font-semibold text-slate-900">
                       {(() => {
-                        const p = prices[symbol] ?? (symbol === "USDT" ? 1 : undefined);
+                         // FIX: Check symbol first. If USDT, force 1.
+                        const p = symbol === "USDT" ? 1 : (prices[symbol] ?? undefined);
                         return p !== undefined ? fmtUSD(Number(balance) * p) : "--";
                       })()}
                     </td>
