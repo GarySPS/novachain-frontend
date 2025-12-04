@@ -1070,7 +1070,6 @@ export default function WalletPage() {
                     }}
                     className="text-xs font-bold text-indigo-400 hover:text-indigo-300 px-2 py-1"
                   >
-                    ALL
                   </button>
                   <span className="text-slate-400 font-bold text-sm px-2">{stakeModal.coin}</span>
                 </div>
