@@ -145,6 +145,27 @@ const closeStakeModal = () => {
   setStakeToast(null);
 };
 
+const handleRedeem = async (stakeId) => {
+    if(stakeBusy) return;
+    setStakeBusy(true);
+    try {
+      const res = await axios.post(`${MAIN_API_BASE}/earn/redeem`, { stakeId }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if(res.data.success) {
+        setStakeToast({ type: "success", message: res.data.message });
+        fetchBalances();     // Update main balance
+        fetchStakedAssets(); // Remove from list (or update status)
+      } else {
+        setStakeToast({ type: "error", message: res.data.error });
+      }
+    } catch(err) {
+      setStakeToast({ type: "error", message: err.response?.data?.error || "Failed" });
+    } finally {
+      setStakeBusy(false);
+    }
+  };
+
 // 5. Submit Staking Request
 const handleStakeSubmit = async (e) => {
   e.preventDefault();
@@ -704,20 +725,28 @@ const handleWithdraw = async (e) => {
                   <table className="w-full text-sm">
                     <tbody>
                       {stakedAssets.map((row, idx) => (
-                        <tr key={idx} className="border-b border-slate-100 hover:bg-white transition">
-                          <td className="py-3 px-6 font-bold text-slate-700">{row.coin}</td>
-                          <td className="py-3 px-2 text-right">
-                            <div className="font-medium text-slate-900">{Number(row.amount).toFixed(4)}</div>
-                            <div className="text-xs text-indigo-600 font-bold">
-                              +{row.daily_rate || "0"}% / day
-                            </div>
-                          </td>
-                          <td className="py-3 px-6 text-right text-xs text-slate-500">
-                             {/* You can calculate specific days left here if your backend sends dates */}
-                             Active
-                          </td>
-                        </tr>
-                      ))}
+  <tr key={idx} className="border-b border-slate-100 hover:bg-white transition">
+    <td className="py-3 px-6 font-bold text-slate-700">{row.coin}</td>
+    <td className="py-3 px-2 text-right">
+      <div className="font-medium text-slate-900">{Number(row.amount).toFixed(4)}</div>
+      <div className="text-xs text-indigo-600 font-bold">
+        +{row.daily_rate}% / day
+      </div>
+    </td>
+    <td className="py-3 px-6 text-right text-xs">
+      {row.can_redeem ? (
+        <button 
+          onClick={() => handleRedeem(row.id)}
+          className="bg-emerald-500 text-white px-3 py-1 rounded-lg font-bold hover:bg-emerald-600 transition"
+        >
+          Redeem
+        </button>
+      ) : (
+        <span className="text-slate-500">{row.days_left} days left</span>
+      )}
+    </td>
+  </tr>
+))}
                     </tbody>
                   </table>
                 ) : (
