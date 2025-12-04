@@ -13,6 +13,13 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { createClient } from '@supabase/supabase-js';
 
+const STAKING_PLANS = [
+  { days: 7, rate: 1.3 },   // 1.3% Daily
+  { days: 14, rate: 1.6 },  // 1.6% Daily
+  { days: 30, rate: 2.1 },  // 2.1% Daily
+  { days: 90, rate: 2.6 },  // 2.6% Daily
+];
+
 const SUPABASE_URL = "https://zgnefojwdijycgcqngke.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnbmVmb2p3ZGlqeWNnY3FuZ2tlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNTc3MjcsImV4cCI6MjA2NTczMzcyN30.RWPMuioeBKt_enKio-Z-XIr6-bryh3AEGSxmyc7UW7k";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -90,65 +97,110 @@ const [withdrawBusy, setWithdrawBusy] = useState(false);
 const [depositToast, setDepositToast] = useState("");
 const [withdrawToast, setWithdrawToast] = useState("");
 
-// ===== NEW: State for Earn Wallet =====
-const [earnBalances, setEarnBalances] = useState([]); // { symbol, balance }
-const [totalEarnUsd, setTotalEarnUsd] = useState(0);
-const [currentEarnRate, setCurrentEarnRate] = useState(0);
-const [earnModal, setEarnModal] = useState({ open: false, type: "save", coin: "USDT", amount: "" });
-const [earnBusy, setEarnBusy] = useState(false);
-const [earnToast, setEarnToast] = useState(null);
-// ======================================
+// ===== NEW: DeFi Staking State & Logic =====
+const [stakedAssets, setStakedAssets] = useState([]); // Assets currently locked
+const [totalStakedUsd, setTotalStakedUsd] = useState(0);
 
+// Modal State
+const [stakeModal, setStakeModal] = useState({ open: false, coin: "USDT", amount: "" });
+const [selectedPlan, setSelectedPlan] = useState(null); // { days: 7, rate: 1.3 }
+const [stakeBusy, setStakeBusy] = useState(false);
+const [stakeToast, setStakeToast] = useState(null);
 
-  /* ---------------- history merge (unchanged logic) ---------------- */
-  const userDepositHistory = depositHistory.filter(d => userId && Number(d.user_id) === Number(userId));
-  const userWithdrawHistory = withdrawHistory.filter(w => userId && Number(w.user_id) === Number(userId));
-  const allHistory = [
-    ...userDepositHistory.map(d => ({ ...d, type: "Deposit" })),
-    ...userWithdrawHistory.map(w => ({ ...w, type: "Withdraw" })),
-  ].sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
+// 1. Calculate Total Staked Value in USD
+useEffect(() => {
+  if (!stakedAssets.length || !Object.keys(prices).length) {
+    setTotalStakedUsd(0);
+    return;
+  }
+  let sum = 0;
+  stakedAssets.forEach(({ coin, amount }) => {
+    const coinPrice = prices[coin] || (coin === "USDT" ? 1 : 0);
+    sum += Number(amount) * coinPrice;
+  });
+  setTotalStakedUsd(sum);
+}, [stakedAssets, prices]);
 
-  // ===== MODIFIED: This now calculates total for *main* wallet only =====
-  useEffect(() => {
-    if (!balances.length) { setTotalUsd(0); return; }
-    if (!Object.keys(prices).length) { return; }
-    let sum = 0;
-    balances.forEach(({ symbol, balance }) => {
-      // FIX: Force USDT to 1.00 strictly, otherwise use API price
-      const coinPrice = symbol === "USDT" ? 1 : (prices[symbol] || 0);
-      sum += Number(balance) * coinPrice;
+// 2. Fetch Staked Assets
+function fetchStakedAssets() {
+  if (!token || !userId) return;
+  // NOTE: Ensure your backend has this endpoint: GET /earn/stakes
+  axios.get(`${MAIN_API_BASE}/earn/stakes`, { headers: { Authorization: `Bearer ${token}` } })
+    .then(res => setStakedAssets(res.data || []))
+    .catch(() => setStakedAssets([]));
+}
+
+// 3. Add fetchStakedAssets to the main load sequence
+useEffect(() => {
+  if (token && userId) {
+    fetchStakedAssets();
+  }
+}, [token, userId]);
+
+// 4. Modal Handlers
+const openStakeModal = () => setStakeModal({ open: true, coin: "USDT", amount: "" });
+const closeStakeModal = () => {
+  setStakeModal({ open: false, coin: "USDT", amount: "" });
+  setSelectedPlan(null);
+  setStakeToast(null);
+};
+
+// 5. Submit Staking Request
+const handleStakeSubmit = async (e) => {
+  e.preventDefault();
+  if (stakeBusy) return;
+  
+  if (!selectedPlan) {
+    setStakeToast({ type: "error", message: t("please_select_plan") || "Please select a plan" });
+    return;
+  }
+
+  setStakeBusy(true);
+  setStakeToast(null);
+
+  // Prepare payload
+  const payload = { 
+    coin: stakeModal.coin, 
+    amount: parseFloat(stakeModal.amount),
+    duration_days: selectedPlan.days, // e.g. 7
+    daily_rate: selectedPlan.rate     // e.g. 1.3
+  };
+  
+  let wasSuccess = false;
+
+  try {
+    // NOTE: Ensure backend has: POST /earn/stake
+    const res = await axios.post(`${MAIN_API_BASE}/earn/stake`, payload, {
+      headers: { Authorization: `Bearer ${token}` }
     });
-    setTotalUsd(sum);
-  }, [balances, prices]);
 
-  // ===== NEW: Calculate total USD in Earn Wallet =====
-  useEffect(() => {
-    if (!earnBalances.length || !Object.keys(prices).length) {
-      setTotalEarnUsd(0);
-      return;
-    }
-    let sum = 0;
-    earnBalances.forEach(({ symbol, balance }) => {
-      // FIX: Force USDT to 1.00 strictly
-      const coinPrice = symbol === "USDT" ? 1 : (prices[symbol] || 0);
-      sum += Number(balance) * coinPrice;
-    });
-    setTotalEarnUsd(sum);
-  }, [earnBalances, prices]);
-
-  // ===== NEW: Calculate current earn rate based on total Earn USD =====
-  useEffect(() => {
-    if (totalEarnUsd >= 100000) {
-      setCurrentEarnRate(10); // 10%
-    } else if (totalEarnUsd >= 10000) {
-      setCurrentEarnRate(7); // 7%
-    } else if (totalEarnUsd >= 1000) {
-      setCurrentEarnRate(4); // 4%
+    if (res.data && res.data.success) {
+      wasSuccess = true;
+      setStakeToast({
+        type: "success",
+        message: t("stake_success") || "Staking Successful!"
+      });
+      fetchBalances();      // Update main wallet (balance goes down)
+      fetchStakedAssets();  // Update stake list (stake appears)
     } else {
-      setCurrentEarnRate(0); // 0%
+      setStakeToast({
+        type: "error",
+        message: res.data.error || t("operation_failed")
+      });
     }
-  }, [totalEarnUsd]);
-  // ===============================================================
+  } catch (err) {
+    setStakeToast({
+      type: "error",
+      message: err.response?.data?.error || t("operation_failed")
+    });
+  } finally {
+    setStakeBusy(false);
+    if (wasSuccess) {
+      setTimeout(() => closeStakeModal(), 1500);
+    }
+  }
+};
+// ============================================
 
   useEffect(() => {
     async function fetchHistoryScreenshots() {
@@ -577,8 +629,7 @@ const handleWithdraw = async (e) => {
               {/* USD Value */}
               <td className="py-3 px-2 text-right tabular-nums font-semibold text-slate-900">
                 {(() => {
-                  // FIX: Check symbol first. If USDT, force 1.
-                  const p = symbol === "USDT" ? 1 : (prices[symbol] ?? undefined);
+                  const p = prices[symbol] ?? (symbol === "USDT" ? 1 : undefined);
                   return p !== undefined ? fmtUSD(Number(balance) * p) : "--";
                 })()}
               </td>
@@ -607,91 +658,75 @@ const handleWithdraw = async (e) => {
         </Card>
       </div>
 
-        {/* ===== NEW: Earn Savings Card ===== */}
+        {/* ===== NEW: DeFi Staking Section ===== */}
         <Card id="earn-section" className="mt-8 rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden">
-          <div className="bg-gradient-to-r from-teal-50 via-sky-50 to-indigo-50 px-5 py-5 md:px-6 md:py-6">
-            <div className="flex items-center gap-2 text-slate-800 text-xl md:text-2xl font-extrabold">
-              <Icon name="zap" className="w-7 h-7 text-teal-500" /> {t("savings_earn", "Savings Earn")}
+          {/* Header with Darker/DeFi Vibe */}
+          <div className="bg-slate-900 px-6 py-6 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+              <Icon name="activity" className="w-32 h-32" />
             </div>
-          </div>
-          
-          {/* --- Earn Stats --- */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-6 py-5 border-b border-slate-100">
-            <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-slate-50 ring-1 ring-slate-200">
-              <div className="text-sm font-semibold text-slate-500">{t("total_saved", "Total Saved")}</div>
-              <div className="text-3xl font-extrabold text-slate-900 tabular-nums">{fmtUSD(totalEarnUsd)}</div>
-            </div>
-            <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-teal-50 ring-1 ring-teal-200">
-              <div className="text-sm font-semibold text-teal-600">{t("monthly_rate", "Monthly Rate")}</div>
-              <div className="text-3xl font-extrabold text-teal-700 tabular-nums">{currentEarnRate}%</div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 text-xl md:text-2xl font-extrabold mb-1">
+                <div className="bg-indigo-500 p-2 rounded-lg">
+                  <Icon name="layers" className="w-6 h-6 text-white" />
+                </div>
+                <span>Novachain AI DeFi Staking</span>
+              </div>
+              <p className="text-slate-400 text-sm font-medium ml-1">
+                {t("easy_access_defi", "Easy Access to DeFi Opportunities")}
+              </p>
             </div>
           </div>
 
-          {/* --- Earn Actions --- */}
-          <div className="flex flex-col md:flex-row gap-3 px-6 py-5 border-b border-slate-100">
-            <button
-              onClick={() => openEarnModal('save')}
-              className="flex-1 h-12 rounded-xl bg-slate-900 text-white text-lg font-extrabold hover:scale-[1.02] transition"
-            >
-              <span className="inline-flex items-center gap-2">
-                <Icon name="plus" /> {t("save", "Save")}
-              </span>
-            </button>
-            <button
-              onClick={() => openEarnModal('redeem')}
-              className="flex-1 h-12 rounded-xl bg-white ring-1 ring-slate-200 text-slate-800 text-lg font-extrabold hover:bg-slate-50 transition"
-            >
-              <span className="inline-flex items-center gap-2">
-                <Icon name="check-circle" /> {t("redeem", "Redeem")}
-              </span>
-            </button>
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+            {/* Left: Total Staked Info */}
+            <div className="p-6 md:p-8 flex flex-col justify-center border-b md:border-b-0 md:border-r border-slate-100">
+              <div className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">{t("total_value_locked", "Total Value Locked")}</div>
+              <div className="text-4xl font-extrabold text-slate-900 tabular-nums mb-6">
+                {fmtUSD(totalStakedUsd)}
+              </div>
+              <button
+                onClick={openStakeModal}
+                className="w-full md:max-w-xs h-14 rounded-2xl bg-indigo-600 text-white text-lg font-bold shadow-lg shadow-indigo-200 hover:scale-[1.02] hover:bg-indigo-700 transition flex items-center justify-center gap-2"
+              >
+                <span>{t("start_staking", "Start Staking")}</span>
+                <Icon name="arrow-right" className="w-5 h-5" />
+              </button>
+            </div>
 
-          {/* --- Earn Balances Table --- */}
-          <div className="w-full overflow-x-auto">
-            <table className="w-full min-w-[600px] text-sm md:text-base">
-              <thead className="bg-white sticky top-0 z-10">
-                <tr className="text-left text-slate-600 border-y border-slate-100">
-                  <th className="py-3 pl-4 pr-2 whitespace-nowrap">{t("asset", "Asset")}</th>
-                  <th className="py-3 px-2 text-right whitespace-nowrap">{t("balance", "Balance")}</th>
-                  <th className="py-3 px-2 text-right whitespace-nowrap">{t("usd_value", "USD Value")}</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white">
-                {earnBalances.length > 0 ? earnBalances.map(({ symbol, balance }) => (
-                  <tr key={symbol} className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors" style={{ height: 60 }}>
-                    {/* Asset */}
-                    <td className="py-3 pl-4 pr-2">
-                      <div className="flex items-center gap-2">
-                        <Icon name={symbol?.toLowerCase() || "coin"} className="w-6 h-6" />
-                        <span className="font-semibold text-slate-900">{symbol}</span>
-                      </div>
-                    </td>
-                    {/* Balance */}
-                    <td className="py-3 px-2 text-right tabular-nums font-medium text-slate-800">
-                      {Number(balance).toLocaleString(undefined, {
-                        minimumFractionDigits: symbol === "BTC" ? 6 : 2,
-                        maximumFractionDigits: symbol === "BTC" ? 8 : 6,
-                      })}
-                    </td>
-                    {/* USD Value */}
-                    <td className="py-3 px-2 text-right tabular-nums font-semibold text-slate-900">
-                      {(() => {
-                         // FIX: Check symbol first. If USDT, force 1.
-                        const p = symbol === "USDT" ? 1 : (prices[symbol] ?? undefined);
-                        return p !== undefined ? fmtUSD(Number(balance) * p) : "--";
-                      })()}
-                    </td>
-                  </tr>
-                )) : (
-                  <tr>
-                    <td colSpan="3" className="text-center py-10 text-slate-500">
-                      {t("no_savings_yet", "You have no assets in savings.")}
-                    </td>
-                  </tr>
+            {/* Right: Active Stakes List (Mini View) */}
+            <div className="p-0 bg-slate-50/50">
+              <div className="px-6 py-4 border-b border-slate-100 font-semibold text-slate-700">
+                {t("your_active_stakes", "Your Active Stakes")}
+              </div>
+              <div className="max-h-[250px] overflow-y-auto">
+                {stakedAssets.length > 0 ? (
+                  <table className="w-full text-sm">
+                    <tbody>
+                      {stakedAssets.map((row, idx) => (
+                        <tr key={idx} className="border-b border-slate-100 hover:bg-white transition">
+                          <td className="py-3 px-6 font-bold text-slate-700">{row.coin}</td>
+                          <td className="py-3 px-2 text-right">
+                            <div className="font-medium text-slate-900">{Number(row.amount).toFixed(4)}</div>
+                            <div className="text-xs text-indigo-600 font-bold">
+                              +{row.daily_rate || "0"}% / day
+                            </div>
+                          </td>
+                          <td className="py-3 px-6 text-right text-xs text-slate-500">
+                             {/* You can calculate specific days left here if your backend sends dates */}
+                             Active
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="p-8 text-center text-slate-400 text-sm">
+                    {t("no_active_stakes", "No active stakes running.")}
+                  </div>
                 )}
-              </tbody>
-            </table>
+              </div>
+            </div>
           </div>
         </Card>
         {/* =================================== */}
@@ -1000,65 +1035,157 @@ const handleWithdraw = async (e) => {
         </form>
       </Modal>
 
-      {/* ===== NEW: Earn Modal ===== */}
-      <Modal visible={earnModal.open} onClose={closeEarnModal}>
-        <form onSubmit={handleEarnSubmit} className="space-y-5 p-2">
-          <div className="text-2xl font-bold mb-3 flex items-center gap-2 text-slate-900">
-            <Icon name={earnModal.type === 'save' ? 'plus' : 'check-circle'} className="w-7 h-7" />
-            {earnModal.type === 'save' ? t("save_to_earn", "Save to Earn") : t("redeem_from_earn", "Redeem from Earn")}
+      {/* ===== NEW: DeFi Staking Modal ===== */}
+      <Modal visible={stakeModal.open} onClose={closeStakeModal}>
+        <div className="p-1">
+          {/* Header */}
+          <div className="mb-6">
+             <h2 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+               <span className="bg-indigo-100 text-indigo-600 p-2 rounded-xl"><Icon name="layers" /></span>
+               DeFi Staking
+             </h2>
+             <p className="text-slate-500 text-sm mt-1">Earn daily rewards by locking assets.</p>
           </div>
 
-          <select
-            className="w-full px-4 py-3 rounded-xl bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-sky-200 outline-none"
-            value={earnModal.coin}
-            onChange={e => setEarnModal(m => ({ ...m, coin: e.target.value }))}
-          >
-            {coinSymbols.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          
-          <Field
-            label={t("amount_with_coin", { coin: earnModal.coin })}
-            type="number"
-            min={0.0001}
-            step="any"
-            required
-            placeholder={t("enter_amount", "Enter amount")}
-            value={earnModal.amount}
-            onChange={e => setEarnModal(m => ({ ...m, amount: e.target.value }))}
-            icon="dollar-sign"
-          />
+          <form onSubmit={handleStakeSubmit} className="space-y-6">
+            
+            {/* 1. Select Coin */}
+            <div>
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-2">
+                <span className="bg-slate-900 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">1</span>
+                {t("select_coin", "Select coin to stake")}
+              </label>
+              <div className="relative">
+                <select
+                  className="w-full h-12 pl-12 pr-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-bold focus:ring-2 focus:ring-indigo-500 outline-none appearance-none"
+                  value={stakeModal.coin}
+                  onChange={e => setStakeModal(m => ({ ...m, coin: e.target.value }))}
+                >
+                  {coinSymbols.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                   <Icon name={stakeModal.coin.toLowerCase()} className="w-6 h-6" />
+                </div>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                   <Icon name="chevron-down" className="w-4 h-4" />
+                </div>
+              </div>
+            </div>
 
-          <div className="text-sm text-slate-600 bg-slate-50 ring-1 ring-slate-200 rounded px-3 py-2">
-            {earnModal.type === 'save'
-              ? t("save_desc", "Assets will be moved from 'My Assets' to 'Savings Earn'.")
-              : t("redeem_desc", "Assets will be moved from 'Savings Earn' to 'My Assets'.")
-            }
-          </div>
+            {/* 2. Amount */}
+            <div>
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-2">
+                <span className="bg-slate-900 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">2</span>
+                {t("enter_amount", "Enter Amount")}
+              </label>
+              <div className="relative">
+                <input 
+                  type="number"
+                  className="w-full h-14 pl-4 pr-20 rounded-xl bg-slate-900 text-white text-xl font-bold placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 outline-none"
+                  placeholder="0.00"
+                  value={stakeModal.amount}
+                  onChange={e => setStakeModal(m => ({ ...m, amount: e.target.value }))}
+                />
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                   <button 
+                     type="button"
+                     onClick={() => {
+                       // Find balance of selected coin
+                       const asset = balances.find(b => b.symbol === stakeModal.coin);
+                       if(asset) setStakeModal(m => ({...m, amount: asset.balance}));
+                     }}
+                     className="text-xs font-bold text-indigo-400 hover:text-indigo-300 px-2 py-1"
+                   >
+                     ALL
+                   </button>
+                   <span className="text-slate-400 font-bold text-sm px-2">{stakeModal.coin}</span>
+                </div>
+              </div>
+              <div className="text-right mt-1 text-xs text-slate-500">
+                Available: {balances.find(b => b.symbol === stakeModal.coin)?.balance || "0"} {stakeModal.coin}
+              </div>
+            </div>
 
-          <div className="space-y-4"> {/* Use space-y-4 to separate button and message */}
-            <button
-              type="submit"
-              disabled={earnBusy || !earnModal.amount || parseFloat(earnModal.amount) <= 0}
-              className={`w-full h-12 rounded-xl text-white text-lg font-extrabold transition
-                ${earnBusy ? "bg-slate-500 cursor-not-allowed" : "bg-slate-900 hover:scale-[1.02]"}`}
-            >
-              {earnBusy ? (t("submitting", "Submitting...")) : (earnModal.type === 'save' ? t("confirm_save", "Confirm Save") : t("confirm_redeem", "Confirm Redeem"))}
-            </button>
+            {/* 3. Select Plan (Grid Layout) */}
+            <div>
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-3">
+                <span className="bg-slate-900 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">3</span>
+                {t("select_plan", "Select a staking plan")}
+              </label>
+              
+              <div className="grid grid-cols-1 gap-3">
+                {STAKING_PLANS.map((plan) => {
+                  const isSelected = selectedPlan?.days === plan.days;
+                  return (
+                    <div 
+                      key={plan.days}
+                      onClick={() => setSelectedPlan(plan)}
+                      className={`
+                        cursor-pointer relative p-4 rounded-xl border-2 transition-all duration-200 flex justify-between items-center
+                        ${isSelected 
+                          ? "border-indigo-600 bg-indigo-50 shadow-md transform scale-[1.01]" 
+                          : "border-slate-200 bg-white hover:border-indigo-300"
+                        }
+                      `}
+                    >
+                      <div>
+                        <div className={`text-lg font-extrabold ${isSelected ? "text-indigo-900" : "text-slate-700"}`}>
+                          {plan.days} Days
+                        </div>
+                        <div className="text-xs text-slate-500 font-medium">Duration Lock</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-extrabold text-emerald-600">
+                          {plan.rate}%
+                        </div>
+                        <div className="text-xs text-slate-500 font-medium">Per day</div>
+                      </div>
+                      {isSelected && (
+                        <div className="absolute -top-2 -right-2 bg-indigo-600 text-white rounded-full p-1 shadow-sm">
+                          <Icon name="check" className="w-3 h-3" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-            {/* NEW: Message box styled exactly like the 'Convert' one */}
-            {earnToast && (
-              <div className={`rounded-lg px-4 py-3 text-center text-base font-semibold ring-1
-                ${
-                  earnToast.type === 'success'
-                    ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
-                    : 'bg-rose-50 text-rose-700 ring-rose-200'
-                }`}
+            {/* Estimate Calculation Display */}
+            {stakeModal.amount && selectedPlan && (
+               <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 flex justify-between items-center">
+                 <span className="text-slate-600 font-medium text-sm">Estimated Profit:</span>
+                 <span className="text-emerald-600 font-extrabold text-lg">
+                   + {(parseFloat(stakeModal.amount) * (selectedPlan.rate/100) * selectedPlan.days).toFixed(4)} {stakeModal.coin}
+                 </span>
+               </div>
+            )}
+
+            {/* Submit Button */}
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={stakeBusy || !stakeModal.amount || !selectedPlan}
+                className={`w-full h-14 rounded-xl text-white text-lg font-extrabold shadow-lg transition
+                  ${stakeBusy || !stakeModal.amount || !selectedPlan
+                    ? "bg-slate-400 cursor-not-allowed" 
+                    : "bg-indigo-600 hover:bg-indigo-700 hover:scale-[1.02] shadow-indigo-200"
+                  }`}
               >
-                {earnToast.message}
+                {stakeBusy ? t("processing", "Processing...") : t("stake_now", "Stake Now")}
+              </button>
+            </div>
+
+            {/* Toast Message */}
+            {stakeToast && (
+              <div className={`mt-4 p-3 rounded-lg text-center font-bold text-sm ring-1 
+                ${stakeToast.type === 'success' ? 'bg-emerald-100 text-emerald-700 ring-emerald-200' : 'bg-rose-100 text-rose-700 ring-rose-200'}`}>
+                {stakeToast.message}
               </div>
             )}
-          </div>
-        </form>
+
+          </form>
+        </div>
       </Modal>
       {/* ============================= */}
     </div>
