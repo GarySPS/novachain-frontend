@@ -1016,7 +1016,7 @@ export default function WalletPage() {
           <div className="mb-6">
             <h2 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
               <span className="bg-indigo-100 text-indigo-600 p-2 rounded-xl"><Icon name="layers" /></span>
-              DeFi Staking
+              Novachain AI DeFi Staking
             </h2>
             <p className="text-slate-500 text-sm mt-1">Earn daily rewards by locking assets.</p>
           </div>
