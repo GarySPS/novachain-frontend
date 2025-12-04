@@ -91,137 +91,70 @@ export default function WalletPage() {
   const [isGuest, setIsGuest] = useState(false);
   const [historyScreenshots, setHistoryScreenshots] = useState({});
   const [totalUsd, setTotalUsd] = useState(0);
+  
   // lock + inline toasts
-const [depositBusy, setDepositBusy] = useState(false);
-const [withdrawBusy, setWithdrawBusy] = useState(false);
-const [depositToast, setDepositToast] = useState("");
-const [withdrawToast, setWithdrawToast] = useState("");
+  const [depositBusy, setDepositBusy] = useState(false);
+  const [withdrawBusy, setWithdrawBusy] = useState(false);
+  const [depositToast, setDepositToast] = useState("");
+  const [withdrawToast, setWithdrawToast] = useState("");
 
-// ===== NEW: DeFi Staking State & Logic =====
-const [stakedAssets, setStakedAssets] = useState([]); // Assets currently locked
-const [totalStakedUsd, setTotalStakedUsd] = useState(0);
+  // ===== NEW: DeFi Staking State & Logic =====
+  const [stakedAssets, setStakedAssets] = useState([]); // Assets currently locked
+  const [totalStakedUsd, setTotalStakedUsd] = useState(0);
 
-// Modal State
-const [stakeModal, setStakeModal] = useState({ open: false, coin: "USDT", amount: "" });
-const [selectedPlan, setSelectedPlan] = useState(null); // { days: 7, rate: 1.3 }
-const [stakeBusy, setStakeBusy] = useState(false);
-const [stakeToast, setStakeToast] = useState(null);
+  // Modal State
+  const [stakeModal, setStakeModal] = useState({ open: false, coin: "USDT", amount: "" });
+  const [selectedPlan, setSelectedPlan] = useState(null); // { days: 7, rate: 1.3 }
+  const [stakeBusy, setStakeBusy] = useState(false);
+  const [stakeToast, setStakeToast] = useState(null);
 
-// 1. Calculate Total Staked Value in USD
-useEffect(() => {
-  if (!stakedAssets.length || !Object.keys(prices).length) {
-    setTotalStakedUsd(0);
-    return;
-  }
-  let sum = 0;
-  stakedAssets.forEach(({ coin, amount }) => {
-    const coinPrice = prices[coin] || (coin === "USDT" ? 1 : 0);
-    sum += Number(amount) * coinPrice;
-  });
-  setTotalStakedUsd(sum);
-}, [stakedAssets, prices]);
-
-// 2. Fetch Staked Assets
-function fetchStakedAssets() {
-  if (!token || !userId) return;
-  // NOTE: Ensure your backend has this endpoint: GET /earn/stakes
-  axios.get(`${MAIN_API_BASE}/earn/stakes`, { headers: { Authorization: `Bearer ${token}` } })
-    .then(res => setStakedAssets(res.data || []))
-    .catch(() => setStakedAssets([]));
-}
-
-// 3. Add fetchStakedAssets to the main load sequence
-useEffect(() => {
-  if (token && userId) {
-    fetchStakedAssets();
-  }
-}, [token, userId]);
-
-// 4. Modal Handlers
-const openStakeModal = () => setStakeModal({ open: true, coin: "USDT", amount: "" });
-const closeStakeModal = () => {
-  setStakeModal({ open: false, coin: "USDT", amount: "" });
-  setSelectedPlan(null);
-  setStakeToast(null);
-};
-
-const handleRedeem = async (stakeId) => {
-    if(stakeBusy) return;
-    setStakeBusy(true);
-    try {
-      const res = await axios.post(`${MAIN_API_BASE}/earn/redeem`, { stakeId }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if(res.data.success) {
-        setStakeToast({ type: "success", message: res.data.message });
-        fetchBalances();     // Update main balance
-        fetchStakedAssets(); // Remove from list (or update status)
-      } else {
-        setStakeToast({ type: "error", message: res.data.error });
-      }
-    } catch(err) {
-      setStakeToast({ type: "error", message: err.response?.data?.error || "Failed" });
-    } finally {
-      setStakeBusy(false);
+  // 1. Calculate Total Staked Value in USD
+  useEffect(() => {
+    if (!stakedAssets.length || !Object.keys(prices).length) {
+      setTotalStakedUsd(0);
+      return;
     }
-  };
-
-// 5. Submit Staking Request
-const handleStakeSubmit = async (e) => {
-  e.preventDefault();
-  if (stakeBusy) return;
-  
-  if (!selectedPlan) {
-    setStakeToast({ type: "error", message: t("please_select_plan") || "Please select a plan" });
-    return;
-  }
-
-  setStakeBusy(true);
-  setStakeToast(null);
-
-  // Prepare payload
-  const payload = { 
-    coin: stakeModal.coin, 
-    amount: parseFloat(stakeModal.amount),
-    duration_days: selectedPlan.days, // e.g. 7
-    daily_rate: selectedPlan.rate     // e.g. 1.3
-  };
-  
-  let wasSuccess = false;
-
-  try {
-    // NOTE: Ensure backend has: POST /earn/stake
-    const res = await axios.post(`${MAIN_API_BASE}/earn/stake`, payload, {
-      headers: { Authorization: `Bearer ${token}` }
+    let sum = 0;
+    stakedAssets.forEach(({ coin, amount }) => {
+      const coinPrice = prices[coin] || (coin === "USDT" ? 1 : 0);
+      sum += Number(amount) * coinPrice;
     });
+    setTotalStakedUsd(sum);
+  }, [stakedAssets, prices]);
 
-    if (res.data && res.data.success) {
-      wasSuccess = true;
-      setStakeToast({
-        type: "success",
-        message: t("stake_success") || "Staking Successful!"
-      });
-      fetchBalances();      // Update main wallet (balance goes down)
-      fetchStakedAssets();  // Update stake list (stake appears)
-    } else {
-      setStakeToast({
-        type: "error",
-        message: res.data.error || t("operation_failed")
-      });
-    }
-  } catch (err) {
-    setStakeToast({
-      type: "error",
-      message: err.response?.data?.error || t("operation_failed")
-    });
-  } finally {
-    setStakeBusy(false);
-    if (wasSuccess) {
-      setTimeout(() => closeStakeModal(), 1500);
-    }
+  // 2. Fetch Staked Assets
+  function fetchStakedAssets() {
+    if (!token || !userId) return;
+    axios.get(`${MAIN_API_BASE}/earn/stakes`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => setStakedAssets(res.data || []))
+      .catch(() => setStakedAssets([]));
   }
-};
-// ============================================
+
+  // 3. Add fetchStakedAssets to the main load sequence
+  useEffect(() => {
+    if (token && userId) {
+      fetchStakedAssets();
+    }
+  }, [token, userId]);
+
+  /* ---------------- history merge (unchanged logic) ---------------- */
+  const userDepositHistory = depositHistory.filter(d => userId && Number(d.user_id) === Number(userId));
+  const userWithdrawHistory = withdrawHistory.filter(w => userId && Number(w.user_id) === Number(userId));
+  const allHistory = [
+    ...userDepositHistory.map(d => ({ ...d, type: "Deposit" })),
+    ...userWithdrawHistory.map(w => ({ ...w, type: "Withdraw" })),
+  ].sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
+
+  useEffect(() => {
+    if (!balances.length) { setTotalUsd(0); return; }
+    if (!Object.keys(prices).length) { return; }
+    let sum = 0;
+    balances.forEach(({ symbol, balance }) => {
+      const coinPrice = prices[symbol] || (symbol === "USDT" ? 1 : 0);
+      sum += Number(balance) * coinPrice;
+    });
+    setTotalUsd(sum);
+  }, [balances, prices]);
 
   useEffect(() => {
     async function fetchHistoryScreenshots() {
@@ -349,17 +282,15 @@ const handleStakeSubmit = async (e) => {
       });
   }, []);
 
-  // ===== MODIFIED: Added fetchEarnBalances() =====
+  // ===== DATA FETCHING =====
   useEffect(() => {
     if (!token || !userId) return;
     fetchBalances();
-    fetchEarnBalances(); // <-- NEW
     axios.get(`${MAIN_API_BASE}/deposits`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => setDepositHistory(res.data)).catch(() => setDepositHistory([]));
     axios.get(`${MAIN_API_BASE}/withdrawals`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => setWithdrawHistory(res.data)).catch(() => setWithdrawHistory([]));
   }, [token, userId]);
-  // ===============================================
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -394,137 +325,157 @@ const handleStakeSubmit = async (e) => {
       .catch(() => setBalances([]));
   }
 
-  // ===== NEW: Function to fetch Earn Wallet balances =====
-  function fetchEarnBalances() {
-    if (!token || !userId) return;
-    // NOTE: This assumes a *new* endpoint `/earn/balance` for the savings wallet
-    axios.get(`${MAIN_API_BASE}/earn/balance`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => setEarnBalances(res.data.assets || []))
-      .catch(() => setEarnBalances([])); // Set to empty on error
-  }
-  // =====================================================
-
   const openModal = (type, coin) => setModal({ open: true, type, coin });
   const closeModal = () => setModal({ open: false, type: "", coin: "" });
 
-  // ===== NEW: Handlers for Earn Modal =====
-  const openEarnModal = (type) => setEarnModal({ open: true, type, coin: "USDT", amount: "" });
-  const closeEarnModal = () => setEarnModal({ open: false, type: "save", coin: "USDT", amount: "" });
+  // 4. Modal Handlers
+  const openStakeModal = () => setStakeModal({ open: true, coin: "USDT", amount: "" });
+  const closeStakeModal = () => {
+    setStakeModal({ open: false, coin: "USDT", amount: "" });
+    setSelectedPlan(null);
+    setStakeToast(null);
+  };
 
-  const handleEarnSubmit = async (e) => {
+  // 5. Submit Staking Request
+  const handleStakeSubmit = async (e) => {
     e.preventDefault();
-    if (earnBusy) return;
-    setEarnBusy(true);
-    setEarnToast(null); // Clear previous toast
-
-    const { type, coin, amount } = earnModal;
-    const endpoint = type === 'save' ? '/earn/deposit' : '/earn/withdraw';
-    const payload = { coin, amount: parseFloat(amount) };
+    if (stakeBusy) return;
     
-    let wasSuccess = false; // <-- This flag will help us
+    if (!selectedPlan) {
+      setStakeToast({ type: "error", message: t("please_select_plan") || "Please select a plan" });
+      return;
+    }
+
+    setStakeBusy(true);
+    setStakeToast(null);
+
+    // Prepare payload
+    const payload = { 
+      coin: stakeModal.coin, 
+      amount: parseFloat(stakeModal.amount),
+      duration_days: selectedPlan.days, // e.g. 7
+      daily_rate: selectedPlan.rate     // e.g. 1.3
+    };
+    
+    let wasSuccess = false;
 
     try {
-      const res = await axios.post(`${MAIN_API_BASE}${endpoint}`, payload, {
+      const res = await axios.post(`${MAIN_API_BASE}/earn/stake`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       if (res.data && res.data.success) {
-        // --- SUCCESS ---
-        wasSuccess = true; // <-- Set flag to true
-        setEarnToast({
+        wasSuccess = true;
+        setStakeToast({
           type: "success",
-          message: type === 'save' ? (t("Save Successful") || "Save Successful") : (t("Redeem Successful") || "Redeem Successful")
+          message: t("stake_success") || "Staking Successful!"
         });
-        fetchBalances(); // Refresh main wallet
-        fetchEarnBalances(); // Refresh earn wallet
+        fetchBalances();      // Update main wallet (balance goes down)
+        fetchStakedAssets();  // Update stake list (stake appears)
       } else {
-        // --- KNOWN ERROR ---
-        setEarnToast({
+        setStakeToast({
           type: "error",
-          message: res.data.error || t("Operation Failed") || "Operation Failed"
+          message: res.data.error || t("operation_failed")
         });
       }
     } catch (err) {
-      // --- UNKNOWN ERROR ---
-      setEarnToast({
+      setStakeToast({
         type: "error",
-        message: err.response?.data?.error || t("Operation Failed") || "Operation Failed"
+        message: err.response?.data?.error || t("operation_failed")
       });
     } finally {
-      setTimeout(() => {
-        setEarnToast(null);
-        if (wasSuccess) { // <-- Check the flag
-          closeEarnModal(); // Only close modal on success!
-        }
-      }, 1400); 
-      setEarnBusy(false);
+      setStakeBusy(false);
+      if (wasSuccess) {
+        setTimeout(() => closeStakeModal(), 1500);
+      }
     }
   };
-  // ============================================
 
-const handleDepositSubmit = async (e) => {
-  e.preventDefault();
-  if (depositBusy) return;
-  setDepositBusy(true);
-  try {
-    let screenshotUrl = null;
-    if (depositScreenshot) {
-      screenshotUrl = await uploadDepositScreenshot(depositScreenshot, userId);
+  const handleRedeem = async (stakeId) => {
+    if(stakeBusy) return;
+    setStakeBusy(true);
+    try {
+      const res = await axios.post(`${MAIN_API_BASE}/earn/redeem`, { stakeId }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if(res.data.success) {
+        setStakeToast({ type: "success", message: res.data.message });
+        fetchBalances();     // Update main balance
+        fetchStakedAssets(); // Remove from list (or update status)
+      } else {
+        setStakeToast({ type: "error", message: res.data.error });
+      }
+    } catch(err) {
+      setStakeToast({ type: "error", message: err.response?.data?.error || "Failed" });
+    } finally {
+      setStakeBusy(false);
     }
-    await axios.post(`${MAIN_API_BASE}/deposit`, {
-      coin: selectedDepositCoin,
-      amount: depositAmount,
-      address: walletAddresses[selectedDepositCoin],
-      screenshot: screenshotUrl,
-    }, { headers: { Authorization: `Bearer ${token}` } });
+  };
 
-    setDepositToast(t("Deposit Submitted") || "Deposit Submitted");
-    setDepositAmount("");
-    setDepositScreenshot(null);
-    setFileLocked(false);
+  const handleDepositSubmit = async (e) => {
+    e.preventDefault();
+    if (depositBusy) return;
+    setDepositBusy(true);
+    try {
+      let screenshotUrl = null;
+      if (depositScreenshot) {
+        screenshotUrl = await uploadDepositScreenshot(depositScreenshot, userId);
+      }
+      await axios.post(`${MAIN_API_BASE}/deposit`, {
+        coin: selectedDepositCoin,
+        amount: depositAmount,
+        address: walletAddresses[selectedDepositCoin],
+        screenshot: screenshotUrl,
+      }, { headers: { Authorization: `Bearer ${token}` } });
 
-    // refresh list
-    axios.get(`${MAIN_API_BASE}/deposits`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => setDepositHistory(res.data));
+      setDepositToast(t("Deposit Submitted") || "Deposit Submitted");
+      setDepositAmount("");
+      setDepositScreenshot(null);
+      setFileLocked(false);
 
-    // close after short delay
-    setTimeout(() => { setDepositToast(""); closeModal(); }, 1400);
-  } catch (err) {
-    setDepositToast(t("deposit_failed"));
-    console.error(err);
-    setTimeout(() => setDepositToast(""), 1400);
-  } finally {
-    setDepositBusy(false);
-  }
-};
-const handleWithdraw = async (e) => {
-  e.preventDefault();
-  if (withdrawBusy) return;
-  setWithdrawBusy(true);
-  try {
-    const res = await axios.post(`${MAIN_API_BASE}/withdraw`, {
-      user_id: userId,
-      coin: selectedWithdrawCoin,
-      amount: withdrawForm.amount,
-      address: withdrawForm.address,
-    }, { headers: { Authorization: `Bearer ${token}` } });
+      // refresh list
+      axios.get(`${MAIN_API_BASE}/deposits`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => setDepositHistory(res.data));
 
-    if (res.data && res.data.success) {
-      setWithdrawToast(t("Withdraw Submitted") || "Withdraw Submitted");
-      axios.get(`${MAIN_API_BASE}/withdrawals`, { headers: { Authorization: `Bearer ${token}` } })
-        .then(r => setWithdrawHistory(r.data));
-      fetchBalances();
-    } else {
-      setWithdrawToast(t("withdraw_failed"));
+      // close after short delay
+      setTimeout(() => { setDepositToast(""); closeModal(); }, 1400);
+    } catch (err) {
+      setDepositToast(t("deposit_failed"));
+      console.error(err);
+      setTimeout(() => setDepositToast(""), 1400);
+    } finally {
+      setDepositBusy(false);
     }
-  } catch (err) {
-    setWithdrawToast(err.response?.data?.error || t("withdraw_failed"));
-    console.error(err);
-  } finally {
-    setTimeout(() => { setWithdrawForm({ address: "", amount: "" }); setWithdrawToast(""); closeModal(); }, 1400);
-    setWithdrawBusy(false);
-  }
-};
+  };
+
+  const handleWithdraw = async (e) => {
+    e.preventDefault();
+    if (withdrawBusy) return;
+    setWithdrawBusy(true);
+    try {
+      const res = await axios.post(`${MAIN_API_BASE}/withdraw`, {
+        user_id: userId,
+        coin: selectedWithdrawCoin,
+        amount: withdrawForm.amount,
+        address: withdrawForm.address,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+
+      if (res.data && res.data.success) {
+        setWithdrawToast(t("Withdraw Submitted") || "Withdraw Submitted");
+        axios.get(`${MAIN_API_BASE}/withdrawals`, { headers: { Authorization: `Bearer ${token}` } })
+          .then(r => setWithdrawHistory(r.data));
+        fetchBalances();
+      } else {
+        setWithdrawToast(t("withdraw_failed"));
+      }
+    } catch (err) {
+      setWithdrawToast(err.response?.data?.error || t("withdraw_failed"));
+      console.error(err);
+    } finally {
+      setTimeout(() => { setWithdrawForm({ address: "", amount: "" }); setWithdrawToast(""); closeModal(); }, 1400);
+      setWithdrawBusy(false);
+    }
+  };
 
   const swap = () => { setFromCoin(toCoin); setToCoin(fromCoin); setAmount(""); setResult(""); };
 
@@ -574,110 +525,105 @@ const handleWithdraw = async (e) => {
       />
       <div style={{ position: "relative", zIndex: 1 }} className="w-full max-w-7xl">
         {/* ===== Top row: balance + assets ===== */}
-<div className="w-full grid grid-cols-1 lg:grid-cols-[minmax(320px,380px),1fr] gap-6 md:gap-8 items-stretch">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-[minmax(320px,380px),1fr] gap-6 md:gap-8 items-stretch">
 
-<Card className="rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden h-full">
-  <div className="w-full h-full min-h-[180px] md:min-h-[220px] flex items-center justify-center
-            px-4 sm:px-6 bg-gradient-to-br from-indigo-50 via-sky-50 to-emerald-50">
-    <div className="flex flex-col items-center gap-1 w-full">
-      <div className="text-center text-slate-500 text-xs sm:text-sm font-semibold">
-        {t("total_balance")}
-      </div>
-
-      {/* key: clamp + break-all + leading + full width */}
-      <div
-        className="
-          w-full max-w-full px-1 text-center font-extrabold text-slate-900 tabular-nums
-          leading-[1.1] tracking-tight break-all
-          text-[clamp(1.5rem,5.2vw,2.75rem)]
-        "
-      >
-        {fmtUSD(totalUsd)}
-      </div>
-    </div>
-  </div>
-</Card>
-
-        {/* Assets table */}
-        <Card className="rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden">
-          <div className="px-5 pt-4 pb-2">
-            <div className="text-slate-700 font-semibold">{t("my_assets")}</div>
-          </div>
-          <div className="w-full overflow-x-auto">
-            {/* REVISED: 
-              - Removed 'table-fixed' to allow columns to size based on content, fixing alignment.
-              - Added 'min-w-[700px]' to ensure the table is scrollable on small screens instead of collapsing.
-            */}
-            <table className="w-full min-w-[700px] text-sm md:text-base">
-              <thead className="bg-white sticky top-0 z-10">
-                <tr className="text-left text-slate-600 border-y border-slate-100">
-                  {/* REVISED: Removed width classes (e.g., w-1/5) and added whitespace-nowrap */}
-                  <th className="py-3 pl-4 pr-2 whitespace-nowrap">{t("type")}</th>
-                  <th className="py-3 px-2 text-right whitespace-nowrap">{t("amount")}</th>
-                  <th className="py-3 px-2 text-right whitespace-nowrap">{t("frozen", "Frozen")}</th>
-                  <th className="py-3 px-2 text-right whitespace-nowrap">{t("usd_value", "USD Value")}</th>
-                  <th className="py-3 pl-2 pr-4 text-right whitespace-nowrap">{t("Transfer")}</th>
-                </tr>
-              </thead>
-        <tbody className="bg-white">
-          {balances.map(({ symbol, icon, balance, frozen }) => (
-            <tr
-              key={symbol}
-              className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
-              style={{ height: 64 }}
-            >
-              {/* Type */}
-              <td className="py-3 pl-4 pr-2">
-                <div className="flex items-center gap-2">
-                  <Icon name={symbol?.toLowerCase() || "coin"} className="w-6 h-6" />
-                  <span className="font-semibold text-slate-900">{symbol}</span>
+          <Card className="rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden h-full">
+            <div className="w-full h-full min-h-[180px] md:min-h-[220px] flex items-center justify-center
+                      px-4 sm:px-6 bg-gradient-to-br from-indigo-50 via-sky-50 to-emerald-50">
+              <div className="flex flex-col items-center gap-1 w-full">
+                <div className="text-center text-slate-500 text-xs sm:text-sm font-semibold">
+                  {t("total_balance")}
                 </div>
-              </td>
-              {/* Amount */}
-              <td className="py-3 px-2 text-right tabular-nums font-medium text-slate-800">
-                {Number(balance).toLocaleString(undefined, {
-                  minimumFractionDigits: symbol === "BTC" ? 6 : 2,
-                  maximumFractionDigits: symbol === "BTC" ? 8 : 6,
-                })}
-              </td>
-              {/* Frozen */}
-              <td className="py-3 px-2 text-right tabular-nums font-medium text-amber-600">
-                {Number(frozen || 0).toLocaleString(undefined, {
-                  minimumFractionDigits: symbol === "BTC" ? 6 : 2,
-                  maximumFractionDigits: symbol === "BTC" ? 8 : 6,
-                })}
-              </td>
-              {/* USD Value */}
-              <td className="py-3 px-2 text-right tabular-nums font-semibold text-slate-900">
-                {(() => {
-                  const p = prices[symbol] ?? (symbol === "USDT" ? 1 : undefined);
-                  return p !== undefined ? fmtUSD(Number(balance) * p) : "--";
-                })()}
-              </td>
-              {/* Transfer */}
-              <td className="py-3 pl-2 pr-4 text-right">
-                <div className="inline-flex items-center gap-2">
-                  <button
-                    className="h-10 px-4 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:scale-[1.02] transition whitespace-nowrap"
-                    onClick={() => { setSelectedDepositCoin(symbol); openModal("deposit", symbol); }}
-                  >
-                    <span className="inline-flex items-center gap-1"><Icon name="download" />{t("deposit")}</span>
-                  </button>
-                  <button
-                    className="h-10 px-4 rounded-xl bg-white ring-1 ring-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition whitespace-nowrap"
-                    onClick={() => openModal("withdraw", symbol)}
-                  >
-                    <span className="inline-flex items-center gap-1"><Icon name="upload" />{t("withdraw")}</span>
-                  </button>
+
+                {/* key: clamp + break-all + leading + full width */}
+                <div
+                  className="
+                    w-full max-w-full px-1 text-center font-extrabold text-slate-900 tabular-nums
+                    leading-[1.1] tracking-tight break-all
+                    text-[clamp(1.5rem,5.2vw,2.75rem)]
+                  "
+                >
+                  {fmtUSD(totalUsd)}
                 </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-            </table>
-          </div>
-        </Card>
-      </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Assets table */}
+          <Card className="rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden">
+            <div className="px-5 pt-4 pb-2">
+              <div className="text-slate-700 font-semibold">{t("my_assets")}</div>
+            </div>
+            <div className="w-full overflow-x-auto">
+              <table className="w-full min-w-[700px] text-sm md:text-base">
+                <thead className="bg-white sticky top-0 z-10">
+                  <tr className="text-left text-slate-600 border-y border-slate-100">
+                    <th className="py-3 pl-4 pr-2 whitespace-nowrap">{t("type")}</th>
+                    <th className="py-3 px-2 text-right whitespace-nowrap">{t("amount")}</th>
+                    <th className="py-3 px-2 text-right whitespace-nowrap">{t("frozen", "Frozen")}</th>
+                    <th className="py-3 px-2 text-right whitespace-nowrap">{t("usd_value", "USD Value")}</th>
+                    <th className="py-3 pl-2 pr-4 text-right whitespace-nowrap">{t("Transfer")}</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white">
+                  {balances.map(({ symbol, icon, balance, frozen }) => (
+                    <tr
+                      key={symbol}
+                      className="group border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
+                      style={{ height: 64 }}
+                    >
+                      {/* Type */}
+                      <td className="py-3 pl-4 pr-2">
+                        <div className="flex items-center gap-2">
+                          <Icon name={symbol?.toLowerCase() || "coin"} className="w-6 h-6" />
+                          <span className="font-semibold text-slate-900">{symbol}</span>
+                        </div>
+                      </td>
+                      {/* Amount */}
+                      <td className="py-3 px-2 text-right tabular-nums font-medium text-slate-800">
+                        {Number(balance).toLocaleString(undefined, {
+                          minimumFractionDigits: symbol === "BTC" ? 6 : 2,
+                          maximumFractionDigits: symbol === "BTC" ? 8 : 6,
+                        })}
+                      </td>
+                      {/* Frozen */}
+                      <td className="py-3 px-2 text-right tabular-nums font-medium text-amber-600">
+                        {Number(frozen || 0).toLocaleString(undefined, {
+                          minimumFractionDigits: symbol === "BTC" ? 6 : 2,
+                          maximumFractionDigits: symbol === "BTC" ? 8 : 6,
+                        })}
+                      </td>
+                      {/* USD Value */}
+                      <td className="py-3 px-2 text-right tabular-nums font-semibold text-slate-900">
+                        {(() => {
+                          const p = prices[symbol] ?? (symbol === "USDT" ? 1 : undefined);
+                          return p !== undefined ? fmtUSD(Number(balance) * p) : "--";
+                        })()}
+                      </td>
+                      {/* Transfer */}
+                      <td className="py-3 pl-2 pr-4 text-right">
+                        <div className="inline-flex items-center gap-2">
+                          <button
+                            className="h-10 px-4 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:scale-[1.02] transition whitespace-nowrap"
+                            onClick={() => { setSelectedDepositCoin(symbol); openModal("deposit", symbol); }}
+                          >
+                            <span className="inline-flex items-center gap-1"><Icon name="download" />{t("deposit")}</span>
+                          </button>
+                          <button
+                            className="h-10 px-4 rounded-xl bg-white ring-1 ring-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition whitespace-nowrap"
+                            onClick={() => openModal("withdraw", symbol)}
+                          >
+                            <span className="inline-flex items-center gap-1"><Icon name="upload" />{t("withdraw")}</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
 
         {/* ===== NEW: DeFi Staking Section ===== */}
         <Card id="earn-section" className="mt-8 rounded-3xl shadow-xl border border-slate-100 p-0 overflow-hidden">
@@ -725,28 +671,28 @@ const handleWithdraw = async (e) => {
                   <table className="w-full text-sm">
                     <tbody>
                       {stakedAssets.map((row, idx) => (
-  <tr key={idx} className="border-b border-slate-100 hover:bg-white transition">
-    <td className="py-3 px-6 font-bold text-slate-700">{row.coin}</td>
-    <td className="py-3 px-2 text-right">
-      <div className="font-medium text-slate-900">{Number(row.amount).toFixed(4)}</div>
-      <div className="text-xs text-indigo-600 font-bold">
-        +{row.daily_rate}% / day
-      </div>
-    </td>
-    <td className="py-3 px-6 text-right text-xs">
-      {row.can_redeem ? (
-        <button 
-          onClick={() => handleRedeem(row.id)}
-          className="bg-emerald-500 text-white px-3 py-1 rounded-lg font-bold hover:bg-emerald-600 transition"
-        >
-          Redeem
-        </button>
-      ) : (
-        <span className="text-slate-500">{row.days_left} days left</span>
-      )}
-    </td>
-  </tr>
-))}
+                        <tr key={idx} className="border-b border-slate-100 hover:bg-white transition">
+                          <td className="py-3 px-6 font-bold text-slate-700">{row.coin}</td>
+                          <td className="py-3 px-2 text-right">
+                            <div className="font-medium text-slate-900">{Number(row.amount).toFixed(4)}</div>
+                            <div className="text-xs text-indigo-600 font-bold">
+                              +{row.daily_rate}% / day
+                            </div>
+                          </td>
+                          <td className="py-3 px-6 text-right text-xs">
+                            {row.can_redeem ? (
+                              <button
+                                onClick={() => handleRedeem(row.id)}
+                                className="bg-emerald-500 text-white px-3 py-1 rounded-lg font-bold hover:bg-emerald-600 transition"
+                              >
+                                Redeem
+                              </button>
+                            ) : (
+                              <span className="text-slate-500">{row.days_left} days left</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 ) : (
@@ -863,11 +809,10 @@ const handleWithdraw = async (e) => {
                     style={{ height: 60 }}
                   >
                     <td className="py-3 px-4">
-                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ring-1 ${
-                        row.type === "Deposit"
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ring-1 ${row.type === "Deposit"
                           ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
                           : "bg-amber-50 text-amber-700 ring-amber-200"
-                      }`}>
+                        }`}>
                         <Icon name={row.type === "Deposit" ? "download" : "upload"} className="w-4 h-4" />
                         {t(row.type.toLowerCase())}
                       </span>
@@ -974,26 +919,26 @@ const handleWithdraw = async (e) => {
             <span className="block text-amber-600">{t("proof_ensures_support")}</span>
           </div>
 
-<div className="relative">
-  <button
-    type="submit"
-    disabled={depositBusy || !depositAmount || !depositScreenshot}
-    className={`w-full h-12 rounded-xl text-white text-lg font-extrabold transition
+          <div className="relative">
+            <button
+              type="submit"
+              disabled={depositBusy || !depositAmount || !depositScreenshot}
+              className={`w-full h-12 rounded-xl text-white text-lg font-extrabold transition
       ${depositBusy ? "bg-slate-500 cursor-not-allowed" : "bg-slate-900 hover:scale-[1.02]"}`}
-  >
-    {depositBusy ? (t("submitting") || "Submitting...") : t("submit")}
-  </button>
+            >
+              {depositBusy ? (t("submitting") || "Submitting...") : t("submit")}
+            </button>
 
-  {depositToast && (
-    <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-[70]">
-      <div className="flex items-center gap-2 px-4 py-2 rounded-2xl shadow-2xl
+            {depositToast && (
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-[70]">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-2xl shadow-2xl
               bg-slate-900/95 backdrop-blur text-white font-semibold ring-1 ring-white/15">
-        <Icon name="check" className="w-5 h-5" />
-        <span>{depositToast}</span>
-      </div>
-    </div>
-  )}
-</div>
+                  <Icon name="check" className="w-5 h-5" />
+                  <span>{depositToast}</span>
+                </div>
+              </div>
+            )}
+          </div>
         </form>
       </Modal>
 
@@ -1035,26 +980,26 @@ const handleWithdraw = async (e) => {
 
           <div className="text-sm text-amber-700 bg-amber-50 ring-1 ring-amber-200 rounded px-3 py-2">{t("double_check_withdraw")}</div>
 
-<div className="relative">
-  <button
-    type="submit"
-    disabled={withdrawBusy || !withdrawForm.address || !withdrawForm.amount}
-    className={`w-full h-12 rounded-xl text-white text-lg font-extrabold transition
+          <div className="relative">
+            <button
+              type="submit"
+              disabled={withdrawBusy || !withdrawForm.address || !withdrawForm.amount}
+              className={`w-full h-12 rounded-xl text-white text-lg font-extrabold transition
       ${withdrawBusy ? "bg-slate-500 cursor-not-allowed" : "bg-slate-900 hover:scale-[1.02]"}`}
-  >
-    {withdrawBusy ? (t("submitting") || "Submitting...") : t("submit_withdraw")}
-  </button>
+            >
+              {withdrawBusy ? (t("submitting") || "Submitting...") : t("submit_withdraw")}
+            </button>
 
-  {withdrawToast && (
-    <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-[70]">
-      <div className="flex items-center gap-2 px-4 py-2 rounded-2xl shadow-2xl
+            {withdrawToast && (
+              <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-[70]">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-2xl shadow-2xl
               bg-slate-900/95 backdrop-blur text-white font-semibold ring-1 ring-white/15">
-        <Icon name="check" className="w-5 h-5" />
-        <span>{withdrawToast}</span>
-      </div>
-    </div>
-  )}
-</div>
+                  <Icon name="check" className="w-5 h-5" />
+                  <span>{withdrawToast}</span>
+                </div>
+              </div>
+            )}
+          </div>
 
           {withdrawMsg && (
             <div className="mt-2 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 rounded-lg px-4 py-2 text-center text-base font-semibold">
@@ -1069,15 +1014,15 @@ const handleWithdraw = async (e) => {
         <div className="p-1">
           {/* Header */}
           <div className="mb-6">
-             <h2 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
-               <span className="bg-indigo-100 text-indigo-600 p-2 rounded-xl"><Icon name="layers" /></span>
-               DeFi Staking
-             </h2>
-             <p className="text-slate-500 text-sm mt-1">Earn daily rewards by locking assets.</p>
+            <h2 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+              <span className="bg-indigo-100 text-indigo-600 p-2 rounded-xl"><Icon name="layers" /></span>
+              DeFi Staking
+            </h2>
+            <p className="text-slate-500 text-sm mt-1">Earn daily rewards by locking assets.</p>
           </div>
 
           <form onSubmit={handleStakeSubmit} className="space-y-6">
-            
+
             {/* 1. Select Coin */}
             <div>
               <label className="flex items-center gap-2 text-sm font-bold text-slate-800 mb-2">
@@ -1093,10 +1038,10 @@ const handleWithdraw = async (e) => {
                   {coinSymbols.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                   <Icon name={stakeModal.coin.toLowerCase()} className="w-6 h-6" />
+                  <Icon name={stakeModal.coin.toLowerCase()} className="w-6 h-6" />
                 </div>
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                   <Icon name="chevron-down" className="w-4 h-4" />
+                  <Icon name="chevron-down" className="w-4 h-4" />
                 </div>
               </div>
             </div>
@@ -1108,7 +1053,7 @@ const handleWithdraw = async (e) => {
                 {t("enter_amount", "Enter Amount")}
               </label>
               <div className="relative">
-                <input 
+                <input
                   type="number"
                   className="w-full h-14 pl-4 pr-20 rounded-xl bg-slate-900 text-white text-xl font-bold placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 outline-none"
                   placeholder="0.00"
@@ -1116,18 +1061,18 @@ const handleWithdraw = async (e) => {
                   onChange={e => setStakeModal(m => ({ ...m, amount: e.target.value }))}
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                   <button 
-                     type="button"
-                     onClick={() => {
-                       // Find balance of selected coin
-                       const asset = balances.find(b => b.symbol === stakeModal.coin);
-                       if(asset) setStakeModal(m => ({...m, amount: asset.balance}));
-                     }}
-                     className="text-xs font-bold text-indigo-400 hover:text-indigo-300 px-2 py-1"
-                   >
-                     ALL
-                   </button>
-                   <span className="text-slate-400 font-bold text-sm px-2">{stakeModal.coin}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // Find balance of selected coin
+                      const asset = balances.find(b => b.symbol === stakeModal.coin);
+                      if (asset) setStakeModal(m => ({ ...m, amount: asset.balance }));
+                    }}
+                    className="text-xs font-bold text-indigo-400 hover:text-indigo-300 px-2 py-1"
+                  >
+                    ALL
+                  </button>
+                  <span className="text-slate-400 font-bold text-sm px-2">{stakeModal.coin}</span>
                 </div>
               </div>
               <div className="text-right mt-1 text-xs text-slate-500">
@@ -1141,18 +1086,18 @@ const handleWithdraw = async (e) => {
                 <span className="bg-slate-900 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs">3</span>
                 {t("select_plan", "Select a staking plan")}
               </label>
-              
+
               <div className="grid grid-cols-1 gap-3">
                 {STAKING_PLANS.map((plan) => {
                   const isSelected = selectedPlan?.days === plan.days;
                   return (
-                    <div 
+                    <div
                       key={plan.days}
                       onClick={() => setSelectedPlan(plan)}
                       className={`
                         cursor-pointer relative p-4 rounded-xl border-2 transition-all duration-200 flex justify-between items-center
-                        ${isSelected 
-                          ? "border-indigo-600 bg-indigo-50 shadow-md transform scale-[1.01]" 
+                        ${isSelected
+                          ? "border-indigo-600 bg-indigo-50 shadow-md transform scale-[1.01]"
                           : "border-slate-200 bg-white hover:border-indigo-300"
                         }
                       `}
@@ -1182,12 +1127,12 @@ const handleWithdraw = async (e) => {
 
             {/* Estimate Calculation Display */}
             {stakeModal.amount && selectedPlan && (
-               <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 flex justify-between items-center">
-                 <span className="text-slate-600 font-medium text-sm">Estimated Profit:</span>
-                 <span className="text-emerald-600 font-extrabold text-lg">
-                   + {(parseFloat(stakeModal.amount) * (selectedPlan.rate/100) * selectedPlan.days).toFixed(4)} {stakeModal.coin}
-                 </span>
-               </div>
+              <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 flex justify-between items-center">
+                <span className="text-slate-600 font-medium text-sm">Estimated Profit:</span>
+                <span className="text-emerald-600 font-extrabold text-lg">
+                  + {(parseFloat(stakeModal.amount) * (selectedPlan.rate / 100) * selectedPlan.days).toFixed(4)} {stakeModal.coin}
+                </span>
+              </div>
             )}
 
             {/* Submit Button */}
@@ -1197,7 +1142,7 @@ const handleWithdraw = async (e) => {
                 disabled={stakeBusy || !stakeModal.amount || !selectedPlan}
                 className={`w-full h-14 rounded-xl text-white text-lg font-extrabold shadow-lg transition
                   ${stakeBusy || !stakeModal.amount || !selectedPlan
-                    ? "bg-slate-400 cursor-not-allowed" 
+                    ? "bg-slate-400 cursor-not-allowed"
                     : "bg-indigo-600 hover:bg-indigo-700 hover:scale-[1.02] shadow-indigo-200"
                   }`}
               >
