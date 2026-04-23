@@ -35,11 +35,11 @@ export default function SignUpPage() {
         return;
       }
       if (!res.ok) {
-        setError(data.error || "Signup failed");
-        return;
-      }
-      setSuccess("OTP code sent to your email. Please verify to complete sign up.");
-      setTimeout(() => navigate("/verify-otp", { state: { email } }), 1200);
+        setError(data.error || "Signup failed");
+        return;
+      }
+      setSuccess("Account created successfully! Redirecting to login...");
+      setTimeout(() => navigate("/login"), 1200);
     } catch {
       setError("Signup failed. Please try again.");
     }
